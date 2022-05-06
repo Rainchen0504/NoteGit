@@ -1,0 +1,1576 @@
+# 官方描述
+
+**Node*.*js** 是一个基于 Chrome V8 引擎的 JavaScript 运行环境。*Node*.*js* 使用了一个事件驱动、非阻塞式 I/O 的模型,使其轻量又高效。
+
+
+
+# 一、Node基础
+
+## 1、浏览器内核
+
+Gecko:早期被Netscape和Mozilla Firefox浏览器使用;
+
+Trident:微软开发，被IE4~IE11浏览器使用，但是Edge浏览器已经转向Blink;
+
+Webkit:苹果基于KHTML开发、开源的，用于Safari，Google Chrome之前也在使用;
+
+Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、Edge、Opera等;
+
+事实上，经常说的<font color=orange>浏览器内核指的是浏览器的**排版引擎**</font>。排版引擎也被称为**浏览器引擎**，**页面渲染引擎**，或**样板引擎**。
+
+
+
+## 2、JS引擎
+
+​	浏览器内核一般由两部分组成，即渲染引擎和JS引擎。渲染引擎负责HTML解析、布局、渲染等相关工作；JS引擎负责解析、执行JS代码。
+
+编写的JavaScript无论你交给浏览器或者Node执行，最后都是需要被CPU执行的。但是CPU只认识自己的指令集，实际上是机器语言，才能被CPU所执行。所以需要JavaScript引擎帮助我们**将JavaScript代码翻译成CPU指令来执行**。
+
+常见的JS引擎有以下几种：
+
+- **SpiderMonkey**:第一款JavaScript引擎，由Brendan Eich开发(也就是JavaScript作者)；
+- **Chakra**:微软开发，用于IE浏览器；
+- **JavaScriptCore**:WebKit中的JavaScript引擎，Apple公司开发；
+- **V8**:Google开发的强大JavaScript引擎，也帮助Chrome从众多浏览器中脱颖而出；
+
+
+
+## 3、V8引擎
+
+​	V8是用C ++编写的Google开源高性能JavaScript和WebAssembly引擎，它用于Chrome和Node.js等。
+
+​	跨平台性：它实现ECMAScript和WebAssembly，并在Windows 7或更高版本，macOS 10.12+和使用x64，IA-32， ARM或MIPS处理器的Linux系统上运行。
+
+​	V8可以独立运行，也可以嵌入到任何C ++应用程序中。
+
+
+
+#### v8引擎中JS代码执行过程
+
+- **Parse**模块<font color=orange>将JS代码转换成AST（抽象语法树）</font>，因为解释器不能直接识别JS代码；
+  - 如果函数没有被调用，那么是不会转换成AST的。
+- **Ignition**是一个<font color=orange>解释器，会将AST转换成ByteCode（字节码）</font>；
+  - 同时会收集TurboFan优化所需要的信息（比如函数参数的类型信息，有了类型才能真正真实的运算）
+  - 如果函数值调用一次，Ignition会进行解释并执行字节码
+- **TurboFan**是一个<font color=orange>编译器，可以将字节码直接编译为CPU可以直接执行的机器码</font>；
+  - 如果一个函数被多次调用，那么就会被标记为热点函数，那么就会经过TurboFan转换成优化的机器码，提高代码的执行性能
+  - 但是，机器码实际上也会被还原为ByteCode，这是因为如果后续执行函数的过程中，类型发生了变化(比如sum函数原来执行的是number类型，后 来执行变成了string类型)，之前优化的机器码并不能正确的处理运算，就会逆向的转换成字节码;
+
+
+
+## 4、浏览器和Node架构的区别
+
+![image-20220322161837523](https://raw.githubusercontent.com/Rainchen0504/picture/master/202203221618648.png)
+
+
+
+## 5、Node.js架构
+
+![image-20220322163648233](https://raw.githubusercontent.com/Rainchen0504/picture/master/202203221636333.png)
+
+编写的JavaScript代码会经过V8引擎，再通过Node.js的Bindings，将任务放到Libuv的事件循环中。
+
+**libuv**(Unicorn Velociraptor—独角伶盗龙)是使用C语言编写的库。libuv提供了事件循环、文件系统读写、网络IO、线程池等等内容;
+
+
+
+## 6、Node的输出
+
+- 最常用的输入内容的方式:console.log
+- 清空控制台:console.clear
+- 打印函数的调用栈:console.trace
+
+
+
+## 7、常见的全局对象
+
+![image-20220401083107481](https://raw.githubusercontent.com/Rainchen0504/picture/master/202204010831989.png)
+
+- **__dirname:**获取当前文件所在的路径，不包括后面的文件名；
+- **__filename:**获取当前文件所在的路径和文件名称，包括后面的文件名；
+- **process对象:**process提供了Node进程中相关的信息；
+- **console对象:**提供了简单的调试控制台；
+- **定时器函数:**在Node中使用定时器有好几种方式：
+  - setTimeout(callback, delay[, ...args]):callback在delay毫秒后执行一次
+  - setInterval(callback, delay[, ...args]):callback每delay毫秒重复执行一次
+  - setImmediate(callback[, ...args]):callbackI / O事件后的回调的“立即”执行
+  - process.nextTick(callback[, ...args]):添加到下一次tick队列中
+
+
+
+## 8、global和window的区别
+
+在浏览器中执行的JavaScript代码，如果在顶级范围内通过var定义的一个属性，默认会被添加到window 对象上。但是在node中，通过var定义一个变量，它只是在当前模块中有一个变量，不会放到全局中。
+
+
+
+# 二、JS模块化
+
+​	模块化开发最终的目的是将程序划分成一个个小的结构。这个结构中编写属于自己的逻辑代码，有自己的作用域，不会影响到其他的结构。这个结构可以将自己希望暴露的变量、函数、对象等导出给其结构使用。也可以通过某种方式，导入另外结构中的变量、函数、对象等。
+
+按照这种**结构划分**开发程序的过程，就是<font color=orange>模块化开发</font>的过程
+
+
+
+## 1、CommonJS和Node
+
+​	CommonJS是一个规范，最初提出来是在浏览器以外的地方使用，并且当时被命名为**ServerJS**，后来为了 体现它的广泛性，修改为**CommonJS**，平时我们也会简称为CJS
+
+​	Node中对CommonJS进行了支持和实现，Node中每一个js文件都是一个单独的模块。这个模块中包括CommonJS规范的核心变量:**exports、module.exports、require**;
+
+- exports和module.exports可以负责对模块中的内容进行导出;
+- require函数可以帮助导入其他模块(自定义模块、系统模块、第三方库模块)中的内容。
+
+
+
+## 2、exports导出
+
+exports是一个对象，**可以在这个对象中添加很多个属性，添加的属性会导出**
+
+```js
+//bar导出文件
+const name = "zhang";
+const sayHello = function(name){
+  console.log("hello")
+}
+exports.name = name;
+exports.sayHello = sayHello;
+
+//main导入文件,bar变量等于exports对象,相当于浅拷贝
+const bar = require('./bar')
+console.log(bar.name)
+```
+
+
+
+## 3、module.exports
+
+​	CommonJS中是没有module.exports的概念的。但是为了实现模块的导出，Node中使用的是Module的类，每一个模块都是Module的一个实例，也就是 module;所以在Node中真正用于导出的其实根本不是exports，而是module.exports。
+
+为什么exports也可以导出：module对象的exports属性是exports对象的一个引用，也就是说module.exports = exports = main中的bar。
+
+
+
+## 4、require
+
+require是一个函数，可以帮助我们引入一个文件(模块)中导入的对象。
+
+常见的查找规则：require(X)
+
+- 情况一：X是一个核心模块，比如path、http
+  - 直接返回核心模块，并且停止查找
+- 情况二：以 ./ 或 ../ 或 /(根目录)开头的
+  - 第一步：将X当做一个文件在对应的目录下查找
+    - 1、如果有后缀名，按照后缀名的格式查找对应的文件
+    - 2、如果没有后缀名，会按照如下顺序
+      - 直接查找文件X
+      - 查找X.js文件
+      - 查找X.json文件
+      - 查找X.node文件
+  - 第二步：没有找到对应的文件，将X作为一个目录
+    - 查找目录下面的index文件
+      - 查找X/index.js文件
+      - 查找X/index.json文件
+      - 查找X/index.node文件
+  - 如果没有找到，那么报错:not found
+- 情况三：直接是一个X(没有路径)，并且X不是一个核心模块
+  - 如果没有找到，那么报错:not found
+
+
+
+## 5、CommonJS规范的缺点
+
+### 1.CommonJS加载模块是同步的
+
+同步的意味着只有等到对应的模块加载完毕，当前模块中的内容才能被运行；
+
+这个在服务器不会有什么问题，因为服务器加载的js文件都是本地文件，加载速度非常快；
+
+### 2.浏览器应用情景
+
+浏览器加载js文件需要先从服务器将文件下载下来，之后在加载运行;
+
+采用同步的就意味着后续的js代码都无法正常运行，即使是一些简单的DOM操作;
+
+### 3.浏览器通常不采用CommonJS规范
+
+webpack中使用CommonJS是另外一回事，它会将我们的代码转成浏览器可以直接执行的代码。
+
+### 4.早期为了可以在浏览器中使用模块化，通常会采用AMD或CMD
+
+目前一方面现代的浏览器已经支持ES Modules，另一方面借助于webpack等工具可以实现对CommonJS或者ES Module代码的转换，所以AMD和CMD已经使用非常少了。
+
+
+
+## 6、AMD规范
+
+AMD主要是应用于浏览器的一种模块化规范：
+
+​	1、AMD是Asynchronous Module Definition(异步模块定义)的缩写
+
+​	2、它采用的是异步加载模块；
+
+​	3、事实上AMD的规范还要早于CommonJS，但是CommonJS目前依然在被使用，而AMD使用的较少了；
+
+​	4、AMD实现的比较常用的库是require.js和curl.js。
+
+
+
+## 7、CMD规范
+
+CMD规范也是应用于浏览器的一种模块化规范：
+
+​	1、CMD 是Common Module Definition(通用模块定义)的缩写;
+
+​	2、采用了异步加载模块，但是它将CommonJS的优点吸收了过来；
+
+​	3、CMD使用也非常少了；
+
+​	4、CMD实现的比较常用的库是SeaJS。
+
+
+
+## 8、ES Module
+
+CommonJS、AMD、CMD等都是社区规范，ESModule是ES自己推出的模块化系统。
+
+- ES Module和CommonJS的模块化有一些不同之处
+  - 一方面它使用了import和export关键字；
+  - 另一方面它采用编译期的静态分析，并且也加入了动态引用的方式；
+- ES Module模块采用export和import关键字来实现模块化
+  - export负责将模块内的内容导出
+  - import负责从其他模块导入内容
+- 采用ES Module将自动采用严格模式:**use strict**
+
+
+
+## 9、CommonJS和ESModule加载过程
+
+### 1.CommonJS
+
+#### （1）commonJS模块加载js文件的过程是运行时加载的，并且是同步的。
+
+运行时加载意味着是js引擎在执行js代码的过程中加载模块；
+
+同步的就意味着一个文件没有结束之前，后面的代码不会执行；
+
+#### （2）commonJS通过module.exports导出的是一个对象。
+
+导出的是一个对象意味着可以将这个对象的引用在其他模块中赋值给其他变量；
+
+但是最终指向的都是同一个对象，那么一个变量修改了对象的属性，所有的地方都会被修改；
+
+
+
+### 2.ES Module加载过程
+
+#### （1）ES Module加载js文件的过程是编译(解析)时加载的，并且是异步的
+
+import不能和运行时相关的内容放在一起使用，不能把import放到`if`语句中。所以称ES Module是静态解析的。
+
+#### （2）JS引擎在import时获取过程是异步的，不会阻塞主线程继续执行;
+
+设置了 type=module 的代码，相当于在script标签上也加上了 async 属性。后面代码不会阻塞执行；
+
+#### （3）Module通过export导出的是变量本身的引用
+
+export在导出一个变量时，js引擎会解析这个语法，并且创建**模块环境记录**，它会和变量进行绑定，在导入的地方，是可以实时的获取到绑定的最新值的；
+
+
+
+### 3.commonJS和ES Module交互
+
+- Node环境下，CommonJS不能加载ES Module
+- ES Module可以加载CommonJS
+
+
+
+# 三、Node常用内置模块
+
+## 1、内置模块path
+
+### （1）path常见API
+
+- 从路径中获取信息
+  - dirname：获取文件的父文件夹；
+  - basename：获取文件名；
+  - extname：获取文件扩展名；
+- 路径的拼接
+  - path.join
+- 文件和文件夹的拼接
+  - path.resolve
+  - resolve函数会判断拼接的路径前面是否有 /或../或./。如果有，表示是一个绝对路径，会返回对应的拼接路径；如果没有，会和当前执行文件所在的文件夹进行路径拼接。
+
+
+
+## 2、内置模块fs
+
+fs即File System，标识文件系统。
+
+### （1）fs的API操作方式
+
+#### 	1.方式一：
+
+同步操作文件，代码会被阻塞，不能继续执行；
+
+#### 	2.方式二：
+
+异步回调函数操作文件，代码不会被阻塞，需要传入回调函数，获取结果时触发；
+
+#### 	3.方式三：
+
+异步Promise操作文件，代码不会阻塞，通过fs.promises方法操作，返回promise通过then和catch处理；
+
+```js
+//举个例子
+const fs = require('fs')
+const filepath = "./abc.txt"
+
+//方式一：同步操作
+const info = fs.statSync(filepath);
+console.log("后续需要执行的代码");
+console.log(info);
+
+//方式二：异步操作
+fs.stat(filepath, (err, info) => {
+  if (err) { return; }
+  //是否是文件
+  console.log(info.isFile());
+  //是否是文件目录
+  console.log(info.isDirectory());
+});
+console.log("后续需要执行的代码");
+
+//方式三：promise
+fs.promises.stat(filepath)
+  .then((info) => {
+    console.log(info);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+console.log("后续需要执行的代码");
+```
+
+
+
+### （2）文件描述符
+
+文件描述符：每个打开的文件都分配一个数字标识符，系统层使用这些标识跟踪文件，称为文件描述符。
+
+fs.open()方法用于分配新的文件描述符：一旦被分配，可用于文件读写。
+
+```js
+const fs = require('fs');
+fs.open("./abc.txt", (err, fd) => {
+  if (err) { return; }
+  // 通过描述符去获取文件的信息
+  fs.fstat(fd, (err, info) => {
+    console.log(info);
+  })
+})
+```
+
+
+
+### （3）文件的读写
+
+```js
+fs.readFile(path[, options], callback) //读取文件的内容;
+fs.writeFile(file, data[, options], callback) //在文件中写入内容;
+
+// 1.文件写入
+const content = "你好啊,李银河";
+fs.writeFile("./abc.txt", content, { flag: "a" }, (err) => {
+  console.log(err);
+});
+
+// 2.文件读取
+fs.readFile("./abc.txt", {encoding: 'utf-8'}, (err, data) => {
+	console.log(data);
+});
+```
+
+其中option可配置以下两种参数：
+
+- flag：写入的方式
+  - w：打开文件写入，默认值
+  - w+：打开文件读写，不存在则创建文件
+  - r+：打开文件读写，不存在抛异常
+  - r：打开文件读取的默认值
+  - a：打开要写入的文件，将流放在文件末尾，如果不存在则创建文件
+  - a+：打开文件以进行读写，将流放在文件末尾，如果不存在则创建文件
+- encoding：字符的编码
+  - 目前都基本都使用的是UTF-8编码
+  - 如果不填，返回的是Buffer
+
+
+
+### （4）文件夹操作
+
+- 新建文件夹
+
+```js
+//使用fs.mkdir()或fs.mkdirSync()创建一个新文件夹
+//举个例子
+const dirname = './why';
+if (!fs.existsSync(dirname)) {
+  fs.mkdir(dirname, err => {
+    console.log(err);
+  });
+}
+```
+
+- 获取文件夹内容
+
+```js
+function readFolders(floder){
+  fs.readdir(folder,{withFileTypes:true},(err,files)=>{
+    files.forEach(file => {
+      if(file.isDirextory()){
+        const newFolder = path.resolve(dirname,file.name);
+        readFloders(newFolder);
+      }else{
+        console.log(file.name)
+      }
+    })
+  })
+}
+```
+
+- 文件重命名
+
+```js
+fs.rename("./why", "./kobe", err => {
+  console.log(err);
+})
+```
+
+- 删除文件夹
+
+```js
+//同步删除文件夹
+fs.rmdirSync()
+//异步删除文件夹
+fs.mrdir()
+```
+
+
+
+## 3、events模块
+
+​	Node核心API都是基于异步事件驱动的：
+
+​	事件发射器发出某一个事件，可以监听这个事件，并在事件发生时传入一个回调函数。
+
+**发出事件和监听事件都是通过EventEmitter类来完成的，它们都属于events对象**。
+
+- emitter.on(eventName, listener)：监听事件，也可以使用 addListener；
+- emitter.off(eventName, listener)：移除事件监听，也可以使用removeListener；
+- emitter.emit(eventName[, ...args])：发出事件，可以携带一些参数；
+- emitter.once(eventName, listener)：事件监听一次；
+- emitter.prependListener()：将监听事件添加到最前面；
+- emitter.prependOnceListener()：将监听事件添加到最前面，但是只监听一次；
+- emitter.removeAllListeners([eventName])：移除所有的监听器；
+
+```js
+//应用举例：
+const EventEmmiter = require('events');
+//监听事件
+const bus = new EventEmmiter();
+
+function clickHandle(args){
+  console.log("监听到click事件",args)
+}
+
+bus.on("click",clickHandle);
+
+setTimeout(()=>{
+  bus.emit("click","zhangyuchen");
+  bus.off("click",clickHandle);
+})
+```
+
+
+
+此外，EventEmmiter实例还有一些属性可以记录一些信息
+
+- emitter.eventNames():返回当前 EventEmitter对象注册的事件字符串数组;
+- emitter.getMaxListeners():返回当前 EventEmitter对象的最大监听器数量，可以通过setMaxListeners() 来修改，默认是10;
+- emitter.listenerCount(事件名称):返回当前 EventEmitter对象某一个事件名称，监听器的个数;
+- emitter.listeners(事件名称):返回当前 EventEmitter对象某个事件监听器上所有的监听器数组;
+
+
+
+# 四、包管理工具
+
+## 1、包管理工具npm
+
+npm管理的包其实发布到registry上的，下载时也是在registry上下载的。
+
+npm init创建package.json配置文件。
+
+npm包遵循semver版本规范X.Y.Z：
+
+- X主版本号(major):当你做了不兼容的 API 修改(可能不兼容之前的版本);
+- Y次版本号(minor):当你做了向下兼容的功能性新增(新功能增加，但是兼容之前的版本);
+- Z修订号(patch):当你做了向下兼容的问题修正(没有新功能，修复了之前版本的bug);
+
+##### 注意⚠️：^和～的区别
+
+- ^x.y.z:表示x是保持不变的，y和z永远安装最新的版本;
+- ~x.y.z:表示x和y保持不变的，z永远安装最新的版本;
+
+
+
+## 2、npm原理
+
+![image-20220327214802234](https://raw.githubusercontent.com/Rainchen0504/picture/master/202203272148320.png)
+
+- npm install会检测是有package-lock.json文件
+  - 没有lock文件
+    - 分析依赖关系
+    - 从registry仓库中下载压缩包
+    - 获取到压缩包后会对压缩包进行缓存
+    - 将压缩包解压到项目的node_modules文件夹中
+  - 有lock文件
+    - 检测和pack.json版本是否一致
+      - 不一致会重新构建依赖关系，直接走顶层的流程
+    - 优先查找缓存
+      - 没找到会从registry仓库下载，直接走顶层流程
+    - 查找到获取压缩文件，解压到node_module文件夹
+
+
+
+## 3、npm命令
+
+```js
+//强制重新build
+npm rebuild
+//清除缓存
+npm cache clean
+```
+
+
+
+## 4、Yarn
+
+另一node包管理工具，由Facebook、Google、Exponent 和 Tilde 联合推出。
+
+
+
+# 五、创建个人脚手架
+
+
+
+
+
+# 六、事件循环和异步IO
+
+## 1、事件循环
+
+- 浏览器事件循环是编写的JS和浏览器API调用的一个沟通桥梁；
+- Node事件循环是编写的JS和系统调用之间的沟通桥梁；
+
+JS是**单线程**的，但是**JS线程有自己的容器进程：浏览器或者Node**
+
+​	JS代码是在一个单独的线程中执行的，只能同时做一件事，打开一个tab页会生成一个进程（防止卡死导致整个浏览器都崩溃推出），每个进程中有很多线程），其中包含JS线程。
+
+​	JS代码执行任务过程中，会判断任务是同步还是异步，同步进入主线程，异步加入到调用栈中，不影响后续代码的执行，执行完主线程后，从调用栈中读取对应的函数进入主线程执行。
+
+​	不同的任务会进入到不同的队列，事件循环中维护着两个队列，分别为宏任务和任务两列，执行每个宏任务先查看微任务队列是否有任务要执行，宏任务执行之前，必须保证微任务队列是空的。
+
+​	**"<font color=red>有微则微，无微则宏</font>"**
+
+### （1）宏任务
+
+setTimeout、setInterval、ajax、DOM监听等
+
+### （2）微任务
+
+Promise中的then回调、Mutation Observe API、queueMicrotask()等
+
+### （3）async和await
+
+async和await是Promise的一个语法糖：
+
+- await关键字后面执行的代码，看作是包裹在`(resolve,reject) => {函数执行}`中的代码 ，属于直接执行的代码；
+
+- await的下一条看作是then(res => {函数执行})中的代码l；
+
+
+
+## 2、Node架构
+
+​	浏览器中的EventLoop是根据HTML5定义的规范来实现的，不同的浏览器可能会有不同的实现，而Node中是由 libuv实现的。
+
+​	libuv是一个多平台专注异步IO的库。
+
+![image-20220330174016822](https://raw.githubusercontent.com/Rainchen0504/picture/master/202203301740279.png)
+
+​	libuv主要维护EventLoop和worker threads（线程池）
+
+​	EventLoop负责调用系统的一些操作：文件IO、Network、子线程等。
+
+
+
+## 3、阻塞和非阻塞IO
+
+- 任何程序中的文件操作都需要系统调用（操作系统的文件系统），**<font color=orange>文件的操作就是操作系统的IO操作（输入、输出）</font>**。
+- 操作系统提供了阻塞式调用和非阻塞式调用
+  - **阻塞式调用**：调用结果返回前，线程处于阻塞状态；
+  - **非阻塞式调用**：调用执行后，线程不会停止；
+- 开发中的很多耗时操作都使用的是非阻塞式调用。
+
+### （1）非阻塞IO的问题
+
+​	非阻塞IO意味着没有获取到需要读取的结果，因此需要频繁的确定读取的数据是否完整。这个过程称之为**<font color=orange>轮询</font>**。
+
+​	轮询一般由libuv提供的线程池来完成。线程池会通过轮训等方式等待结果,获取到结果时，就将对应的回调放到事件循环中。事件循环就负责接管后续的回调工作，告知JS程序执行对应的回调。
+
+### （2）阻塞和非阻塞、同步和异步的区别
+
+- 阻塞和非阻塞是对于被调用者来说的：
+  - 也就是系统调用，操作系统提供了阻塞调用和非阻塞调用;
+- 同步和异步是对于调用者来说的：
+  - 也就是自己的程序；
+  - 如果发起调用后不进行其它任何操作，只等待结果，称为同步调用；
+  - 如果发起调用之后，并不会等待结果，继续完成其他的工作，等到有回调时再去执行，这个过程就是异步调用;
+- libuv采用的就是非阻塞异步IO的调用方式；
+
+
+
+## 4、Node事件循环的阶段
+
+一次完整的事件循环Tick分成多个阶段：
+
+### （1）定时器
+
+本阶段执行已经被 setTimeout() 和 setInterval() 的调度回调函数。
+
+### （2）待定回调
+
+对某些系统操作(如TCP错误类型)执行回调，比如TCP连接时接收到 ECONNREFUSED。
+
+### （3）idle，prepare
+
+仅系统内部使用。
+
+### （4）轮询
+
+检索新的 I/O 事件;执行与 I/O 相关的回调;
+
+### （5）检测
+
+setImmediate() 回调函数在这里执行。
+
+### （6）关闭的回调函数
+
+一些关闭的回调函数，如:socket.on('close', ...)
+
+
+
+## 5、Node的微任务和宏任务
+
+宏任务：setTimeout、setInterval、IO事件、setImmediate、close事件;
+
+微任务：Promise的then回调、process.nextTick、queueMicrotask;
+
+
+
+## 6、Node事件执行过程
+
+Main script直接执行的任务
+
+nextTicks
+
+其它微任务
+
+timers
+
+immediate
+
+注意：
+
+​	**如果事件循环开启的时间小于 setTimeout函数的执行时间**，那么意味着先开启了事件循环，在这个循环中执行到timer阶段是没有定时器进入到timer queue中的，所以不会执行定时器的内容。
+
+​	**如果事件循环开启的时间大于 setTimeout函数的执行时间**，意味着在第一次 tick中，已经准备好了timer queue，会按照上面的顺序执行。
+
+
+
+# 七、Buffer使用
+
+## 1、Buffer和二进制
+
+​	服务端为了实现更多功能，需要直接操作二进制数据，因此Node提供了一个类Buffer，同时这个类是全局的。
+
+​	Bugger可以看成一个二进制数组，数组中每一项可以保存8位二进制。
+
+- 补充内容：
+  - 通常会将8位合在一起作为一个单元，这个单元称之为一个字节(byte)；
+  - 1byte = 8bit，1kb=1024byte，1M=1024kb；
+  - TCP传输的是字节流，在写入和读取时都需要说明字节的个数；
+
+
+
+## 2、创建Buffer
+
+### （1）字符串、汉字创建Buffer
+
+```js
+const buffer01 = new Buffer('chen');
+console.log(buffer01);	//<Buffer 63 68 65 6e>
+
+const buffer01 = new Buffer('张雨晨');
+console.log(buffer01);	//<Buffer e5 bc a0 e9 9b a8 e6 99 a8>
+```
+
+
+
+### （2）创建指定位数的Buffer
+
+```js
+const buffer = Buffer.alloc(8);
+console.log(buffer); 
+//<Buffer 00 00 00 00 00 00 00 00>
+
+buffer01[0] = "w".charCodeAt();
+buffer01[1] = 100;
+buffer01[2] = 0x66;
+console.log(buffer);
+//<Buffer 77 64 66 00 00 00 00 00>
+```
+
+
+
+## 3、Buffer和文件读取
+
+#### （1）文本读取
+
+```js
+fs.readFile('./test.txt',(err,data) => {
+  console.log(data)
+  //<Buffer e6 9d 8e e9 93 b6 e6 b2 b3>可以通过toString()编译
+})
+```
+
+
+
+#### （2）图片读取
+
+```js
+//图片读取同上
+fs.readFile("./bar.png", (err, data) => {
+  console.log(data);
+  //非常长的字节
+});
+
+//引入更为高效的sharp库
+const fs = require("fs");
+const sharp = require("sharp");
+
+sharp("./007.jpg").resize(200, 200).toFile("./first.png");
+
+sharp("./007.jpg")
+  .resize(300, 300)
+  .toBuffer()
+  .then((data) => {
+    fs.writeFile("./second.png", data, (err) => console.log(err));
+  });
+```
+
+
+
+# 八、Stream
+
+## 1、流
+
+​	从一个文件读取数据时，文件的二进制（字节）数据源源不断被读取到程序中，这个一连串的字节就是程序中的流。
+
+​	流可读可写，是连续字节的一种表现形式和抽象概念。
+
+
+
+## 2、文件读写的Stream
+
+- Node中很多对象是基于流实现的：
+  - http模块的request和response对象；
+  - process.stdout对象
+
+- 另外所有的流都是EventEmitter实例；
+- Node中有四种基本流类型
+  - Writable:可以向其写入数据的流(例如 fs.createWriteStream())。
+  - Readable:可以从中读取数据的流(例如 fs.createReadStream())。
+  - Duplex:同时为Readable和的流Writable(例如 net.Socket)。
+  - Transform:Duplex可以在写入和读取数据时修改或转换数据的流(例如zlib.createDeflate())。
+
+举例介绍writable和readable
+
+### 1、Readable：
+
+- 之前读取文件信息的方式：
+
+```js
+fs.readFile("./foo.txt", (err, data) => {
+  console.log(data)
+})
+```
+
+这会一次性将一个文件的所有内容都读到程序中，会产生文件过大、无法控制一次读取大小的问题。
+
+- 因此，可以使用createStream，属于fs模块读取值的一个方法。
+
+```js
+const read = fs.createStream("./foo.txt", {
+  start:3,//文件读取的开始位置
+  end:8,//问卷读取结束的位置
+  highWaterMark:4//一次读取的字节长度，默认是64KB
+})
+```
+
+- 读取完成后怎么获取流数据呢？
+
+```js
+//监听data事件，获取读取值
+read.on("data", (data) => {
+  console.log(data)
+})
+read.on("open", () => {
+  console.log("文件被打开")
+})
+read.on("end", () => {
+  console.log("文件读取结果")
+})
+read.on("close", () => {
+  console.log("文件被关闭")
+})
+read.parse()//暂停读取
+read.resume()//继续读取
+```
+
+
+
+### 2、Writeable
+
+- 之前写入文件信息的方式：
+
+```js
+fs.writeFile("./foo.txt","内容", (err) => {
+  console.log(err)
+})
+```
+
+相当于一次性将所有的内容写入到文件中，无法精确控制写入位置和写入频率。
+
+- 因此，可以使用createWriteStream，属于fs模块写入值的一个方法。
+
+```js
+const writer = fs.createWriteStream("./foo.txt", {
+  flags:"r+",//默认是w，使用r或r+写入，如果希望追加不设置start使用a或a+
+  start:2,//写入的位置
+})
+```
+
+- 写入完成后的监听
+
+```js
+writer.write("你好啊", (err) => {
+  if (err) {
+    console.log(err);
+    return;
+  }
+  console.log("写入成功");
+});
+write.close();
+//不会主动关闭，需要调用close方法关闭，但是真实情况下不调用close，一般用end方法
+write.on("close", () => {
+  console.log("文件被关闭")
+})
+```
+
+1. 但是不能监听到close：写入流打开后是不会自动关闭的，必须手动关闭然后发出一个finish事件。
+2. 实际中常用end方法：end**方法相当于执行了两步**，write写入数据和调用close方法。
+
+
+
+###  3、pipe
+
+可以将读取到的输入流，手动的放到输出流中进行写入:
+
+```js
+//传统写法，把一个读取的内容写入到另一个文件中
+fs.readFile('./bar.txt', (err,data) => {
+  fs.writeFile('./baz.txt', data, (err) => {
+    console.log(err)
+  })
+})
+
+//Stream写法
+const reader = fs.createReadStream("./foo.txt");
+const writer = fs.createWriteStream('./foz.txt');
+reader.pipe(writer);
+writer.close();
+```
+
+
+
+# 九、Http模块
+
+## 1、Web服务器
+
+​	当应用程序需要某一个资源时，可以向一个台服务器，通过Http请求获取到这个资源;提供资源的服务器，就是一个Web服务器；
+
+![image-20220402114447456](https://raw.githubusercontent.com/Rainchen0504/picture/master/202204021144680.png)
+
+- 目前有的开源Web服务器：Nginx、Apache(静态)、Apache Tomcat(静态、动态)、Node.js。
+
+
+
+### （1）创建简单的web服务器
+
+```js
+const http = require('http');
+
+// 创建一个web服务器
+const server = http.createServer((req, res) => {
+  res.end("Hello Server");
+});
+
+// 启动服务器,并且制定端口号和主机
+server.listen(HTTP_PROT, "0.0.0.0", () => {
+  console.log(`服务器在${HTTP_PROT}启动成功`);
+});
+```
+
+注意⚠️：
+
+可以使用npm安装**nodemon**来维持服务器更新，nodemon XX要执行的文件，就可以实现不关闭终端更新
+
+
+
+### （2）第二种创建服务器
+
+- http.createServer会返回服务器的对象；
+- 底层是使用new Server创建对象；
+
+```js
+function createServer(opts, requestListener){
+  return new Server(opts, requestListener);
+}
+```
+
+- 可以手动创建服务器对象
+
+```js
+const server2 = new http.Server((req, res) => {
+  res.end("hello server2")
+});
+server2.listen(9000, () => {
+  console.log("服务器启动成功～")
+})
+```
+
+创建Server时会传入一个回调函数，这个回调函数被调用时会传入两个参数：
+
+1. req：request请求对象，包含请求相关的信息；
+2. res：response响应对象，包含要发送给客户端的信息；
+
+
+
+### （3）监听主机和端口
+
+#### 	1.Server
+
+**Server**通过listen方法来开启服务器，并且在某一个主机和端口上监听网络请求。
+
+#### 	2.listen函数
+
+- 参数一：端口port
+  - 可以不传，系统会默认分配端；
+- 参数二：主机host域名
+  - localhost：本质上是一个域名，通常情况下会被解析成127.0.0.1;
+  - 127.0.0.1：回环地址表达的意思其实是我们主机自己发出去的包，直接被自己接收；
+    - 正常的数据库经过 应用层-->传输层-->网络层-->数据链路层-->物理层；
+    - 回环地址是在网络层直接获取到，不经过数据链路层和物理层；
+    - 比如监听 127.0.0.1时，在同一个网段下的主机中，通过ip地址是不能访问的；
+  - 0.0.0.0：监听IPV4上所有的地址，再根据端口找到不同的应用程序，监听 0.0.0.0时，在同一个网段下的主机中，通过ip地址是可以访问的。不写端口如果是IPv4默认是0.0.0.0
+- 参数三：回调函数
+  - 服务器启动成功时的回调函数
+
+
+
+## 2、request对象
+
+向服务器发送请求时携带的信息Node会封装到一个request对象中。
+
+```js
+const server = http.creater((req,res) => {
+  console.log(req.url);//请求URL
+  console.log(req.method);//请求方式GET、POST
+  console.log(req.headers);//携带信息(数据格式、编码信息、编码格式)
+  res.end("hello world")
+})
+```
+
+
+
+### （1）URL的处理
+
+#### 	1.URL用法
+
+​	客户端发送请求时会请求不同的数据，传入不同的请求地址，服务器根据不同的请求地址作出不同响应。
+
+​	通过操作req.url判断返回对应值。
+
+#### 	2.URL解析
+
+比如`http://localhost:8000/login?name=why&password=123`的url就是`/login?name=why&password=123`;
+
+如果请求地址携带参数，解析使用<font color=orange>**内置url模块**</font>:
+
+```js
+const http = require('http');
+const url = require('url');
+const qs = require('querystring');
+
+// 创建一个web服务器
+const server = http.createServer((req, res) => {
+  // /login?username=why&password=123
+  const { pathname, query } = url.parse(req.url);
+  if (pathname === '/login') {
+    const { username, password } = qs.parse(query);
+    console.log(username, password);
+    res.end("请求结果~");
+  }
+});
+
+// 启动服务器,并且制定端口号和主机
+server.listen(8888, '0.0.0.0', () => {
+  console.log("服务器启动成功~");
+});
+```
+
+
+
+### （2）method的处理
+
+数据增删查改对应的请求方式：
+
+- GET:查询数据;
+
+- POST:新建数据;
+- PATCH:更新数据;
+- DELETE:删除数据;
+
+比如创建一个请求方法实现：创建一个用户，用户接口为/user，请求方式采用post，携带数据username和password。
+
+```js
+//需要判断接口是/user且请求方式是POST
+//判断后要提取携带的数据，监听req中的data
+const server = http.createServer((req,res) = {
+  const {pathname} = url.parse(req.url);
+  if(pathname === '/user'){
+  	if(req.method === 'POST'){
+      req.setEncoding('utf-8');
+      req.on('data',(data) => {
+        const {username,password} = JSON.parse(data);
+        console.log(username,password)
+      })
+      req.on('end',() => {
+        console.log("传输结束")
+      })
+      res.end("create user success")
+    }
+	}
+}
+
+server.listen(8888, '0.0.0.0', ()=> {
+  console.log("服务器启动成功~");
+})
+```
+
+
+
+### （3）headers处理
+
+request对象的header中也包含很多客户端会默认传递过来的信息：
+
+#### 	1.content-type：请求携带的数据的类型
+
+```js
+application/json	//表示是一个json类型;
+
+text/plain	//表示是文本类型;
+
+application/xml	//表示是xml类型;
+
+multipart/form-data	//表示是上传文件;
+```
+
+#### 	2.content-length：文件的大小和长度
+
+#### 	3.keep-alive
+
+- http是基于TCP协议的，但是通常在进行一次请求和响应结束后会立刻中断；
+- 在http1.0中，如果想要继续保持连接：
+  - 浏览器需要在请求头中添加connection: keep-alive；
+  - 服务器需要在响应头中添加 connection:keey-alive；
+  - 当客户端再次请求时，就会使用同一个连接，直接一方中断连接；
+- 在http1.1中，所有连接默认是 connection: keep-alive的：
+  - 不同的Web服务器会有不同的保持 keep-alive的时间；
+  - Node中默认是5s；
+
+#### 	4.accept-encoding：客户端支持的文件压缩格式
+
+#### 	5.accept：客户端可接受格式类型
+
+#### 	6.user-agent：客户端相关信息
+
+## 3、response对象
+
+### （1）返回响应结果
+
+给客户端返回响应的结果数据，可以通过两种方式：
+
+- write方法：直接写出数据，但是并没有关闭流；
+- end方法：写出最后数据，并且写出后会关闭流；
+
+**如果没有调用end和close，客户端将会一直等待结果**，所以客户端发送网络请求时，都会设置超时事件。
+
+
+
+### （2）返回状态码
+
+Http状态码时用来表示Http响应状态的数字代码
+
+![image-20220402151326049](https://raw.githubusercontent.com/Rainchen0504/picture/master/202204021513831.png)
+
+**<font color=red>设置状态码两种方式：</font>**
+
+```js
+res.statusCode = 400;
+res.writeHead(200);
+```
+
+
+
+### （3）响应头文件
+
+返回头部信息的两种方式：
+
+```js
+//方式一：
+res.setHeader	//一次写入一个头部信息;
+res.setHeader(
+	"Content-Type","application/json;charset=utf8"
+)
+
+//方式二：
+res.writeHead	//同时写入header和status;
+res.writeHead(200,{
+  "Content-Type":"application/json;charset=utf8"
+})
+```
+
+
+
+## 4、http请求
+
+### （1）网络请求
+
+axios使用的是封装xhr；
+
+node中使用的是http内置模块；
+
+```js
+//发送get请求
+http.get("http://localhost:8000", (res) => {
+  res.on("data", data => {
+    console.log(JSON.parse(data.toString())
+  })
+})
+
+//发送post请求
+const req = http.request({
+  method: 'POST',
+  hostname: 'localhost',
+  port: 8888
+}, (res) => {
+  res.on('data', (data) => {
+    console.log(data.toString());
+  });
+
+  res.on('end', () => {
+    console.log("获取到了所有的结果");
+  })
+});
+req.end();
+```
+
+
+
+### （2）文件上传（原生）
+
+```js
+const http = require("http");
+const fs = require("fs");
+const qs = require("querystring");
+
+const server = http.createServer((req, res) => {
+  if (req.url === "/upload") {
+    if (req.method === "POST") {
+      req.setEncoding("binary");
+
+      let body = "";
+      const totalBoundary = req.headers["content-type"].split(";")[1];
+      const boundary = totalBoundary.split("=")[1];
+
+      req.on("data", (data) => {
+        body += data;
+      });
+
+      req.on("end", () => {
+        console.log(body);
+        // 处理body
+        // 1.获取image/png的位置
+        const payload = qs.parse(body, "\r\n", ": ");
+        const type = payload["Content-Type"];
+
+        // 2.开始在image/png的位置进行截取
+        const typeIndex = body.indexOf(type);
+        const typeLength = type.length;
+        let imageData = body.substring(typeIndex + typeLength);
+
+        // 3.将中间的两个空格去掉
+        imageData = imageData.replace(/^\s\s*/, "");
+
+        // 4.将最后的boundary去掉
+        imageData = imageData.substring(
+          0,
+          imageData.indexOf(`--${boundary}--`)
+        );
+
+        fs.writeFile("./foo.png", imageData, "binary", (err) => {
+          res.end("文件上传成功~");
+        });
+      });
+    }
+  }
+});
+
+server.listen(8000, () => {
+  console.log("文件上传服务器开启成功~");
+});
+```
+
+
+
+# 十、express框架
+
+express出现早于koa，核心是中间件。
+
+## 1、express安装使用
+
+### （1）使用express脚手架
+
+```js
+//安装脚手架
+npm install -g express-generator
+//创建项目
+express express-demo
+//安装依赖
+npm install
+//启动项目
+node bin/www
+```
+
+
+
+### （2）手动搭建
+
+```js
+npm init -y
+npm install express
+```
+
+
+
+### （3）基本使用
+
+```js
+const express = require("express");
+const app = express();//创建服务器
+app.get("/home", (req,res,next) => {
+  res.end("hello world")
+})
+app.listen(8000, () => {
+  console.log("服务器启动成功")
+})
+```
+
+
+
+## 2、中间件
+
+​	**Express应用程序本质上是一系列中间件函数的调用，中间件就是一个个传递给express的回调函数**。
+
+### （1）中间件作用
+
+执行任何代码;
+
+更改请求(request)和响应(response)对象;
+
+结束请求-响应周期(返回数据);
+
+调用栈中的下一个中间件;
+
+​	如果当前中间件功能没有结束请求-响应周期，则必须调用next()将控制权传递给下一个中间件功能，否则请求将被挂起。
+
+![image-20220411213150632](https://raw.githubusercontent.com/Rainchen0504/picture/master/202204112131669.png)
+
+
+
+### （2）路径方法中间件
+
+```js
+app.use((req, res, next) => {
+  console.log("common middleware01");
+  next();
+})
+app.get('/home', (req, res, next) => {
+  console.log("home path and method middleware01");
+});
+app.post('/login', (req, res, next) => {
+  console.log("login path and method middleware01");
+})
+```
+
+
+
+### （3）中间件数据解析
+
+#### 	1.json解析
+
+```js
+//自己编写的json解析
+app.use((req, res, next) => {
+  if (req.headers["content-type"] === "application/json") {
+    req.on("data", (data) => {
+      const info = JSON.parse(data.toString());
+      req.body = info;
+    });
+    req.on("end", () => {
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
+//使用express解析
+app.use(express.json())
+//可使用req.body获取参数
+```
+
+#### 	2.urlencoded解析
+
+```js
+app.use(express.urlencoded({ extended: true }));
+// true: 那么对urlencoded进行解析时, 它使用的是第三方库: qs
+// false: 那么对urlencoded进行解析时, 它使用的是Node内置模块: 
+```
+
+#### 	3.form-data解析
+
+```js
+//引入外部multer方法
+const multer = require("multer");
+const upload = multer();
+app.use(upload.any());
+app.post('/login', (req, res, next) => {
+  console.log(req.body);
+  res.end("用户登录成功~")
+});
+```
+
+```js
+//form-data上传文件
+const path = require("path");
+
+const express = require("express");
+const multer = require("multer");
+
+const app = express();
+
+//设置文件后缀
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  // dest: './uploads/'
+  storage,
+});
+
+app.post("/login", upload.any(), (req, res, next) => {
+  console.log(req.body);
+  res.end("用户登录成功~");
+});
+```
+
+#### 	4.中间件保存日志
+
+引入第三方库morgan
+
+```js
+const morgan = require('morgan');
+const writerStream = fs.createWriteStream('./logs/access.log', {
+  flags: "a+"
+})
+app.use(morgan("combined", {stream: writerStream}));
+```
+
+#### 	5.客户端发送请求的方式
+
+- 方式一:通过get请求中的URL的params
+- 方式二:通过get请求中的URL的query；
+- 方式三:通过post请求中的body的json格式(中间件中已经使用过)；
+- 方式四:通过post请求中的body的x-www-form-urlencoded格式(中间件使用过)；
+- 方式五:通过post请求中的form-data格式(中间件中使用过)；
+
+
+
+### （4）传递参数params和query
+
+```js
+app.use('/login/:id/:name', (req,res,next) => {
+  	console.log(req.params);
+  	res.json("请求成功")
+})
+
+app.use('/login', (req,res,next) => {
+  	console.log(req.query);
+  	res.json("请求成功")
+})
+```
+
+
+
+### （5）响应数据
+
+- end方法
+  - 类似于http中的response.end方法，用法是一致的；
+- json方法
+  - json方法中可以传入很多的类型:object、array、string、boolean、number、null等，它们会被转换成json格式返回；
+- status方法
+  - 用于设置状态码；
+
+
+
+## 3、express路由
+
+可以使用 express.Router来创建一个路由处理程序：
+
+- 一个Router实例拥有完整的中间件和路由系统；
+- 因此，也被称为迷你应用程序(mini-app)；
+
+```js
+//主文件
+const express = require("express");
+const userRouter = require("./router/users");
+const app = express();
+app.use("/users",userRouter);
+app.listen(8000, () => {
+  console.log("路由服务启动成功")
+})
+
+//路由文件
+//请求所有的用户信息: get /users
+//请求所有的某个用户信息: get /users/:id
+//请求所有的某个用户信息: post /users body {username: passwod:}
+//请求所有的某个用户信息: delete /users/:id 
+
+const express = require('express');
+const router = express.Router();
+router.get('/', (req, res, next) => {
+  res.json(["why", "kobe", "lilei"]);
+});
+router.get('/:id', (req, res, next) => {
+  res.json(`${req.params.id}用户的信息`);
+});
+module.exports = router;
+```
+
+
+
+## 4、静态资源服务器
+
+**node可以作为静态资源服务器**，express提供了方便部署静态资源的方法：
+
+```js
+app.use(express.static("./build静态资源打包后文件目录"))
+```
+
+
+
+# 十一、Koa框架
+
+node.js的下一代web框架，是express同一个团队开发的。旨在为Web应用程序和API提供更小、更丰富和更强大的能力。
+
+## 1、初体验
+
+```js
+const Koa = require("koa");
+const app = new Koa();
+app.use((ctx,next) => {
+  	ctx.response.body = "hello koa"
+})
+app.listen(8000, () => {
+  console.log("服务器启动成功")
+})
+```
+
+- ctx上下文对象：
+  - koa并没有像express一样，将req和res分开，而是将它们作为ctx的属性；
+  - ctx代表依次请求的上下文对象；
+  - ctx.request:获取请求对象；
+  - ctx.response:获取响应对象；
+- next本质上是一个dispatch
+
+
+
+## 2、koa中间件
+
+​	koa通过创建的app对象，注册中间件，且**<font color=orange>只能通过use方法</font>**注册。koa不提供methods的方式注册和path中间件来匹配路径。
+
+​	所以在正式开发中，会采用**request手动判断**或者是**第三方路由中间件**来分离路径和method。
+
+```js
+// 手动注册中间件分离路径和方法
+app.use((ctx, next) => {
+  if (ctx.request.url === '/login') {
+    if (ctx.request.method === 'GET') {
+      console.log("来到了这里~");
+      ctx.response.body = "Login Success~";
+    }
+  } else {
+    ctx.response.body = "other request~";
+  }
+});
+```
+
+
+
+## 3、koa路由
+
+可以选择第三方库:koa-router
+
+```js
+npm install koa-router
+```
+
