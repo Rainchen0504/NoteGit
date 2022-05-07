@@ -1019,7 +1019,8 @@ console.log(b.getName());
 
 
 ## （13）元祖类型
-###元组就是数组的变种
+### 元组就是数组的变种
+
 数组合并了相同类型的对象，而**元组合并了不同类型的对象**。
 元组与集合的不同之处在于，元组中的元素类型可以是不同的，而且数量固定。元组的好处在于可以把多个元素作为一个单元传递。如果一个方法需要返回多个值，可以把这多个值作为元组返回，而不需要创建额外的类来表示。
 
@@ -1035,7 +1036,9 @@ arr[0].length //error,数字没有length
 arr[1].length //success
 ```
 
-###越界元素
+
+
+### 越界元素
 
 ```typescript
 let arr: [number,string] = [1,'string']
@@ -1044,7 +1047,10 @@ arr.push(true) //'number | string'
 
 越界的元素的类型被限制为联合类型，即元组中已经定义的类型。
 
-###应用场景
+
+
+### 应用场景
+
 常见应用在execl返回的数据
 
 ```typescript
@@ -1056,10 +1062,13 @@ let excel: [string, string, number, string][] = [
 ```
 
 
+
 ## （14）枚举类型
+
 枚举类型用于取值被限定在一定范围内的场景，通过**enum关键字**定义枚举。
 
-###数字枚举
+### 数字枚举
+
 ```typescript
 //基础枚举
 enum Types{
@@ -1077,8 +1086,10 @@ enum Types{
 
 
 
-###字符串枚举
+### 字符串枚举
+
 在一个字符串枚举里，每个成员都必须用字符串字面量，或另外一个字符串枚举成员进行初始化。
+
 ```typescript
 enum Types{
    Red = 'red',
@@ -1090,8 +1101,10 @@ enum Types{
 
 
 
-###异构枚举
+### 异构枚举
+
 枚举可以混合字符串和数字成员
+
 ```typescript
 enum Types{
    No = "No",
@@ -1101,8 +1114,10 @@ enum Types{
 
 
 
-###接口枚举
+### 接口枚举
+
 声明对象的时候要遵循接口规则
+
 ```typescript
 enum Types {
   yyds,
@@ -1119,9 +1134,11 @@ let obj:A = {
 
 
 
-###常数枚举
+### 常数枚举
+
 常数枚举是使用`const enum`定义的枚举类型，let和var都不允许的声明。常数枚举与普通枚举的区别是，它会在编译阶段被删除，并且不能包含计算成员，如果包含计算成员也就是使用计算符的成员时会报错。
 const声明的枚举会被编译成常量，普通声明的枚举编译完后是个对象。这样避免在额外生成的代码上的开销和额外的非直接的对枚举成员的访问。
+
 ```typescript
 const enum Directions {
     Up,
@@ -1137,8 +1154,10 @@ var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 
 
 
-###外部枚举
+### 外部枚举
+
 外部枚举是使用`declare enum`定义的枚举类型，
+
 ```typescript
 const enum Directions {
     Up,
@@ -1167,9 +1186,129 @@ var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 
 ## （15）类型推论｜类型别名
 
+### 类型推论
+
+TS会在没有明确指定类型的时候推测出一个类型，这就是类型推论。
+
+```typescript
+let myFav = "six";
+myFav = 6;	//报错，不能赋值给别的类型
+```
+
+上面的代码等价于
+
+```typescript
+let myFav:string = "six";
+myFav = 6;	//6是number不是string
+```
+
+**如果定义的时候没有赋值，不管之后有没有赋值，都会被推断成`any`类型**而完全不被类型检查。
+
+```typescript
+let zhang;
+zhang = 123;
+zhang = "chenge";
+zhang = true;
+```
+
+
+
+### 类型别名
+
+**类型别名就是给一个类型起一个新的名字**（使用type关键字定义）。
+
+- 定义类型别名
+
+```typescript
+type str = string;
+let s:str = "我是晨哥";
+```
+
+- 定义函数别名
+
+```typescript
+type str = () => string;
+let s : str = () => "我是雨晨";
+```
+
+- 定义联合类型别名
+
+```typescript
+type str = string | number;
+let s : str = 123;
+let s2 : str = "123";
+```
+
+- 定义值别名
+
+```typescript
+type value = boolean | 0 | '123';
+let s:value = true;	//变量s的值，只能是value定义的值
+```
+
 
 
 ## （16）never类型
+
+TS使用never类型表示不应该存在的状态。
+
+```typescript
+// 必定抛出异常，error将不会有返回值
+function error(message: string): never {
+    throw new Error(message);
+}
+ 
+//存在死循环，loop将不会有返回值
+function loop(): never {
+    while (true) {
+    }
+}
+```
+
+
+
+### never和void的区别
+
+```typescript
+//void类型用于没有返回值，本身不会出错
+function Void():void {
+	console.log();
+}
+
+//never用于只抛出异常不会有返回值
+function Never(message:string):never {
+  throw new Error(message)
+}
+```
+
+
+
+### never使用场景
+
+举个例子：
+
+```typescript
+interface A {
+  type:"foo"
+}
+interface B {
+  type:"bar"
+}
+type All = A | B;
+function handleValue(val:All){
+  switch(val.type){
+      case:"foo":
+      	break;
+      case:"bar":
+      	break;
+    	default:	//兜底逻辑，进来基本是程序异常
+      	const exhaustiveCheck:never = val;
+      	break
+  }
+}
+```
+
+由于任何类型都不能赋值给 `never` 类型的变量，所以当存在进入 `default` 分支的可能性时，TS的类型检查会及时发现这个问题。
 
 
 
