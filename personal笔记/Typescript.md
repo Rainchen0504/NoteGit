@@ -888,13 +888,13 @@ console.log(a.sayHi());   //我的名字叫老八
 
 如果定义了变量不使用也会报错
 
-<img src="/Users/rain_chen/Library/Application Support/typora-user-images/image-20220506185955859.png" alt="image-20220506185955859" style="zoom:67%;" />
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202205071424046.png" alt="image-20220506185955859" style="zoom:67%;" />
 
 通常给个默认值或赋值
 
-<img src="/Users/rain_chen/Library/Application Support/typora-user-images/image-20220506190134347.png" alt="image-20220506190134347" style="zoom:67%;" />
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202205071424075.png" alt="image-20220506190134347" style="zoom:67%;" />
 
-<img src="/Users/rain_chen/Library/Application Support/typora-user-images/image-20220506190226713.png" alt="image-20220506190226713" style="zoom:67%;" />
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202205071424881.png" alt="image-20220506190226713" style="zoom:67%;" />
 
 
 
@@ -946,7 +946,7 @@ static静态函数同样也是不能通过this去调用也是**通过类名去�
 
 但是，如果两个函数都是static静态方法是可以通过this互相调用的。
 
-![image-20220506192319368](https://raw.githubusercontent.com/Rainchen0504/picture/master/202205061923600.png)
+![image-20220506192319368](https://raw.githubusercontent.com/Rainchen0504/picture/master/202205071423834.png)
 
 
 
