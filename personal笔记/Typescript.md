@@ -1019,10 +1019,149 @@ console.log(b.getName());
 
 
 ## （13）元祖类型
+###元组就是数组的变种
+数组合并了相同类型的对象，而**元组合并了不同类型的对象**。
+元组与集合的不同之处在于，元组中的元素类型可以是不同的，而且数量固定。元组的好处在于可以把多个元素作为一个单元传递。如果一个方法需要返回多个值，可以把这多个值作为元组返回，而不需要创建额外的类来表示。
 
+```typescript
+let arr : [number,string] = [1 , 'string']
+```
+
+当赋值或者访问一个已知索引的元素时，会得到正确的类型:
+
+```typescript
+let arr:[number,string] = [1,'string']
+arr[0].length //error,数字没有length
+arr[1].length //success
+```
+
+###越界元素
+
+```typescript
+let arr: [number,string] = [1,'string']
+arr.push(true) //'number | string'
+```
+
+越界的元素的类型被限制为联合类型，即元组中已经定义的类型。
+
+###应用场景
+常见应用在execl返回的数据
+
+```typescript
+let excel: [string, string, number, string][] = [
+    ['title', 'name', 1, '123'],
+    ['title', 'name', 1, '123'],
+    ['title', 'name', 1, '123'],
+]
+```
 
 
 ## （14）枚举类型
+枚举类型用于取值被限定在一定范围内的场景，通过**enum关键字**定义枚举。
+
+###数字枚举
+```typescript
+//基础枚举
+enum Types{
+   Red = 0,
+   Green = 1,
+   BLue = 2
+}
+//增长枚举，其余值会从1开始增长
+enum Types{
+   Red = 1,
+   Green,
+   BLue
+}
+```
+
+
+
+###字符串枚举
+在一个字符串枚举里，每个成员都必须用字符串字面量，或另外一个字符串枚举成员进行初始化。
+```typescript
+enum Types{
+   Red = 'red',
+   Green = 'green',
+   BLue = 'blue'
+}
+```
+由于字符串枚举没有自增长的行为，字符串枚举可以很好的序列化。
+
+
+
+###异构枚举
+枚举可以混合字符串和数字成员
+```typescript
+enum Types{
+   No = "No",
+   Yes = 1,
+}
+```
+
+
+
+###接口枚举
+声明对象的时候要遵循接口规则
+```typescript
+enum Types {
+  yyds,
+  dddd
+}
+interface A {
+  red:Types.yyds
+}
+
+let obj:A = {
+  red:Types.yyds
+}
+```
+
+
+
+###常数枚举
+常数枚举是使用`const enum`定义的枚举类型，let和var都不允许的声明。常数枚举与普通枚举的区别是，它会在编译阶段被删除，并且不能包含计算成员，如果包含计算成员也就是使用计算符的成员时会报错。
+const声明的枚举会被编译成常量，普通声明的枚举编译完后是个对象。这样避免在额外生成的代码上的开销和额外的非直接的对枚举成员的访问。
+```typescript
+const enum Directions {
+    Up,
+    Down,
+    Left,
+    Right
+}
+let directions = [Directions.Up, Directions.Down, Directions.Left, Directions.Right];
+//const声明编译后
+var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
+//普通声明编译后会是一个复杂对象
+```
+
+
+
+###外部枚举
+外部枚举是使用`declare enum`定义的枚举类型，
+```typescript
+const enum Directions {
+    Up,
+    Down,
+    Left,
+    Right
+}
+let directions = [Directions.Up, Directions.Down, Directions.Left, Directions.Right];
+//编译结果
+var directions = [Directions.Up, Directions.Down, Directions.Left, Directions.Right];
+```
+外部枚举与声明语句一样，常出现在声明文件中，同时使用 declare 和 const 也是可以的。
+```typescript
+declare const enum Directions {
+    Up,
+    Down,
+    Left,
+    Right
+}
+let directions = [Directions.Up, Directions.Down, Directions.Left, Directions.Right];
+//编译结果
+var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
+```
 
 
 
