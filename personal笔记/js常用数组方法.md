@@ -392,9 +392,6 @@ console.log('array1:', array1);	//["three", "two", "one"]
 const array = [1, 2, 3, 4, 5];
 const even = (element) => element % 2 === 0;
 console.log(array.some(even));	//true
-
-
-
 ```
 
 

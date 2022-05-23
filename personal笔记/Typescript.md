@@ -10,19 +10,25 @@
 - 最初 JS 设计的数组类型并不是连续的内存空间
 - 知道今天 JS 也没有加入类型检测机制
 
+
+
 # 2、认识 TS
 
 ## （1）什么是 TS
 
 ### 1.类型系统按照<font color=red>类型检查的时机</font>分为动态类型和静态类型。
 
-​ 动态类型是指在运行时才会进行类型检查，这种语言的类型错误往往会导致运行时错误。JavaScript 是一门解释型语言，没有编译阶段，所以它是动态类型
+ 动态类型是指在运行时才会进行类型检查，这种语言的类型错误往往会导致运行时错误。JavaScript 是一门解释型语言，没有编译阶段，所以它是动态类型
 
-​ 静态类型是指编译阶段就能确定每个变量的类型，这种语言的类型错误往往会导致语法错误。TypeScript 在运行前需要先编译为 JavaScript，而在编译阶段就会进行类型检查，所以 **TypeScript 是静态类型**。
+ 静态类型是指编译阶段就能确定每个变量的类型，这种语言的类型错误往往会导致语法错误。TypeScript 在运行前需要先编译为 JavaScript，而在编译阶段就会进行类型检查，所以 **TypeScript 是静态类型**。
+
+
 
 ### 2.类型系统按照<font color=red>是否允许隐式类型转换</font>分为强类型和弱类型。
 
 TS 和 JS 都是弱类型，Python 是强类型
+
+
 
 ### 3.总结
 
@@ -36,7 +42,7 @@ TS 和 JS 都是弱类型，Python 是强类型
 8. TypeScript 拥有活跃的社区，大多数常用的第三方库都提供了类型声明。
 9. TypeScript 与标准同步发展，符合最新的 ECMAScript 标准（stage 3）。
 
-​ **TypeScript 是拥有类型的<font color=red>Javascript 超集</font>，可以编译成<font color=red>普通、干净、完整的 Javascript 代码</font>。**
+ **TypeScript 是拥有类型的<font color=red>Javascript 超集</font>，可以编译成<font color=red>普通、干净、完整的 Javascript 代码</font>。**
 
 **TS 的特点**
 
@@ -50,17 +56,21 @@ TS 和 JS 都是弱类型，Python 是强类型
 - 目前公司非常流行 Vue3+TypeScript、React+TypeScript 的开发模式;
 - 包括小程序开发，也是支持 TypeScript 的;
 
+
+
 # 3、大前端
 
 大前端是一群最能或者最需要折腾的开发者：
 
-​ 客户端开发者:从 Android 到 iOS，或者从 iOS 到 Android，到 RN，甚至现在越来越多的客户端开发者接触前端相关知识(Vue、React、Angular、小程序)
+ 客户端开发者:从 Android 到 iOS，或者从 iOS 到 Android，到 RN，甚至现在越来越多的客户端开发者接触前端相关知识(Vue、React、Angular、小程序)
 
-​ 前端开发者:从 jQuery 到 AngularJS，到三大框架并行:Vue、React、Angular，还有小程序，甚至现在也要 接触客户端开发(比如 RN、Flutter)
+ 前端开发者:从 jQuery 到 AngularJS，到三大框架并行:Vue、React、Angular，还有小程序，甚至现在也要 接触客户端开发(比如 RN、Flutter)
 
-​ 目前又面临着不仅仅学习 ES 的特性，还要学习 TypeScript
+ 目前又面临着不仅仅学习 ES 的特性，还要学习 TypeScript
 
-​ 新框架的出现，又需要学习新框架的特性，比如 vue3.x、react18 等等
+ 新框架的出现，又需要学习新框架的特性，比如 vue3.x、react18 等等
+
+
 
 # 4、TS 的编译环境
 
@@ -74,6 +84,8 @@ tsc --version
 ```
 
 我们约定使用 TypeScript 编写的文件以 `.ts` 为后缀，用 TypeScript 编写 React 时，以 `.tsx` 为后缀。
+
+
 
 # 5、TS 的运行环境
 
@@ -96,8 +108,14 @@ tsc '文件名'
 为 TS 的运行环境提供编译环境
 
 ```js
+//全局安装
+npm install -g typescript
+npm install -g ts-node
+//使用ts-node可以直接运行ts代码
 ts-node '文件名'
 ```
+
+
 
 # 6、类型
 
@@ -109,6 +127,8 @@ ts-node '文件名'
 
 #### 其他类型：类型推理、字面量类型、交叉类型。
 
+
+
 ## （1）字符串类型
 
 使用 string 定义的
@@ -118,6 +138,8 @@ let a: string = "123";
 //也可以使用es6的字符串模板
 let str: string = `dddd${a}`;
 ```
+
+
 
 ## （2）数字类型
 
@@ -133,12 +155,16 @@ let binary: number = 0b1010; //二进制
 let octal: number = 0o744; //八进制
 ```
 
+
+
 ## （3）布尔类型
 
 ```tsx
 let booleand: boolean = true; //可以直接使用布尔值
 let booleand2: boolean = Boolean(1); //也可以通过函数返回布尔值
 ```
+
+
 
 ## （4）空值类型
 
@@ -157,12 +183,16 @@ let u: void = undefined;
 let n: void = null;
 ```
 
+
+
 ## （5）Null 和 undefined 类型
 
 ```tsx
 let u: undefined = undefined; //定义undefined
 let n: null = null; //定义null
 ```
+
+
 
 ## （6）Any 和 unknown 类型
 
@@ -208,10 +238,12 @@ let n: null = null; //定义null
    let obj: unknow = { b: 1, ccc: (): number => 213 };
    obj.b;
    obj.ccc(); //报错
-
+   
    let obj: any = { b: 1 };
    obj.a; //不报错
    ```
+
+
 
 ## （7）对象和接口类型
 
@@ -252,6 +284,8 @@ let obj: B = {
 };
 ```
 
+
+
 ### 可选属性?操作符
 
 ```tsx
@@ -261,6 +295,8 @@ interface Person {
 }
 const person: Person = { a: "123" };
 ```
+
+
 
 ### 任意属性 [propName: string]
 
@@ -280,9 +316,13 @@ const person: Person = {
 };
 ```
 
+
+
 ### 只读属性 readonly
 
 只读属性不允许重新赋值，会报错
+
+
 
 ## （8）数组类型
 
@@ -292,11 +332,15 @@ const person: Person = {
 let arr: number[] = [1, 2, 3];
 ```
 
+
+
 ### 数组泛型
 
 ```tsx
 let arr: Array<number> = [1, 2, 3, 4];
 ```
+
+
 
 ### 用接口表示数组
 
@@ -307,6 +351,8 @@ interface NumberArray {
 let fibonacci: NumberArray = [1, 1, 2, 3, 5];
 ```
 
+
+
 ### 多维数组
 
 ```tsx
@@ -315,6 +361,8 @@ let data: number[][] = [
   [3, 4],
 ];
 ```
+
+
 
 ### arguments 类数组
 
@@ -334,6 +382,8 @@ interface IArguments {
 }
 ```
 
+
+
 ## （9）函数类型
 
 ### 1、函数的类型
@@ -350,6 +400,8 @@ let sum = function (x, y) {
   return x + y;
 };
 ```
+
+
 
 #### （1）函数声明
 
@@ -371,6 +423,8 @@ sum(1, 2, 3); //Supplied parameters do not match any signature of call target.
 sum(1); //Supplied parameters do not match any signature of call target.
 ```
 
+
+
 #### （2）函数表达式
 
 ```typescript
@@ -383,6 +437,8 @@ let mySum: (x: number, y: number) => number = function (
 ```
 
 注意 ⚠️：在 TS 类型定义中`=>`用来<font color=red>表示函数的定义</font>，左边是输入类型，需要用括号括起来，右边是输出类型；在 ES6 中`=>`<font color=red>表示箭头函数。</font>
+
+
 
 #### （3）用接口定义函数的形状
 
@@ -405,7 +461,9 @@ const fn: Add = (num: number, num2: number): number => {
 fn(5, 5);
 ```
 
-​ 采用函数表达式接口定义函数的方式时，对等号左侧进行类型限制，可以保证以后对函数名赋值时保证参数个数、参数类型、返回值类型不变。
+ 采用函数表达式接口定义函数的方式时，对等号左侧进行类型限制，可以保证以后对函数名赋值时保证参数个数、参数类型、返回值类型不变。
+
+
 
 #### （4）可选参数
 
@@ -438,6 +496,8 @@ let tom = buildName(undefined, "Tom");
 //报错：A required parameter cannot follow an optional parameter.
 ```
 
+
+
 #### （5）参数默认值
 
 TS 会将添加了默认值的参数识别为可选参数：
@@ -460,6 +520,8 @@ let tomcat = buildName("Tom", "Cat"); //Tom Cat
 let cat = buildName(undefined, "Cat"); //Tom Cat
 ```
 
+
+
 #### （6）剩余参数
 
 ES6 中，可以使用`...rest`的方式获取函数中的剩余参数:
@@ -474,6 +536,8 @@ fn(a, "4", "5", "6"); //返回['4','5','6']
 ```
 
 ⚠️ 注意：剩余参数只能是最后一个参数。
+
+
 
 #### （7）重载
 
@@ -507,7 +571,9 @@ function reverse(x: number | string): number | string | void {
 }
 ```
 
-​ 复定义多次函数 reverse，前几次都是函数定义，最后一次是函数实现。TS 会优先从最前面的的函数定义开始匹配，所以多个函数定义如果包含关系，需要优先把精确的定义写在前面。
+ 复定义多次函数 reverse，前几次都是函数定义，最后一次是函数实现。TS 会优先从最前面的的函数定义开始匹配，所以多个函数定义如果包含关系，需要优先把精确的定义写在前面。
+
+
 
 ## （10）类型断言｜联合类型｜交叉类型
 
@@ -531,6 +597,8 @@ const fn = (something: number | boolean): boolean => {
 
 当 ts 不确定一个联合类型的变量类型时，只能访问联合类型的所有类型里共有的属性或方法。
 
+
+
 ### 交叉类型
 
 多种类型的集合，联合对象将具有所有联合类型的所有成员。
@@ -550,6 +618,8 @@ const jiaocha = (man: People & Man) => {
 };
 jiaocha({ age: 18, height: 180, sex: "male" });
 ```
+
+
 
 ### 类型断言
 
@@ -598,6 +668,8 @@ a1.unshift(30); // 错误，此时已经断言字面量为[10, 20],数据无法�
 a2.unshift(30); // 通过，没有修改指针
 ```
 
+
+
 ### 类型断言不具影响力
 
 将 something 断言为 boolean 虽然可以通过编译，但是并没有什么用 并不会影响结果, 因为编译过程中会删除类型断言
@@ -609,9 +681,13 @@ function toBoolean(something:any):boolean{
 toBoolean(1);	//返回值为1
 ```
 
+
+
 ## （11）内置对象
 
 JS 中有很多内置对象，可以在 TS 中当作定义好的类型。
+
+
 
 ### ECMAScript 内置对象
 
@@ -631,6 +707,8 @@ console.log(r); // /^1/
 let e: Error = new Error("error!");
 console.log(e); //报错提示
 ```
+
+
 
 ### DOM 和 BOM 的内置对象
 
@@ -771,6 +849,8 @@ interface HTMLElementTagNameMap {
 }
 ```
 
+
+
 ### 定义 promise
 
 如果不指定返回的类型 TS 无法推断出返回类型，函数定义返回 promise 语法规则：Promise<T>类型
@@ -786,9 +866,13 @@ promise.the((res) => {
 });
 ```
 
+
+
 ### TS 核心库
 
 [TypeScript 核心库的定义文件](https://github.com/Microsoft/TypeScript/tree/master/src/lib)中定义了所有浏览器环境需要用到的类型，并且是预置在 TypeScript 中的。常见体现在报错和提示中。TS 核心库的定义中不包含 Node.js 部分。
+
+
 
 ### 用 TS 写 Node.js
 
@@ -797,6 +881,8 @@ node.js 不是内置对象的一部分，如果用 ts 写 node，需要引入第
 ```tsx
 npm install @type/node --save-dev
 ```
+
+
 
 ## （12）Class 类
 
@@ -812,6 +898,8 @@ npm install @type/node --save-dev
 - 修饰符：修饰符是一些关键字，用于限定成员或类型的性质。比如 `public` 表示公有属性或方法；
 - 抽象类：抽象类是供其他类继承的基类，抽象类不允许被实例化。抽象类中的抽象方法必须在子类中被实现；
 - 接口：不同类之间公有的属性或方法，可以抽象成一个接口。接口可以被类实现。一个类只能继承自另一个类，但是可以实现多个接口；
+
+
 
 ### 类的属性和方法
 
@@ -830,6 +918,8 @@ let a = new Animal("老八");
 console.log(a.sayHi()); //我的名字叫老八
 ```
 
+
+
 ### TS 中定义类
 
 在 TS 中是不允许直接在 constructor 定义变量的，需要在 constructor 上先声明
@@ -846,13 +936,15 @@ console.log(a.sayHi()); //我的名字叫老八
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202205071424881.png" alt="image-20220506190226713" style="zoom:67%;" />
 
+
+
 ### 类的修饰符
 
 修饰符有三个：private、public、protected
 
 - 使用**public 修饰符**，可以让你定义的变量内部访问也可以外部访问如果不写默认就是 public。
-- 使用 **private 修饰符**，代表定义的变量私有的只能在内部访问不能在外部访问。
-- 使用 **protected 修饰符**，代表定义的变量私有的只能在内部和继承的子类中访问不能在外部访问。
+- 使用 **private 修饰符**，代表定义的变量私有的**只能在内部访**问不能在外部访问。
+- 使用 **protected 修饰符**，代表定义的变量私有的**只能在内部和继承的子类中访问**不能在外部访问。
 
 ```tsx
 class Person {
@@ -884,6 +976,8 @@ console.log(man); //{name:'张',age:25,some:1}
 console.log(man.some); //报错
 ```
 
+
+
 ### static 静态属性和静态方法
 
 用 static 定义的属性不可以通过 this 去访问**只能通过类名去调用**；
@@ -893,6 +987,8 @@ static 静态函数同样也是不能通过 this 去调用也是**通过类名�
 但是，如果两个函数都是 static 静态方法是可以通过 this 互相调用的。
 
 ![image-20220506192319368](https://raw.githubusercontent.com/Rainchen0504/picture/master/202205071423834.png)
+
+
 
 ### interface 定义类
 
@@ -928,6 +1024,8 @@ class Person extends A implements PersonClass, PersonClass2 {
 }
 ```
 
+
+
 ### 抽象类
 
 `abstract` 用于定义抽象类和其中的抽象方法。如果写的类实例化之后毫无用处此时可以把他定义为抽象类，或者把它作为一个基类， 通过继承一个派生类去实现基类的一些方法。
@@ -957,6 +1055,8 @@ let b = new B();
 console.log(b.getName());
 ```
 
+
+
 ## （13）元祖类型
 
 ### 元组就是数组的变种
@@ -976,6 +1076,8 @@ arr[0].length; //error,数字没有length
 arr[1].length; //success
 ```
 
+
+
 ### 越界元素
 
 ```typescript
@@ -984,6 +1086,8 @@ arr.push(true); //'number | string'
 ```
 
 越界的元素的类型被限制为联合类型，即元组中已经定义的类型。
+
+
 
 ### 应用场景
 
@@ -996,6 +1100,8 @@ let excel: [string, string, number, string][] = [
   ["title", "name", 1, "123"],
 ];
 ```
+
+
 
 ## （14）枚举类型
 
@@ -1018,6 +1124,8 @@ enum Types {
 }
 ```
 
+
+
 ### 字符串枚举
 
 在一个字符串枚举里，每个成员都必须用字符串字面量，或另外一个字符串枚举成员进行初始化。
@@ -1032,6 +1140,8 @@ enum Types {
 
 由于字符串枚举没有自增长的行为，字符串枚举可以很好的序列化。
 
+
+
 ### 异构枚举
 
 枚举可以混合字符串和数字成员
@@ -1042,6 +1152,8 @@ enum Types {
   Yes = 1,
 }
 ```
+
+
 
 ### 接口枚举
 
@@ -1060,6 +1172,8 @@ let obj: A = {
   red: Types.yyds,
 };
 ```
+
+
 
 ### 常数枚举
 
@@ -1083,6 +1197,8 @@ let directions = [
 var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 //普通声明编译后会是一个复杂对象
 ```
+
+
 
 ### 外部枚举
 
@@ -1129,6 +1245,8 @@ let directions = [
 var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 ```
 
+
+
 ## （15）类型推论｜类型别名
 
 ### 类型推论
@@ -1155,6 +1273,8 @@ zhang = 123;
 zhang = "chenge";
 zhang = true;
 ```
+
+
 
 ### 类型别名
 
@@ -1189,6 +1309,8 @@ type value = boolean | 0 | "123";
 let s: value = true; //变量s的值，只能是value定义的值
 ```
 
+
+
 ## （16）never 类型
 
 TS 使用 never 类型表示不应该存在的状态。
@@ -1205,6 +1327,8 @@ function loop(): never {
 }
 ```
 
+
+
 ### never 和 void 的区别
 
 ```typescript
@@ -1218,6 +1342,8 @@ function Never(message: string): never {
   throw new Error(message);
 }
 ```
+
+
 
 ### never 使用场景
 
@@ -1246,6 +1372,8 @@ function handleValue(val:All){1
 
 由于任何类型都不能赋值给 `never` 类型的变量，所以当存在进入 `default` 分支的可能性时，TS 的类型检查会及时发现这个问题。
 
+
+
 ## （17）symbol 类型
 
 symbol 类型的值是通过**Symbol 构造函数**创建的。它可以传递参数作为唯一的标识，只支持 string 和 number 类型的参数。
@@ -1255,7 +1383,9 @@ let sym1 = Symbol();
 let sym2 = Symbol("key"); //可选的字符串key
 ```
 
-###Symbol 值是唯一的
+
+
+### Symbol 值是唯一的
 
 ```typescript
 const s1 = Symbol();
@@ -1263,7 +1393,9 @@ const s2 = Symbol();
 // s1 === s2 =>false
 ```
 
-###用作对象属性的键
+
+
+### 用作对象属性的键
 
 ```typescript
 let sym = Symbol();
@@ -1289,11 +1421,16 @@ Object.getOwnPropertySymbols(对象);
 Reflect.ownKeys(对象);
 ```
 
+
+
 ## （18）泛型
 
 泛型是指在定义函数、接口或类的时候，不预先指定具体的类型，而在使用的时候再指定类型的一种特性。
 
-###函数泛型
+
+
+### 函数泛型
+
 举个例子：两个函数一个是数字类型函数，另一个是字符串类型函数
 
 ```typescript
@@ -1301,6 +1438,7 @@ function num(a: number, b: number): Array<number> {
   return [a, b];
 }
 num(1, 2);
+
 function str(a: string, b: string): Array<string> {
   return [a, b];
 }
@@ -1329,7 +1467,10 @@ function Sub<T, U>(a: T, b: U): Array<T | U> {
 Sub<Boolean, number>(true, 1);
 ```
 
-###定义泛型接口
+
+
+### 定义泛型接口
+
 声明接口的时候在名字后面加一个`<参数>`，使用时传递类型，使用接口的方式来定义一个函数需要符合的形状。
 
 ```typescript
@@ -1345,7 +1486,9 @@ let result: Demo<number> = fn;
 result(123);
 ```
 
-###对象字面量泛型
+
+
+### 对象字面量泛型
 
 ```typescript
 let foo: { <T>(arg: T): T };
@@ -1355,7 +1498,10 @@ foo = function <T>(arg: T): T {
 foo(123);
 ```
 
-###泛型约束
+
+
+### 泛型约束
+
 **在函数内部使用泛型变量的时候，由于事先不知道该变量的类型，所以不能随便操作其属性和方法**
 
 ```typescript
@@ -1377,7 +1523,10 @@ function getLength<T extends Len>(arg: T) {
 getLength<string>("123");
 ```
 
-###使用 keyof 约束对象
+
+
+### 使用 keyof 约束对象
+
 先定义 T 类型；使用 keyof 操作符获取 T 类型的所有键，返回联合类型；利用 extends 约束 K 类型必须为 T 键的联合类型的子类型。
 
 ```typescript
@@ -1389,7 +1538,10 @@ let o = { a: 1, b: 2, c: 3 };
 console.log("6", prop(o, "a")); //1
 ```
 
-###泛型类
+
+
+### 泛型类
+
 与泛型接口类似，泛型也可以用于类的类型定义中
 
 ```typescript
@@ -1409,7 +1561,10 @@ str.attr = ["1", "2", "3"];
 str.add("123");
 ```
 
-#7、tsconfig.json 配置文件
+
+
+# 7、tsconfig.json 配置文件
+
 该文件通过 tsc --init 命令生成
 
 ```json
@@ -1478,33 +1633,45 @@ str.add("123");
 ]
 ```
 
-##常用属性
-####include
+### 常用属性
+
+#### include
+
 指定编译文件默认是编译当前目录下所有的 ts 文件
 
-####exclude
+#### exclude
+
 指定排除的文件
 
-####target
+#### target
+
 指定编译 js 的版本例如 es5 es6
 
-####allowJS
+#### allowJS
+
 是否允许编译 js 文件
 
-####removeComments
+#### removeComments
+
 是否在编译过程中删除文件中的注释
 
-####rootDir
+#### rootDir
+
 编译文件的目录
 
-####outDir
+#### outDir
+
 输出的目录
 
-####sourceMap
+#### sourceMap
+
 代码源文件
 
-####strict
+#### strict
+
 严格模式
 
-####module
+#### module
+
 默认 common.js 可选 es6 模式 amd umd 等
+

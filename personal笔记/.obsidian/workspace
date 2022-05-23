@@ -1,0 +1,94 @@
+{
+  "main": {
+    "id": "37336986a388f212",
+    "type": "split",
+    "children": [
+      {
+        "id": "2d0528df47cf85ba",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "微任务和宏任务.md",
+            "mode": "preview"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "762614e928ce0efe",
+    "type": "split",
+    "children": [
+      {
+        "id": "71c8e8180668c305",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6308f9d2c0e8abad",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "0aeb4c71a0450bf4",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "fabee3a555e3a2a5",
+    "type": "split",
+    "children": [
+      {
+        "id": "09201d63d44e79a4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c3afed7d0cc50f8d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "微任务和宏任务.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "2d0528df47cf85ba",
+  "lastOpenFiles": [
+    "微任务和宏任务.md",
+    "算法与数据结构.md"
+  ]
+}
