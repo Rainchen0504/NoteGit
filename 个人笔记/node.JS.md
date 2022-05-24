@@ -1316,13 +1316,10 @@ app.listen(8000, () => {
 
 ### （1）中间件作用
 
-执行任何代码;
-
-更改请求(request)和响应(response)对象;
-
-结束请求-响应周期(返回数据);
-
-调用栈中的下一个中间件;
+1. 执行任何代码;
+2. 更改请求(request)和响应(response)对象;
+3. 结束请求-响应周期(返回数据);
+4. 调用栈中的下一个中间件;
 
 ​	如果当前中间件功能没有结束请求-响应周期，则必须调用next()将控制权传递给下一个中间件功能，否则请求将被挂起。
 
@@ -1572,5 +1569,28 @@ app.use((ctx, next) => {
 
 ```js
 npm install koa-router
+```
+
+- 使用时一般封装一个xx.router.js文件；
+- 在Koa实例上注册为中间件；
+
+```js
+//rotuer文件
+const Router = require("koa-router");
+const userRouter = new Router({prefix:"/user"});
+useRouter.get("/",(ctx, next) => {
+  ctx.response.body = "展示结果"
+})
+//或者
+useRouter.post("/",(ctx, next) => {
+  ctx.response.body = "展示结果"
+})
+module.exports = userRouter;
+
+//app上注册中间件
+//启动路由，按照给定的中间件的顺序执行use，也就是注册全部路由
+app.use(userRouter.routes());
+//中间件响应允许方法的请求，当路由跳转失败时拦截抛出错误
+app.use(userRouter.allowedMethods());
 ```
 
