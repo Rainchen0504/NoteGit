@@ -96,7 +96,6 @@ aaa/../bbb/1.jpg
 
 ```html
 <img src="http://img.smyhvae.com/20200122_200901.png">
-
 ```
 
 大家打开上面的img中的链接，可能有彩蛋哦。

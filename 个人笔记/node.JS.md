@@ -1510,7 +1510,58 @@ module.exports = router;
 **node可以作为静态资源服务器**，express提供了方便部署静态资源的方法：
 
 ```js
+const express = require('express');
+const app = express();
 app.use(express.static("./build静态资源打包后文件目录"))
+app.listen(8000, () => {
+  console.log("路由服务器启动成功~");
+});
+```
+
+
+
+## 5、错误处理
+
+```js
+//完整的处理方式，项目级
+const express = require("express");
+const app = express();
+
+const USERNAME_DOES_NOT_EXISTS = "USERNAME_DOES_NOT_EXISTS";
+
+app.post('/login', (req, res, next) => {
+  // 加入在数据中查询用户名时, 发现不存在
+  const isLogin = false;
+  if (isLogin) {
+    res.json("user login success~");
+  } else {
+    // res.type(400);
+    // res.json("username does not exists~")
+    next(new Error(USERNAME_DOES_NOT_EXISTS));
+  }
+})
+
+app.use((err,req,res,next) => {
+  let status = 404;
+  let message = "";
+  switch(err.message) {
+    case USERNAME_DOES_NOT_EXISTS:
+      message = "username does not exists~";
+      break;
+    default: 
+      message = "NOT FOUND~"
+  }
+  
+  res.status(status);
+  res.json({
+    errCode: status,
+    errMessage: message
+  })
+})
+
+app.listen(8000, () => {
+  console.log("路由服务器启动成功~");
+});
 ```
 
 
@@ -1519,9 +1570,12 @@ app.use(express.static("./build静态资源打包后文件目录"))
 
 node.js的下一代web框架，是express同一个团队开发的。旨在为Web应用程序和API提供更小、更丰富和更强大的能力。
 
-## 1、初体验
+## 1、koa安装使用
 
 ```js
+//安装：npm install express
+
+//使用案例：
 const Koa = require("koa");
 const app = new Koa();
 app.use((ctx,next) => {
@@ -1594,3 +1648,249 @@ app.use(userRouter.routes());
 app.use(userRouter.allowedMethods());
 ```
 
+**注意⚠️：<font color=orange>allowedMethods用于判断某一个methods是否支持</font>：**
+
+如果请求的是没有定义的方法，会自动报错：method not allowed，状态码405；
+
+如果请求的是没有定义的接口，会自动报错：not implemented，状态码501；
+
+
+
+## 4、参数解析
+
+### （1）params-query
+
+```js
+//请求地址http://localhost:8000/user/123
+const userRouter = new Router({prefix:"/users"})
+userRouter.get("/:id",(ctx,next) => {
+  //获取params
+  console.log(ctx.params.id)
+})
+
+//请求地址http://localhost:8000/login?username=why&password=123
+app.use((ctx,next) => {
+  //获取query
+  console.log(ctx.request.body)
+})
+```
+
+
+
+### （2）json
+
+安装依赖：npm install koa-bodyparser；
+
+使用koa-bodyparser的中间件；
+
+```js
+app.use(bodyParser());
+app.use((ctx,next) => {
+  console.log(ctx.reqauest.body)
+})
+```
+
+
+
+### （3）urlencoded
+
+和json一致
+
+
+
+### （4）form-data
+
+安装依赖：npm install koa-multer；
+
+使用multer中间件
+
+```js
+const upload = multer({});
+app.use(upload.any());
+app.use((ctx,next) => {
+  console.log(ctx.req.body)
+})
+```
+
+上传文件
+
+```js
+const Koa = require('koa');
+const Router = require('koa-router');
+const multer = require('koa-multer');
+
+const app = new Koa();
+const uploadRouter = new Router({prefix: '/upload'});
+
+const upload = multer({
+  dest: './uploads/'
+});
+
+uploadRouter.post('/avatar', upload.single('avatar'), (ctx, next) => {
+  console.log(ctx.req.file);
+  ctx.response.body = "上传头像成功~";
+});
+
+app.use(uploadRouter.routes());
+```
+
+
+
+## 5、数据的响应
+
+- 数据结果：body将响应主体设置为以下一种
+  - string：字符串数据
+  - Buffer：Buffer数据
+  - Stream：流数据
+  - Object||Array：对象或者数组
+  - null：不输出任何内容
+  - 如果response.status尚未设置，Koa将自动将状态设置为200或者204
+- 请求状态
+  - ctx.status = 201；
+  - ctx.response.status = 204；
+
+
+
+## 6、静态服务器
+
+koa没有内置部署相关的功能，需要使用第三方库：<font color=orange>npm install koa-static</font>
+
+部署过程类似于express
+
+```js
+const Koa = require("koa");
+const staticAssets = require("koa-static");
+
+const app = new Koa();
+
+app.use(staticAssets("./build"));
+
+app.listen(8000, () => {
+  console.log("koa服务器启动成功~");
+});
+```
+
+
+
+## 7、错误处理
+
+```js
+//直接上代码
+const Koa = require('koa');
+
+const app = new Koa();
+
+app.use((ctx, next) => {
+  ctx.app.emit('error', new Error("错误信息"), ctx);
+});
+
+app.on('error', (err, ctx) => {
+  ctx.status = 400;
+  ctx.response.body = err.message;
+})
+
+app.listen(8000, () => {
+  console.log("koa服务器启动成功~");
+});
+```
+
+
+
+## 8、koa和express框架对比
+
+- express是完整强大的，其中内置了非常多的功能；
+
+- koa是简洁自由的，只包含最核心的功能，并不会对使用其他中间件进行任何的限制
+  - 没提供基本的get和post；
+  - 需要手动或者路由来判断请求方式或其他功能；
+- express和koa框架核心都是中间件
+  - 中间件的执行机制是不同的，特别是针对某个中间件中包含异步操作时；
+
+
+
+# 十二、MySQL
+
+## 1、认识MySQL
+
+### （1）常见数据库
+
+- **关系型数据库**：MySQL、Oracle、DB2、SQL Server、Postgre SQL等
+  - 数据表之间相互关联，形成一对一、一对多、多对多关系；
+  - 可利用SQL语句在多张数据表中关联查询数据；
+  - 支持事务，对数据的访问更加的安全；
+
+- **非关系型数据库**：MongoDB、Redis、Memcached、HBse等
+  - 基于key-value的对应关系，查询过程不需要SQL解析，性能高；
+  - 通常不支持事物，需要在程序中保证原子性操作；
+
+
+
+### （2）MySQL
+
+- MySQL原本是一个开源的数据库，原开发者为瑞典的MySQL AB公司，在2009年被Oracle收购；
+
+- MySQL是一个关系型数据库，其实本质上就是一款软件、一个程序：
+  - 这个程序中管理着多个数据库；
+  - 每个数据库中可以有多张表；
+  - 每个表中可以有多条数据；
+
+
+
+## 2、操作数据库方式
+
+### （1）终端有两种连接数据库的方式：
+
+**方式一：**
+
+<font color=red>mysql -uroot -pCoderwhy888.</font> 
+
+**方式二：**
+
+<font color=red>mysql -uroot -p</font>
+
+<font color=red>Enter password: your password</font>
+
+
+
+### （2）终端显示数据库
+
+- 指令：show databases;
+
+- MySQL默认的数据库:
+  - infomation_schema:信息数据库，其中包括MySQL在维护的其他数据库、表、列、访问权限等信息;
+  - performance_schema:性能数据库，记录着MySQL Server数据库引擎在运行 过程中的一些资源消耗相关的信息;
+  - mysql:用于存储数据库管理者的用户信息、权限信息以及一些日志信息等;
+  - sys:相当于是一个简易版的performance_schema，将性能数据库中的数据汇 总成更容易理解的形式;
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202205252128363.png" alt="image-20220525212743174" style="zoom: 50%;" />
+
+
+
+### （3）终端创建数据库&表
+
+```mysql
+#创建数据库
+create database chengehub;
+
+#使用数据库
+use chengehub
+
+#创建表
+ create table user(
+    name varchar(20),
+    age int,
+    height double
+);
+#在表中插入数据
+insert into user (name,age,height) valuse ("zhang",18,1.88)
+```
+
+
+
+### （4）GUI工具
+
+实际开发中可以使用GUI工具连接数据库，常见的MySQL的GUI工具有Navicat、SQLYog、TablePlus；
+
+
+
+## 3、SQL语句
