@@ -37,7 +37,7 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
 
 ## 3、V8引擎
 
-​	V8是用C ++编写的Google开源高性能JavaScript和WebAssembly引擎，它用于Chrome和Node.js等。
+​	V8是用C ++编写的Google开源高性能JavaScript和WebAssembly引擎，它用于Chrome和`等。
 
 ​	跨平台性：它实现ECMAScript和WebAssembly，并在Windows 7或更高版本，macOS 10.12+和使用x64，IA-32， ARM或MIPS处理器的Linux系统上运行。
 
@@ -282,6 +282,14 @@ export在导出一个变量时，js引擎会解析这个语法，并且创建**�
 
 - Node环境下，CommonJS不能加载ES Module
 - ES Module可以加载CommonJS
+
+
+
+### 4、ES6模块和CommonJS模块的差异
+
+1. CommonJS模块输出的是一个值的拷贝，ES6模块输出的是值的拷贝；
+2. CommonJS模块是运行时加载，ES6模块是编译时输出接口；
+3. CommonJS模块的require()是同步加载模块，ES6的import命令是异步加载，有一个独立的模块依赖的解析阶段。
 
 
 
@@ -1894,3 +1902,95 @@ insert into user (name,age,height) valuse ("zhang",18,1.88)
 
 
 ## 3、SQL语句
+
+### 1、分类
+
+- DDL数据定义语言：
+  - 可以通过DDL语句对数据库或者表进行:创建、删除、修改等操作
+- DML数据操作语言：
+  - 可以通过DML语句对表进行:添加、删除、修改等操作
+- DQL数据查询语言：
+  - 可以通过DQL从数据库中查询记录
+- DCL数据控制语言：
+  -  对数据库、表格的权限进行相关访问控制操作
+
+
+
+### 2、数据库操作
+
+- #### 查看当前数据库
+
+```sql
+#查看所有库
+SHOW DATABASES;
+#使用某个数据库
+USE chengehub;
+# 查看当前正在使用的数据库
+SELECT DATABASE();
+```
+
+- #### 创建新的数据库
+
+```sql
+#创建新的数据库
+CREATE DATABASE IF NOT EXISTS chenge;
+#可以设置数据库类型
+CREATE DATABASE IF NOT EXISTS chenge DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+```
+
+- #### 删除数据库
+
+```sql
+#删除数据库
+DROP DATABASE IF EXIT bilibili;
+```
+
+- #### 修改数据库
+
+```sql
+#修改数据库的字符集和排序规则
+ALTER DATABASE bilibili CHARACTER SET = utf8 COLLATE = utf8_unicode_ci;
+```
+
+
+
+### 3、数据表的操作
+
+- #### 查看数据表
+
+```sql
+#查看所有的数据表
+SHOW TABLES;
+#查看选中表结构
+DESC user;
+```
+
+- #### 创建数据表
+
+```sql
+CREATE TABLE
+IF
+	NOT EXISTS `user` (
+		NAME VARCHAR ( 20 ),
+		age INT,
+		height DOUBLE)
+```
+
+
+
+### 4、SQL数据类型
+
+MySQL支持的数据类型有:数字类型，日期和时间类型，字符串(字符和字节)类型，空间类型和 JSON数据类型。
+
+- 数字类型包括：
+  - 整数类型：INT、INTEGER等；
+  - 浮点数类型：FLOAT、DOUBLE(FLOAT是4个字节，DOUBLE是8个字节)；
+  - 精确数字类型：DECIMAL，NUMERIC(DECIMAL是NUMERIC的实现形式)；
+- 日期类型包括：
+  - YEAR以YYYY格式显示值
+  - DATE类型用于具有日期部分但没有时间部分的值（YYYY-MM-DD）
+  -  DATETIME类型用于包含日期和时间部分的值（YYYY-MM-DD hh:mm:ss）
+  - TIMESTAMP数据类型被用于同时包含日期和时间部分的值（范围是UTC的时间范围）
+  - DATETIME或TIMESTAMP 值可以包括在高达微秒(6位)精度的后小数秒一部分
+- 字符串类型包括：
+
