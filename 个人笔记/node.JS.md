@@ -1942,7 +1942,8 @@ CREATE DATABASE IF NOT EXISTS chenge DEFAULT CHARACTER SET utf8mb4 COLLATE utf8m
 
 ```sql
 #删除数据库
-DROP DATABASE IF EXIT bilibili;
+DROP DATABASE users
+DROP DATABASE IF EXISTS bilibili;
 ```
 
 - #### 修改数据库
@@ -1968,12 +1969,57 @@ DESC user;
 - #### 创建数据表
 
 ```sql
-CREATE TABLE
-IF
-	NOT EXISTS `user` (
-		NAME VARCHAR ( 20 ),
-		age INT,
-		height DOUBLE)
+CREATE TABLE IF NOT EXISTS `user` (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	name VARCHAR(20) NOT NULL,
+	age INT DEFAULT 0,
+	telPhone VARCHAR(20) DEFAULT '' UNIQUE NOT NULL
+)
+```
+
+- #### 删除数据表
+
+```sql
+#DELETE方法
+#只删除数据不删除表的结构，会走事务，一行一行删除。
+#只是给删除的数据打了个标记为已删除，磁盘上所占空间不会变小，存储空间不会被释放
+DELETE from TABLE_NAME where xxx
+
+#DROP方法
+#删除表的结构被依赖的约束、触发器、索引，立刻释放磁盘空间
+Drop table Tablename
+
+#TURNCATE方法
+#执行后立即生效，无法找回，立刻释放磁盘空间，删除表数据不删除表结构
+Truncate table TABLE_NAME
+```
+
+
+- #### 修改数据表
+```sql
+#修改表名
+ALTER TABLE `moments` RENAME TO `moment`;
+
+#添加一列
+ALTER TABLE `moment` ADD `publishTime` DATETIME;
+
+#删除一列
+ALTER TABLE `moment` DROP `updateTime`;
+
+#修改列名称
+ALTER TABLE `moment` CHANGE `publishTime` `publishDate` DATE;
+
+#修改列数据类型
+ALTER TABLE `moment` MODIFY `id` INT;
+
+#修改表中所有数据
+UPDATE `products` SET `title` = 'iPhone12';
+
+#修改符合条件数据
+UPDATE `products` SET `title` = 'iPhone12' WHERE `title` = 'iPhone';
+
+#修改数据并记录更新时间
+ALTER TABLE `products` ADD `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 ```
 
 
@@ -1993,4 +2039,109 @@ MySQL支持的数据类型有:数字类型，日期和时间类型，字符串(�
   - TIMESTAMP数据类型被用于同时包含日期和时间部分的值（范围是UTC的时间范围）
   - DATETIME或TIMESTAMP 值可以包括在高达微秒(6位)精度的后小数秒一部分
 - 字符串类型包括：
+	- CHAR类型创建表示为固定长度的字符串（0到255之间）
+	- VARCHAR类型的值是可变长度的字符串，长度指定为（0到65536之间）
+	- BINARY和VARBINARY类型用于存储二进制字符串，存储的是字节字符串
+	- BLOB用于存储大的二进制类型
+	- TEXT用于存储大的字符串类型
+
+
+
+### 5、表约束
+
+- #### 主键：PRIMARY KEY
+
+	一张表中区分每条记录唯一性的字段，这个字段是不会重复的并且不会为空。
+	- 主键是表中唯一的索引；
+	- 必须是NOT NULL的，MySQL会隐式的设置为NOT NULL；
+	- 主键可以是多列索引，PRIMARY KEY(key_part, ...)，称之为联合主键；
+	- 开发中尽量不要使用业务字段来作为主键；
+
+- #### 唯一：UNIQUE
+	- 唯一的，不会重复的字段使用UNIQUE约束；
+	- 使用UNIQUE约束的字段在表中必须是不同的；
+	- UNIQUE 索引允许NULL包含的列具有多个值NULL；
+
+- #### 不能为空：NOT NULL
+	- 必须插入值，不可以为空，使用 NOT NULL 来约束；
+
+- #### 默认值：DEFAULT
+	- 在没有设置值时给予一个默认值；
+
+- #### 自动递增：AUTO_INCREMENT
+	- 不设置值时可以进行递增，比如用户的id，使用AUTO_INCREMENT来完成；
+
+
+
+### 6、数据表查询语句
+#### （1）基本查询语句
+```sql
+#查询所有的数据并且显示所有的字段
+SELECT * FROM `products`;
+
+#查询字段并起别名
+SELECT title as t, brand as b, price as p FROM `products`;
+
+#where比较运算符
+SELECT * FROM `products` WHERE price <= 1000;
+
+#where逻辑运算符
+SELECT * FROM `products` WHERE `brand` = '华为' and `price` < 2000;
+SELECT * FROM `products` WHERE brand = '华为' or price < 1000;
+
+#模糊查询（%表示匹配任意个的任意字符；_表示匹配一个的任意字符）
+SELECT * FROM `products` WHERE title LIKE 'v%';#查询所有以v开头的title
+SELECT * FROM `products` WHERE title LIKE '%M%';#查询带M的title
+SELECT * FROM `products` WHERE title LIKE '__M%';查询带M的title必须是第三个字符
+
+#查询结果排序（ASC升序；DESC降序）
+SELECT * FROM `products` WHERE brand = '华为' or price < 1000 ORDER BY price ASC;
+
+#分页查询
+SELECT * FROM `products` LIMIT 30 OFFSET 0;
+SELECT * FROM `products` LIMIT 30 OFFSET 30;
+```
+
+#### （2）聚合函数
+```sql
+#常用的聚合函数举例
+#平均值
+SELECT AVG(price) FROM `products` WHERE brand = '华为';
+
+#最高和最低值
+SELECT MAX(score) FROM `products`;
+SELECT MIN(score) FROM `products`;
+
+#总数求和
+SELECT SUM(voteCnt) FROM `products`;
+
+#总条目数量计算
+SELECT COUNT(*) FROM `products`;
+SELECT COUNT(*) FROM `products` WHERE brand = '华为';
+```
+
+#### （3）Group By
+通常和聚合函数一起使用，先对数据分组，再对每组数据进行计算。
+```sql
+#应用举例
+SELECT brand,
+	COUNT(*) as count,
+	ROUND(AVG(price),2) as avgPrice,
+	MAX(price) as maxPrice,
+	MIN(price) as minPrice,
+	AVG(score) as avgScore
+FROM `products` GROUP BY brand;
+
+#如果要给Group By添加约束，使用HAVING
+SELECT brand,
+	COUNT(*) as count,
+	ROUND(AVG(price),2) as avgPrice,
+	MAX(price) as maxPrice,
+	MIN(price) as minPrice,
+	AVG(score) as avgScore
+FROM `products` GROUP BY brand HAVING avgPrice < 4000 and avgScore > 7;
+```
+
+#### （4）多表查询
+
 
