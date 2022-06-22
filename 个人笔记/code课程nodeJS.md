@@ -1581,7 +1581,7 @@ node.js的下一代web框架，是express同一个团队开发的。旨在为Web
 ## 1、koa安装使用
 
 ```js
-//安装：npm install express
+//安装：npm install koa
 
 //使用案例：
 const Koa = require("koa");
@@ -1687,7 +1687,7 @@ app.use((ctx,next) => {
 
 ### （2）json
 
-安装依赖：npm install koa-bodyparser；
+**安装依赖：npm install koa-bodyparser；**
 
 使用koa-bodyparser的中间件；
 
@@ -1708,7 +1708,7 @@ app.use((ctx,next) => {
 
 ### （4）form-data
 
-安装依赖：npm install koa-multer；
+**安装依赖：npm install koa-multer；**
 
 使用multer中间件
 
@@ -1741,6 +1741,15 @@ uploadRouter.post('/avatar', upload.single('avatar'), (ctx, next) => {
 
 app.use(uploadRouter.routes());
 ```
+
+- 其中multer(options)中的参数：
+  - dest——文件上传保存位置，如果省略，文件将保存在内存中，不会写入磁盘；
+  - limits——指定数据大小和类型
+- **upload.single('file')**：单文件上传的中间件，参数file是前端上传的文件字段名。
+- **upload.array('file',maxCount)**：多文件上传的中间件，参数一是前端上传的文件字段名，参数而是文件上传的最大数量。
+- **upload.fields([{name: 'xxx', maxCount: Number},{},······])** ：多文件上传的中间件，参数是一个数组，里边可配置多个对象。
+
+
 
 
 
@@ -1920,7 +1929,7 @@ insert into user (name,age,height) valuse ("zhang",18,1.88)
 
 - #### 查看当前数据库
 
-```sql
+```mysql
 #查看所有库
 SHOW DATABASES;
 #使用某个数据库
@@ -1931,7 +1940,7 @@ SELECT DATABASE();
 
 - #### 创建新的数据库
 
-```sql
+```mysql
 #创建新的数据库
 CREATE DATABASE IF NOT EXISTS chenge;
 #可以设置数据库类型
@@ -1940,7 +1949,7 @@ CREATE DATABASE IF NOT EXISTS chenge DEFAULT CHARACTER SET utf8mb4 COLLATE utf8m
 
 - #### 删除数据库
 
-```sql
+```mysql
 #删除数据库
 DROP DATABASE users
 DROP DATABASE IF EXISTS bilibili;
@@ -1948,7 +1957,7 @@ DROP DATABASE IF EXISTS bilibili;
 
 - #### 修改数据库
 
-```sql
+```mysql
 #修改数据库的字符集和排序规则
 ALTER DATABASE bilibili CHARACTER SET = utf8 COLLATE = utf8_unicode_ci;
 ```
@@ -1959,7 +1968,7 @@ ALTER DATABASE bilibili CHARACTER SET = utf8 COLLATE = utf8_unicode_ci;
 
 - #### 查看数据表
 
-```sql
+```mysql
 #查看所有的数据表
 SHOW TABLES;
 #查看选中表结构
@@ -1968,7 +1977,7 @@ DESC user;
 
 - #### 创建数据表
 
-```sql
+```mysql
 CREATE TABLE IF NOT EXISTS `user` (
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	name VARCHAR(20) NOT NULL,
@@ -1979,24 +1988,24 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 - #### 删除数据表
 
-```sql
+```mysql
 #DELETE方法
 #只删除数据不删除表的结构，会走事务，一行一行删除。
 #只是给删除的数据打了个标记为已删除，磁盘上所占空间不会变小，存储空间不会被释放
-DELETE from TABLE_NAME where xxx
+DELETE FROM `tablename` WHERE xxx
 
 #DROP方法
-#删除表的结构被依赖的约束、触发器、索引，立刻释放磁盘空间
-Drop table Tablename
+#立即释放磁盘空间，删除表约束、索引、触发器等
+DROP TABLE `tablename`
 
 #TURNCATE方法
 #执行后立即生效，无法找回，立刻释放磁盘空间，删除表数据不删除表结构
-Truncate table TABLE_NAME
+TRUNCATE TABLE `moment`;
 ```
 
 
 - #### 修改数据表
-```sql
+```mysql
 #修改表名
 ALTER TABLE `moments` RENAME TO `moment`;
 
@@ -2051,31 +2060,43 @@ MySQL支持的数据类型有:数字类型，日期和时间类型，字符串(�
 
 - #### 主键：PRIMARY KEY
 
-	一张表中区分每条记录唯一性的字段，这个字段是不会重复的并且不会为空。
-	- 主键是表中唯一的索引；
-	- 必须是NOT NULL的，MySQL会隐式的设置为NOT NULL；
-	- 主键可以是多列索引，PRIMARY KEY(key_part, ...)，称之为联合主键；
-	- 开发中尽量不要使用业务字段来作为主键；
+  一张表中区分每条记录唯一性的字段，这个字段是不会重复的并且不会为空。
+  - 主键是表中唯一的索引；
+  - 必须是NOT NULL的，MySQL会隐式的设置为NOT NULL；
+  - 主键可以是多列索引，PRIMARY KEY(key_part, ...)，称之为联合主键；
+  - 开发中尽量不要使用业务字段来作为主键；
+
+  
 
 - #### 唯一：UNIQUE
+	
 	- 唯一的，不会重复的字段使用UNIQUE约束；
 	- 使用UNIQUE约束的字段在表中必须是不同的；
 	- UNIQUE 索引允许NULL包含的列具有多个值NULL；
-
+	
+	
+	
 - #### 不能为空：NOT NULL
+	
 	- 必须插入值，不可以为空，使用 NOT NULL 来约束；
-
+	
+	
+	
 - #### 默认值：DEFAULT
+	
 	- 在没有设置值时给予一个默认值；
-
+	
+	
+	
 - #### 自动递增：AUTO_INCREMENT
+	
 	- 不设置值时可以进行递增，比如用户的id，使用AUTO_INCREMENT来完成；
 
 
 
 ### 6、数据表查询语句
 #### （1）基本查询语句
-```sql
+```mysql
 #查询所有的数据并且显示所有的字段
 SELECT * FROM `products`;
 
@@ -2102,8 +2123,11 @@ SELECT * FROM `products` LIMIT 30 OFFSET 0;
 SELECT * FROM `products` LIMIT 30 OFFSET 30;
 ```
 
+
+
 #### （2）聚合函数
-```sql
+
+```mysql
 #常用的聚合函数举例
 #平均值
 SELECT AVG(price) FROM `products` WHERE brand = '华为';
@@ -2120,9 +2144,14 @@ SELECT COUNT(*) FROM `products`;
 SELECT COUNT(*) FROM `products` WHERE brand = '华为';
 ```
 
+![image-20220602150952413](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021509889.png)
+
+
+
 #### （3）Group By
+
 通常和聚合函数一起使用，先对数据分组，再对每组数据进行计算。
-```sql
+```mysql
 #应用举例
 SELECT brand,
 	COUNT(*) as count,
@@ -2142,6 +2171,462 @@ SELECT brand,
 FROM `products` GROUP BY brand HAVING avgPrice < 4000 and avgScore > 7;
 ```
 
+
+
 #### （4）多表查询
 
+- ##### 5外键约束
+
+  使用外键约束可以将两张表联系起来
+
+```mysql
+#把products中的brand_id和brand的id联系起来
+
+#情景一：新建表添加外键约束
+FOREIGN KEY (brand_id) REFERENCES brand(id);
+#情景二：已经创建好的表添加外键约束
+ALTER TABLE `products` ADD FOREIGN KEY (brand_id) REFERENCES brnad(id);
+```
+
+- ##### 更新外键约束
+
+**更新或删除时添加语句**：
+
+1. RESTRICT：更新或删除某个记录时，会检查是否有关联的外键约束，有则会报错并拒绝更新或删除；
+2. NO ACTION：和RESTRICT一致，在SQL标准中定义的；
+3. CASCADE：更新或删除某个有外键关联的记录时，更新会更新对应记录，删除会把关联记录一起删掉；
+4. SET NULL：更新或删除某个有外键关联的记录时，将对应的值设置为NULL；
+
+**执行操作**：
+
+```mysql
+#第一步：查看表结构
+SHOW CREATE TABLE `products`;
+
+#第二步：删除之前的外键
+ALTER TABLE `products` DROP FOREIGN KEY products_ibfk_1;
+
+#第三步：添加新外键
+ALTER TABLE `products` ADD FOREIGN KEY (brand_id) REFERENCES brand(id) ON UPDATE CASCADE ON DELETE CASCADE;
+```
+
+- ##### 默认多表查询
+
+```mysql
+#笛卡尔乘积X*Y
+SELECT * FROM `user`,`moment`
+```
+
+
+
+#### （5）多表连接
+
+SQL JOIN操作：左连接、右连接、内连接、全连接。
+
+![image-20220602161526688](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021615694.png)
+
+##### 左连接：
+
+![image-20220602161943158](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021619593.png)
+
+```mysql
+SELECT * FROM `Table_A` A LEFT JOIN `Table_B` B ON A.key = B.key;
+```
+
+![image-20220602162223951](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021622274.png)
+
+```mysql
+SELECT * FROM `Table_A` A  LEFT JOIN `Table_B` B ON A.key = B.key WHERE B.key IS NULL;
+```
+
+
+
+##### 右连接：
+
+![image-20220602162435729](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021624065.png)
+
+```mysql
+SELECT * FROM `Table_A` A RIGHT JOIN `Table_B` B ON A.key = B.key;
+```
+
+![image-20220602162459383](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021625400.png)
+
+```mysql
+SELECT * FROM `Table_A` A RIGHT JOIN `Table_B` B ON A.key = B.key WHERE A.key IS NULL;
+```
+
+
+
+##### 内连接：
+
+![image-20220602163036828](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021630105.png)
+
+```mysql
+SELECT * FROM Table_A A INNER JOIN Table_B B ON A.key = B.key;
+```
+
+
+
+##### 全连接：MySql中需要使用UNION实现
+
+![image-20220602163109222](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021631494.png)
+
+```mysql
+(SELECT * FROM `Table_A` A LEFT JOIN `Table_B` B ON A.key = B.key) UNION
+(SELECT * FROM `Table_A` A RIGHT JOIN `Table_B` B ON A.key = B.key);
+```
+
+![image-20220602163131848](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021631016.png)
+
+```sql
+(SELECT * FROM `Table_A` A LEFT JOIN `Table_B` B ON A.key = B.key WHERE B.id IS NULL)
+UNION
+(SELECT * FROM `Table_A` A LEFT JOIN `Table_B` B ON A.key = B.key WHERE A.id IS NULL);
+```
+
+
+
+#### （6）查询结果转对象(JSON_OBJECT)
+
+```mysql
+SELECT 
+	products.id as id, 
+	products.title as title,
+  products.price as price, 
+  products.score as score, 
+	JSON_OBJECT('id', brand.id, 'name', brand.name, 'rank', brand.phoneRank, 'website', brand.website) 
+as brand FROM products 
+LEFT JOIN brand ON products.brand_id = brand.id;
+```
+
+![image-20220602165227823](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021652652.png)
+
+
+
+#### （7）查询结果转数组(JSON_ARRAYAGG)
+
+```mysql
+SELECT 
+	stu.id, 
+	stu.name, 
+	stu.age,
+	JSON_ARRAYAGG(JSON_OBJECT('id', cs.id, 'name', cs.name)) 
+as courses FROM students stu
+LEFT JOIN students_select_courses ssc ON stu.id = ssc.student_id 
+LEFT JOIN courses cs ON ssc.course_id = cs.id
+GROUP BY stu.id;
+```
+
+![image-20220602165526386](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206021655455.png)
+
+
+
+## 4、Node连接MySql
+
+### （1）认识mysql2
+
+在node中执行SQL语句，一般借用两个库：
+
+- mysql：最早的Node连接MySQL的数据库驱动；
+- mysql2：在mysql的基础之上，进行了很多的优化、改进；
+
+mysql2兼容mysql的API；性能更快/好；提供预编译语句，防止SQL注入；支持Promise，可以使用async和await语法等。
+
+
+
+### （2）使用mysql2
+
+安装：`npm install mysql2`
+
+创建连接：
+
+```js
+const mysql = require("mysql2");
+const connection = mysql.createConncetion({
+  host:'localhost',
+  database:'数据库名字',
+  user:'root',
+  password:'密码'
+})
+```
+
+执行SQL语句：
+
+```js
+connection.query(
+	'SELECT * FROM table_name',
+  (err,result,fields) => {
+    console.log(err);
+    console.log(result);
+    //使用完关闭连接
+    connection.destory()
+  }
+)
+```
+
+
+
+### （3）预编译语句
+
+提高性能：将创建的语句模块发送给MySql后被编译并存储，使用时提供真实参数才执行，多次执行也只编译一次。
+
+防止SQL注入：只对预留的模块进行编译
+
+
+
+### （4）连接池
+
+mysql2提供了连接池，可以在需要时自动创建连接，并且连接不会被销毁。limit属性可以限制最大连接创建个数。
+
+```js
+const connections = mysql.createPool({
+  host: "localhost",
+  port: "8000",
+  database: "chengehub",
+  user: "root",
+  password: "zhangYU0504",
+  connectionLimit: 5
+});
+```
+
+
+
+### （5）ORM
+
+- 对象关系映射：
+  - 在可编程语言中，使用虚拟对象数据库的效果；
+  - 在Java中使用的ORM包括：Hibernate，MyBatis；
+- Node中ORM通常使用sequelize；
+- Sequelize和MySQL一起使用，需要先安装：
+  - mysql2：sequelize在操作mysql时使用的是mysql2；
+  - sequelize:使用它来让对象映射到表中；
+  - `npm install sequelize mysql2`
+
+
+
+### （6）Sequelize使用
+
+首先创建Sequelize对象，指定数据库、用户名、密码、数据库类型等，其次测试连接是否成功即可。
+
+![image-20220607151701284](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206071517492.png)
+
+#### 创建单表
+
+![image-20220607151759457](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206071518494.png)
+
+操作单表
+
+![image-20220607151828514](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206071518669.png)
+
+#### 创建多表
+
+![image-20220607152606912](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206071526000.png)
+
+操作多表
+
+![image-20220607152632365](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206071526389.png)
+
+
+
+# 十三、项目点
+
+## 1、登录凭证
+
+登录成功后以某个身份去访问其他资源和数据，需要有凭证证明已经登录过。
+
+常用的有cookie、session、token
+
+### （1）Cookie
+
+#### 	1.1cookie基础
+
+- 类型为“**小型文本文件**，某些网站为了辨别用户身份而存储 在用户本地终端(Client Side)上的数据。
+- cookie保存在客户端中，按照存储的位置，Cookie分为内存和硬盘Cookie。
+  - 内存Cookie由浏览器维护，**保存在内存中**，浏览器关闭时Cookie就会消失，其存在时间是短暂的；
+  - 硬盘Cookie**保存在硬盘中**，有一个过期时间，用户手动清理或者过期时间到时，才会被清理；
+  - 不设置过期时间默认是内存Cookie，关闭浏览器时会自动删除；
+  - 设置过期时间并且不为0或者负数的是硬盘Cookie。
+
+
+
+#### 	1.2cookie属性
+
+- 生命周期
+  - 可以设置expires或者max-age配置过期时间：
+    - expires：设置的是Date.toUTCString()，设置格式是;expires=date-in-GMTString-format;
+    - max-age:设置过期的秒钟，max-age=max-age-in-seconds (例如一年为60*60*24*365);
+- 作用域
+  - Domain指定接受cookie的主机，不指定默认是origin，不包括子域；指定则包含子域名；
+  - Path指定主机下接受cookie的路径；
+
+
+
+#### 	1.3客户端设置cookie
+
+```js
+//通过js直接设置和获取（会话关闭时被删除）
+document.cookie
+//设置cookie
+document.cookie = "xx=xx;max-age=10"
+```
+
+
+
+#### 	1.4服务端设置cookie
+
+koa默认支持直接操作cookie
+
+```js
+demoRouter.get("/",(ctx,next) => {
+  ctx.cookie.set("name","xx",{maxAge:1000*10})
+  ctx.body = "设置cookie成功"
+})
+//取的时候通过ctx.cookie.get("属性名")获取
+```
+
+
+
+### （2）Seesion
+
+Session是基于cookie实现机制，在koa中使用需要安装第三方包koa-session。
+
+```javascript
+//引入和设置session属性
+const KoaSeeion = require("koa-session");
+const session = KoaSeeion({
+  key:"session",//cookie的key
+  maxAge:5*1000,//过期时间
+  httpOnly:true,//不允许通过js获取cookie
+  rolling:true,//每次响应时刷新session的有效期
+  signed:true//是否使用signed签名认证，防止数据被篡改
+})
+
+//路由中携带session和获取
+demoRouter.get("/",(ctx,next) => {
+  ctx.session.xx = {id:"xx",name:"xx"}
+  ctx.body = "设置session成功"
+})
+//使用ctx.session.xx获取携带的值
+```
+
+
+
+### （3）token
+
+#### 	1.1cookie和session缺陷
+
+- Cookie会被附加在每个HTTP请求中，所以无形中增加了流量(事实上某些请求是不需要的)；
+- Cookie是明文传递的，所以存在安全性的问题；
+- Cookie的大小限制是4KB，对于复杂的需求来说是不够的；
+- 对于浏览器外的其他客户端(比如iOS、Android)，必须手动的设置cookie和session；
+- 对于分布式系统和服务器集群中不确定可以保证其他系统也可以正确的解析session；
+
+所以前后端分离项目中使用token较多。
+
+
+
+#### 	1.2token使用步骤
+
+生成token：登录时候颁发；
+
+验证token：访问某些资源或接口时验证；
+
+
+
+#### 	1.3对称加密JWT
+
+​	**JWT实现token**
+
+- JWT生成的token由三部分组成：
+  - header
+    - alg加密算法，默认是**对称加密算法HS256**，采用同一个密钥进行加密和解密；
+    - typ固定值JWT；
+    - 会通过base64Url算法进行编码；
+  - payload
+    - 携带的数据，默认会携带iat和令牌签发时间；
+    - 可以设置过期时间exp；
+    - 会通过base64Url算法进行编码；
+  - signature
+    - 设置一个secretKey，将前两个结果合并后进行HS256算法；
+    - HMACSHA256(base64Url(header)+.+base64Url(payload), secretKey)；
+    - 如果secretKey暴露是一件非常危险的事情，因为之后就可以模拟颁发token，也可以解密token
+
+![image-20220616152521182](https://raw.githubusercontent.com/Rainchen0504/picture/master/202206161525406.png)
+
+真实开发中使用jsonwebtoken这个库完成
+
+```javascript
+const jwt = require('jsonwebtoken');
+const SERCET_KEY = "abccba123";
+//颁发token
+testRouter.post('/test', (ctx, next) => {
+  const user = {id: 110, name: 'why'};
+  const token = jwt.sign(user, SERCET_KEY, { expiresIn: 10 });
+  ctx.body = "颁发成功";
+});
+
+//验证token
+testRouter.get('/demo', (ctx, next) => {
+  const authorization = ctx.headers.authorization;
+  const token = authorization.replace("Bearer ", "");
+  try {
+    const result = jwt.verify(token, SERCET_KEY);
+    ctx.body = result;
+  } catch (error) {
+    console.log(error.message);
+    ctx.body = "token是无效的~";
+  }
+});
+```
+
+
+
+#### 	1.4非对称加密
+
+- HS256加密算法单一密钥暴露是非常危险的，因此可以使用**非对称加密RS256**
+
+私钥：用于发布令牌；
+
+公钥：用于验证令牌；
+
+- 使用openssl生成一对私钥和公钥
+
+```shell
+openssl
+> genrsa -out private.key 1024
+> rsa -in private.key -pubout -out public.key
+```
+
+使用公钥和私钥签发和验证签名
+
+```javascript
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const PRIVATE_KEY = fs.readFileSync('./keys/private.key');
+const PUBLIC_KEY = fs.readFileSync('./keys/public.key');
+//颁发令牌
+demoRouter.post("/",(ctx,next) => {
+  const user = {id: 110, name: 'police'};
+  const token = jwt.sign(user, PRIVATE_KEY, {
+    expiresIn: 10,
+    algorithm: "RS256"
+  });
+  ctx.body = token;
+})
+
+//验证令牌
+demoRouter.get("/demo",(ctx,next) => {
+  const authorization = ctx.headers.authorization;
+  const token = authorization.replace("Bearer ", "");
+  try {
+    const result = jwt.verify(token, PUBLIC_KEY, {
+      algorithms: ["RS256"]
+    });
+    ctx.body = result;
+  } catch (error) {
+    console.log(error.message);
+    ctx.body = "token是无效的~";
+  }
+})
+```
 
