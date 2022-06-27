@@ -225,3 +225,117 @@ const obj = {
 
 如果对一个空数组使用扩展运算符，不会产生任何影响。
 
+```javascript
+//扩展运算符应用
+//（1）复制数组（深拷贝）
+const a = [1,2];
+const b = [...a];
+
+//（2）合并数组(浅拷贝)
+const a = [...a1,...a2];
+
+//（3）解构赋值结合
+const [first, ...rest] = [1, 2, 3, 4, 5];
+first // 1
+rest  // [2, 3, 4, 5]
+
+//（4）字符串(将字符串转成数组)
+[...'hello']
+[ "h", "e", "l", "l", "o" ]
+
+//（5）实现Iterator接口对象
+任何定义遍历器(Iterator)接口的对象都可以使用扩展运算符转成真正的数组
+
+//（6）Map和Set结构，Generator函数
+let map = new Map([[1,'one'],[2,'two'],[3,'three']]);
+let arr = [...map.keys()];
+//[1, 2, 3]
+let set = new Set([1,2,3,4,5,1,2])
+let arr = [...set]
+//[1, 2, 3, 4, 5]
+```
+
+
+
+## 2、Array.from()
+
+将两类对象转成真正的数组：<font color=red>**类数组的对象和可遍历的对象**</font>（包括Set和Map）
+
+实际应用中常见的类数组对象是DOM操作返回的NodeList集合以及函数内部的argument对象。
+
+```javascript
+let ps = document.querySelectorAll("p");
+Array.from(ps);
+
+function foo(){
+  var args = Array.from(arguments);
+}
+```
+
+Array.from()还可以接受一个函数作为第二个参数，可以对每个元素进行处理并放入返回的数组。
+
+
+
+## 3、Array.of()
+
+将一组值转换为数组，用来弥补构造函数`Array()`的不足。
+
+```javascript
+Array.of(3,11,5);	//[3,11,5]
+```
+
+基本上可以用来替代`Array()`或`new Array()`，不存在由于参数不同而导致的重载。
+
+该方法总是返回参数值组成的数组，没参数就返回空数组。
+
+
+
+## 4、find()和findIndex()
+
+find方法找到第一个符合条件的数组成员，返回值为找到的元素对象，没找到就返回undefined。
+
+findIndex方法第一个符合条件的数组成员，返回值为找到元素的次序，没找到就返回-1。
+
+
+
+## 5、fill()
+
+使用给定值填充数组，还可接受另外两个参数指定填充起始位置和结束位置。
+
+如果填充的内容是对象，被赋值的是同一个内存地址，不是深拷贝。
+
+
+
+## 6、遍历数组方法
+
+- entries()方法：对键值对的遍历
+- keys()方法：对键名的遍历
+- values()方法：对键值的遍历
+
+```javascript
+let arr = ["zhang","yu","chen"];
+
+//keys
+for(let i of arr.keys()){
+  console.log(i)
+}
+0	1	2
+
+//values
+for(let v of arr.values()){
+  console.log(v)
+}
+zhang	yu chen
+
+//entries
+for(let [i,e] of arr.entries()){
+  console.log(i,e)
+}
+0'zhang'  1'yu'  2'chen'
+```
+
+
+
+## 7、includes()
+
+返回一个布尔值，表示数组中是否包含指定值，与字符串的includes方法类似。

@@ -37,7 +37,7 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
 
 ## 3、V8引擎
 
-​	V8是用C ++编写的Google开源高性能JavaScript和WebAssembly引擎，它用于Chrome和`等。
+​	V8是用C ++编写的Google开源高性能JavaScript和WebAssembly引擎，它用于Chrome和Node.js等。
 
 ​	跨平台性：它实现ECMAScript和WebAssembly，并在Windows 7或更高版本，macOS 10.12+和使用x64，IA-32， ARM或MIPS处理器的Linux系统上运行。
 
