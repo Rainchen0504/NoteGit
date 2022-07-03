@@ -339,3 +339,48 @@ for(let [i,e] of arr.entries()){
 ## 7、includes()
 
 返回一个布尔值，表示数组中是否包含指定值，与字符串的includes方法类似。
+
+接收第二个参数表示从哪一位开始查找。
+
+```javascript
+[1, 2, 3].includes(2)	// true
+[NaN].includes(NaN)	//true
+```
+
+注意⚠️：
+
+Map和Set数据结构有一个has方法
+
+- Map结构的has方法，是用来<font color=red>查找键名的</font>
+
+`Map.prototype.has(key);WeakMap.prototype.has(key)`
+
+- Set结构的has方法，是用来<font color=red>查找值的</font>
+
+`Set.prototype.has(value);WeakSet.prototype.has(value)`
+
+
+
+## 8、flat()扁平化方法
+
+将多维数组转成一维数组，即数组扁平化方法。
+
+```javascript
+[1, 2, [3, 4]].flat()	// [1, 2, 3, 4]
+```
+
+**默认情况下flat()方法只会扁平化一层**，多层嵌套情况下需将层数作为参数执行。
+
+```javascript
+[[1, 2],[2, 3, [5, [7]]]].flat(3);	
+//[ 1, 2, 2, 3, 5, 7 ]
+```
+
+如果不知道多少层，<font color=deepred>使用`Infinity`关键字作为参数</font>。
+
+
+
+## 9、at()
+
+at方法接受一个整数作为参数，返回对应位置的元素，<font color=deepred>**支持负索引，作用于数组、字符串和类型数组**</font>。
+

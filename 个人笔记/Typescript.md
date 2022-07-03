@@ -101,7 +101,7 @@ tsc '文件名'
 
 #### 方法二：使用 webpack
 
-配置本地的 TS 编译环境和开启一个本地服务，可以直接运行字浏览器上；
+配置本地的 TS 编译环境和开启一个本地服务，可以直接运行在浏览器上；
 
 #### 方法三：使用 ts-node
 
@@ -192,7 +192,7 @@ let u: undefined = undefined; //定义undefined
 let n: null = null; //定义null
 ```
 
-
+null和undefined是所有类型的字类型
 
 ## （6）Any 和 unknown 类型
 
@@ -434,6 +434,12 @@ let mySum: (x: number, y: number) => number = function (
 ): number {
   return x + y;
 };
+
+//注意，参数不能多传，也不能少传 必须按照约定的类型来
+const fn = (name: string, age:number): string => {
+    return name + age
+}
+fn('张三',18)
 ```
 
 注意 ⚠️：在 TS 类型定义中`=>`用来<font color=red>表示函数的定义</font>，左边是输入类型，需要用括号括起来，右边是输出类型；在 ES6 中`=>`<font color=red>表示箭头函数。</font>
@@ -861,7 +867,7 @@ function promise(): Promise<number> {
     resolve(1);
   });
 }
-promise.the((res) => {
+promise().then((res) => {
   console.log(res);
 });
 ```
@@ -1040,18 +1046,21 @@ abstract class A {
   constructor(name: string) {
     this.name = name;
   }
+  //定义getName抽象方法但不能实现
   abstract getName(): string;
 }
+let a = new A()//报错，抽象类不能实例化
 
 class B extends A {
   constructor() {
     super("小满");
   }
+  //抽象方法getName必须在派生类实现
   getName(): string {
     return this.name;
   }
 }
-let b = new B();
+let b = new B();//不报错，派生类可以实例化
 console.log(b.getName());
 ```
 
@@ -1082,7 +1091,7 @@ arr[1].length; //success
 
 ```typescript
 let arr: [number, string] = [1, "string"];
-arr.push(true); //'number | string'
+arr.push(true); //报错，只能是定义过的联合类型number|string
 ```
 
 越界的元素的类型被限制为联合类型，即元组中已经定义的类型。
