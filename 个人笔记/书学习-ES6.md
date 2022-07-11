@@ -914,3 +914,89 @@ Proxy支持的拦截操作共13种。
 功能：拦截某个属性的读取操作；
 
 参数：可以接受三个参数，<font color=blue>**目标对象、属性名和proxy实例本身**（操作行为所针对的对象）</font>，且最后一个参数为可选参数。
+
+```javascript
+//实现数组读取负数索引
+function createArray(...elements){
+    let handler = {
+        get(target,propKey,receiver){
+            let index = Number(propKey);
+            if(index < 0){
+                propKey = String(target.length + index)
+            }
+            return Reflect.get(target,propKey,receiver)
+        }
+    };
+    let target = [];
+    target.push(...element);
+    return new Proxy(target,handler)
+}
+let arr = ['a','b','c'];
+arr[-2]	//'b'
+```
+
+```javascript
+//实现一个生成各种DOM节点的通用函数dom
+const dom = new Proxy({}, {
+    get(target,property){
+        return function(attrs = {},...children){
+            const el = document.createElement(property);
+            for(let prop of Object.keys(attrs)){
+                el.setAttribute(prop,attrs[prop])
+            }
+            for(let child  of children){
+                if (typeof child === 'string') {
+                    child = document.createTextNode(child);
+                }
+                el.appendChild(child);
+            }
+            return el;
+        }
+    }
+});
+const el = dom.div({},
+  'Hello, my name is ',
+  dom.a({href: '//example.com'}, 'Mark'),
+  '. I like:',
+  dom.ul({},
+    dom.li({}, 'The web'),
+    dom.li({}, 'Food'),
+    dom.li({}, '…actually that\'s it')
+  )
+);
+document.body.appendChild(el);
+```
+
+```html
+<!--结果如下-->
+<div>
+    "Hello, my name is"
+    <a href="//example.com">Mark</a>
+    ". I like:"
+   <ul>
+       <li>The web</li>
+       <li>Food</li>
+       <li>…actually that's it</li>
+    </ul>
+</div>
+```
+
+​	如果一个属性不可配置且不可写，则 Proxy 不能修改该属性，否则通过 Proxy 对象访问该属性会报错。
+
+```javascript
+const target = Object.defineProperties({}, {
+  foo: {
+    value: 123,
+    writable: false,
+    configurable: false
+  },
+});
+const handler = {
+  get(target, propKey) {
+    return 'abc';
+  }
+};
+const proxy = new Proxy(target, handler);
+proxy.foo	// TypeError: Invariant check failed
+```
+
