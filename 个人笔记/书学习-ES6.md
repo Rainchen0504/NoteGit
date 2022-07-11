@@ -384,3 +384,533 @@ Map和Set数据结构有一个has方法
 
 at方法接受一个整数作为参数，返回对应位置的元素，<font color=deepred>**支持负索引，作用于数组、字符串和类型数组**</font>。
 
+```javascript
+const arr = [1,2,3,4,5];
+arr.at(2)	//3
+arr.at(-2)	//4
+```
+
+如果参数位置超出范围返回`undefined`。
+
+
+
+## 10、group()
+
+分组函数接受三个参数，当前成员、当前成员索引、原数组
+
+```javascript
+const array = [1, 2, 3, 4, 5];
+array.group((item, index, array) => {
+  return item % 2 === 0 ? 'even': 'odd';
+});
+//返回值是一个对象：{ odd: [1, 3, 5], even: [2, 4] }
+```
+
+另外还可以使用对象作为分组的键名
+
+```javascript
+const arr = [1,2,3,4,5];
+const odd = {odd:true};
+const evem = {even:true};
+arr.groupMap((item,index,array) => {
+  return item % 2 === 0 ? even : odd;
+})
+//返回值是一个Mep结构：Map {{odd: true}:[1, 3, 5],{even: true}:[2,4]}
+```
+
+
+
+# 七、对象的扩展
+
+## 1、可枚举性
+
+对象的**每个属性都有一个描述对象**，用来控制属性的行为，可以使用`Object.getOwnPropertyDescriptor`方法获取。
+
+```javascript
+let obj = {foo:123};
+Object.getOwnPropertyDescriptor(obj,"foo");
+//{ value: 123, writable: true, enumerable: true, configurable: true }
+```
+
+
+
+## 2、属性遍历
+
+ES6共有5中方法可以遍历对象的属性：
+
+### （1）for...in
+
+循环遍历对象自身的和继承的可枚举属性（除了Synbol属性），一般不用于遍历数组
+
+### （2）Object.keys(obj)
+
+返回一个数组，包括对象自身的（不含继承的）所有可枚举属性（不含 Symbol 属性）的键名
+
+### （3）Object.getOwnPropertyNames(obj)
+
+返回一个数组，包含对象自身的所有属性（不含 Symbol 属性，但是包括不可枚举属性）的键名
+
+### （4）Object.getOwnPropertySymbols(obj)
+
+返回一个数组，包含对象自身的所有 Symbol 属性的键名
+
+### （5）Reflect.ownKeys(obj)
+
+返回一个数组，包含对象自身的（不含继承的）所有键名，不管键名是 Symbol 或字符串，也不管是否可枚举。
+
+- 上面的遍历方法遵守相同的属性排列规则：
+  - 先遍历所有数值键，按照数值升序排列；
+  - 遍历所有字符串键，按照加入时间升序排列；
+  - 遍历所有 Symbol 键，按照加入时间升序排列；
+
+```javascript
+Reflect.ownKeys({ [Symbol()]:0, b:0, 10:0, 2:0, a:0 })
+//[ '2', '10', 'b', 'a', Symbol() ]
+```
+
+
+
+## 3、扩展运算符
+
+### （1）解构赋值
+
+​	从一个对象取值，相当于将目标对象自身的所有可遍历的、但尚未被读取的属性，分配到指定的对象上面。所有的键和值，都会拷贝到新对象上面。
+
+​	**解构赋值的拷贝是浅拷贝**，即如果一个键的值是复合类型的值（数组、对象、函数）、那么解构赋值**拷贝的是这个值的引用**，而不是这个值的副本。
+
+```javascript
+let obj = { a: { b: 1 } };
+let { ...x } = obj;
+obj.a.b = 2;
+x.a.b // 2
+```
+
+​	扩展运算符的解构赋值，不能复制继承自原型对象的属性。
+
+```javascript
+let o1 = { a: 1 };
+let o2 = { b: 2 };
+o2.__proto__ = o1;
+let { ...o3 } = o2;
+o3 // { b: 2 }
+o3.a // undefined
+```
+
+
+
+## 4、对象新增方法
+
+### （1）Object.is()
+
+​	用来比较两个值是否严格相等，与严格比较运算符（===）的行为基本一致。
+
+1. == 会进行强制类型转换；
+2. === 比较NaN不等于自身，+0等于-0；
+
+Object.is()解决以上问题，+0不等于-0，NaN等于NaN。
+
+
+
+### （2）Object.assign()
+
+​	用于对象的合并，将源对象的所有可枚举属性，复制到目标对象。第一个参数是目标对象，后面参数都是源对象。
+
+​	源对象不是对象时会先转换成对象再进行合并；不能使用null和undefined作为目标对象，会报错。
+
+```javascript
+const target = { a: 1, b: 1 };
+const source1 = { b: 2, c: 2 };
+Object.assign(target, source1);
+target // {a:1, b:2, c:2}
+```
+
+- assign方法执行的是浅拷贝，拷贝的是对象的引用；
+- 同名属性会替换；
+- 会把数组视为对象；
+- 只能进行值的复制
+
+
+
+### （3）Object.getOwnPropertyDescriptors() 
+
+返回指定对象的所有自身属性（非继承属性）的描述对象。
+
+
+
+### （4）`__proto__`属性，Object.setPrototypeOf()，Object.getPrototypeOf() 
+
+<font color=deepred>Javascript语言的对象继承是通过原型链实现的</font>，ES6提供了更多操作原型链的方法。
+
+- `__proto__`属性用来读取或设置当前对象的原型对象(prototype)。该属性使用的前提是浏览器支持，本质上是一个内部属性。`__proto__`调用的是`Object.prototype.__proto__`。
+
+- `Object.setPrototypeOf`方法作用和`__proto__`相同，设置一个对象的原型对象。
+
+```javascript
+Object.setPrototypeOf(object, prototype)
+```
+
+- `Object.getPrototypeOf`方法用于读取一个对象的原型对象。
+
+```javascript
+Object.getPrototypeOf(obj);
+```
+
+
+
+### （5）Object.keys()，Object.values()，Object.entries()
+
+#### 	1.Object.keys()
+
+​	**返回一个数组**，成员是参数对象自身的（不含继承的）<font color=deepred>所有可遍历属性的**键名**</font>。
+
+#### 	2.Object.values()
+
+​	**返回一个数组**，成员是参数对象自身的（不含继承的）<font color=deepred>所有可遍历属性的**键值**</font>。
+
+#### 	3.Object.entries()
+
+​	**返回一个数组**，成员是参数对象自身的（不含继承的）<font color=deepred>所有可遍历属性的**键值对数组**</font>。
+
+
+
+### （6）Object.fromEntries()
+
+将一个键值对数组转为对象。
+
+```javascript
+Object.fromEntries([
+  ['foo', 'bar'],
+  ['baz', 42]
+])
+// { foo: "bar", baz: 42 }
+适合将Map解构转成对象
+```
+
+
+
+# 八、运算符的扩展
+
+## 1、指数运算符`**`
+
+```javascript
+2 ** 2	//4
+2 ** 3  //8
+```
+
+
+
+## 2、链判断运算符`?.`
+
+如果存在就继续执行，不存在返回undefined。
+
+1. 短路机制。不满足条件就不再继续执行；
+
+2. 括号影响。链判断运算符对圆括号外部没有影响，只对圆括号内部有影响；
+
+3. 报错场合。
+
+   ```javascript
+   //构造函数中使用会报错
+   new a?.()
+   new a?.b()
+   //运算符右侧有模板字符串报错
+   a?.`{b}`
+   a?.b`{c}`
+   //运算符左侧是super报错
+   super?.()
+   super?.foo
+   //链运算符用于赋值运算符左侧
+   a?.b = c
+   ```
+
+4. 右侧不能为十进制数值。
+
+
+
+## 3、null判断运算符`??`
+
+​	行为类似`||`，但是只有运算符左侧的值为`null`或`undefined`时，才会返回右侧的值。
+
+​	跟链判断运算符`?.`配合使用，为`null`或`undefined`的值设置默认值。
+
+```javascript
+const result = res.config?.setting ?? 100;
+//如果res.config是null或者undefined就会返回默认值100；
+```
+
+**<font color=deepred>如果多个逻辑运算符(&&、||、??)一起使用，必须用括号表明优先级，否则会报错</font>**。
+
+
+
+## 4、逻辑赋值运算符
+
+先进行逻辑运算，然后根据结果再赋值运算。
+
+```javascript
+// 或赋值运算符
+x ||= y
+// 等同于（如果x不存在就设为y）
+x || (x = y)
+
+// 与赋值运算符
+x &&= y
+// 等同于
+x && (x = y)
+
+// Null 赋值运算符
+x ??= y
+// 等同于
+x ?? (x = y)
+```
+
+
+
+# 九、Set和Map数据结构
+
+## 1、Set
+
+### （1）基本用法
+
+类似于数组，成员都是唯一的，没有重复值。
+
+**Set本身就是一个构造函数**，用来生成Set数据结构。
+
+```javascript
+//数组去重的方法
+[...new Set(array)]
+//也可以用来字符串去重
+[...new Set('ababbc')].join('')	//"abc"
+```
+
+
+
+### （2）Set实例属性和方法
+
+Set实例的方法有两大类：**<font color=deepred>操作方法和遍历方法</font>**。
+
+##### 操作方法
+
+- `Set.prototype.add(value)`：添加某个值，返回 Set 结构本身。
+- `Set.prototype.delete(value)`：删除某个值，返回一个布尔值，表示删除是否成功。
+- `Set.prototype.has(value)`：返回一个布尔值，表示该值是否为`Set`的成员。
+- `Set.prototype.clear()`：清除所有成员，没有返回值。
+
+**<font color=red>Array.from方法可以将Set结构转成数组</font>**
+
+```javascript
+//数组去重方法
+function delRepeat(arr){
+  return Array.from(new Set(arr))
+}
+```
+
+
+
+##### 遍历方法
+
+- `Set.prototype.keys()`：返回键名的遍历器
+- `Set.prototype.values()`：返回键值的遍历器
+- `Set.prototype.entries()`：返回键值对的遍历器
+- `Set.prototype.forEach()`：使用回调函数遍历每个成员
+
+`Set`的遍历顺序就是插入顺序,默认可遍历，默认遍历器生成的函数就是values方法，即可以直接使用for...of遍历Set。
+
+
+
+## 2、Map
+
+### （1）基本用法
+
+​	JavaScript 的对象，本质上是**键值对的集合**（Hash 结构），但是传统上只能用字符串当作键。
+
+​	**<font color=deepred>Object 结构提供了“字符串—值”的对应，Map 结构提供了“值—值”的对应</font>，是一种更完善的 Hash 结构实现**。
+
+```javascript
+//Map构造函数接受数组作为参数
+const items = [
+  ['name', '张三'],
+  ['title', 'Author']
+];
+const map = new Map();
+items.forEach(([key,value]) => map.set(key,value))
+```
+
+任何具有Iterator接口、且每个成员都是一个双元素的数组的数据结构都以当作Map构造函数的参数。`Set`和`Map`都可以用来生成新的 Map。
+
+```javascript
+//对同一个键多次赋值，后面的值将覆盖前面的值。
+const map = new Map();
+map.set(1,'aaa');
+map.set(1,'bbb');
+map.get(1)	//'bbb';
+
+//读取一个未知的键，则返回undefined
+new Map().get('asfddfsasadf')	//undefined
+
+//只有对同一个对象的引用，Map 结构才将其视为同一个键。
+const map = new Map();
+map.set(['a'], 555);
+map.get(['a']) // undefined
+//出现上面问题的原因是 Map 的键实际上是跟内存地址绑定的，只要内存地址不一样，就视为两个键。
+```
+
+
+
+### （2）实例的属性和操作方法
+
+##### 属性
+
+- size 属性：返回 Map 结构的成员总数；
+
+
+
+##### 操作方法
+
+- `Map.prototype.set(key, value)`：设置键名`key`对应的键值为`value`，然后返回整个 Map 结构。如果`key`已经有值，则键值会被更新，否则就新生成该键；
+- `Map.prototype.get(key)`：读取`key`对应的键值，如果找不到`key`，返回`undefined`；
+- `Map.prototype.has(key)`：返回一个布尔值，表示某个键是否在当前 Map 对象之中；
+- `Map.prototype.delete(key)`：删除某个键，返回`true`。如果删除失败，返回`false`；
+- `Map.prototype.clear(key)`：清除所有成员，没有返回值；
+
+
+
+##### 遍历方法
+
+- `Map.prototype.keys()`：返回键名的遍历器。
+- `Map.prototype.values()`：返回键值的遍历器。
+- `Map.prototype.entries()`：返回所有成员的遍历器。
+- `Map.prototype.forEach()`：遍历 Map 的所有成员。
+
+**Map 的遍历顺序就是插入顺序**
+
+
+
+### （3）与其他数据结构的互相转换 
+
+#### 	1.Map转数组
+
+**<font color=red>Map 结构转为数组结构，比较快速的方法是使用扩展运算符（`...`）</font>**
+
+```javascript
+const map = new Map([
+  [1, 'one'],
+  [2, 'two'],
+  [3, 'three'],
+]);
+[...map.keys()]	// [1, 2, 3]
+[...map.values()]	// ['one', 'two', 'three']
+[...map.entries()]	// [[1,'one'], [2, 'two'], [3, 'three']]
+[...map]	// [[1,'one'], [2, 'two'], [3, 'three']]
+```
+
+
+
+#### 	2.数组转Map
+
+将数组传入 Map 构造函数，就可以转为 Map
+
+```javascript
+new Map([[true, 7],[{foo: 3}, ['abc']]])
+// Map {
+//   true => 7,
+//   Object {foo: 3} => ['abc']
+// }
+```
+
+
+
+#### 	3.Map转对象
+
+如果所有 Map 的键都是字符串，它可以无损地转为对象；
+
+如果有非字符串的键名，那么这个键名会被转成字符串，再作为对象的键名；
+
+```javascript
+function strMapToObj(strMap) {
+  let obj = Object.create(null);
+  for (let [k,v] of strMap) {
+    obj[k] = v;
+  }
+  return obj;
+}
+const myMap = new Map()
+  .set('yes', true)
+  .set('no', false);
+strMapToObj(myMap)
+// { yes: true, no: false }
+```
+
+
+
+#### 	4.对象转Map
+
+对象转为 Map 可以通过`Object.entries()`
+
+```javascript
+let obj = {"a":1, "b":2};
+let map = new Map(Object.entries(obj));
+
+//手写转换函数
+function objToStrMap(obj){
+  let strMap = new Map();
+  for(let k of Object.keys(obj)){
+    strMap.set(k,obj[k]);
+  }
+  return strMap;
+}
+objToStrMap({yes: true, no: false})
+// Map {"yes" => true, "no" => false}
+```
+
+
+
+# 十、Proxy
+
+## 1、基本用法
+
+​	用于修改某些操作的默认行为，属于一种"元编程"，对编程语言进行编程。
+
+​	**<font color=deepred>在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这层拦截，可以对外界的访问进行过滤和改写。</font>**
+
+```javascript
+var proxy = new Proxy(target, handler)
+```
+
+1. new Proxy()表示生成一个Proxy实例；
+2. target表示要拦截的目标对象；
+3. <font color=deepred>handler**也是对象**，指定拦截的行为</font>；
+
+**注意⚠️：要使Proxy起作用，必须针对proxy实例进行操作，而不是针对目标对象进行操作。**
+
+```javascript
+var proxy = new Proxy({}, {
+  get: function(target, propKey) {
+    return 35;
+  }
+});
+//必须针对proxy实例，拦截器总是返回35，所以任何属性都返回该值
+proxy.time // 35
+```
+
+
+
+```javascript
+//如果handler没有设置任何拦截，即空对象，那就等同于直接访问target。
+var target = {};
+var hadnler = {};
+var proxy = new Proxy(target, handler);
+proxy.a = "b";
+target.a	//"b"
+```
+
+
+
+## 2、实例方法
+
+Proxy支持的拦截操作共13种。
+
+#### （1）get()
+
+功能：拦截某个属性的读取操作；
+
+参数：可以接受三个参数，<font color=blue>**目标对象、属性名和proxy实例本身**（操作行为所针对的对象）</font>，且最后一个参数为可选参数。

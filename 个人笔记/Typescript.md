@@ -192,7 +192,9 @@ let u: undefined = undefined; //定义undefined
 let n: null = null; //定义null
 ```
 
-null和undefined是所有类型的字类型
+**<font color=deepred>null和undefined是所有类型的字类型</font>**
+
+
 
 ## （6）Any 和 unknown 类型
 
@@ -216,7 +218,7 @@ null和undefined是所有类型的字类型
 
 4. TS3.0 中引入 unknow 类型更安全，所有类型都可以分配给 unknown
 
-   ```tsx
+   ```typescript
    let value: unknown; //unknown 可以定义任何类型的值
    value = true; // OK
    value = 42; // OK
@@ -226,10 +228,20 @@ null和undefined是所有类型的字类型
    value = null; // OK
    value = undefined; // OK
    value = Symbol("type"); // OK
-
-   //unknown类型不能赋值给其他类型,any可以
+   
+   //unknown类型不能赋值给其他类型
    let names: unknown = "123";
-   let names2: string = names;
+   let names2: string = names;//报错
+   
+   //不能直接参与运算
+   let a:unknow = 5;
+   //console.log(a * 2)会报错
+   //除非进行类型检查
+   if (typeof a == "number") {
+     console.log(a * 2);
+   } else if (typeof a == "string") {
+     console.log(a.length);
+   }
    ```
 
 5. unknow 类型在对象上不能调用属性和方法
@@ -242,6 +254,8 @@ null和undefined是所有类型的字类型
    let obj: any = { b: 1 };
    obj.a; //不报错
    ```
+
+6. 如果没有对类型进行检查之前，不允许有任何操作，unknow是一个类型安全的any
 
 
 
@@ -300,7 +314,7 @@ const person: Person = { a: "123" };
 
 ### 任意属性 [propName: string]
 
-**一旦定义了任意属性，那么确定属性和可选属性的类型都必须是它的类型的子集**
+**一旦定义了任意属性，那么<font color=deepred>确定属性和可选属性的类型都必须是它的类型的子集</font>**
 
 ```tsx
 //定义[propName: string]: any，允许添加新的任意属性
@@ -428,10 +442,12 @@ sum(1); //Supplied parameters do not match any signature of call target.
 #### （2）函数表达式
 
 ```typescript
-let mySum: (x: number, y: number) => number = function (
-  x: number,
-  y: number
-): number {
+//对函数表达式的定义：
+let mySum = function(x: number, y: number):number {
+  return x + y;
+}
+//这种写法可以通过编译，这种写法相当于只是对等号右侧的匿名函数进行了类型定义，左侧的mySum是通过赋值操作进行类型推断出来的。其完整写法如下：
+let mySum: (x: number, y: number) => number = function (x: number,y: number): number {
   return x + y;
 };
 
@@ -1301,6 +1317,9 @@ let s: str = "我是晨哥";
 ```typescript
 type str = () => string;
 let s: str = () => "我是雨晨";
+
+type a = (a:number,b:number) => number;
+let add:a = (x:number,y:number):number => {return x + y};
 ```
 
 - 定义联合类型别名
