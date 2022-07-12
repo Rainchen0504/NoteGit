@@ -911,12 +911,13 @@ Proxy支持的拦截操作共13种。
 
 #### （1）get()
 
-功能：拦截某个属性的读取操作；
+**功能**：<font color=red>拦截某个属性的读取操作</font>；
 
-参数：可以接受三个参数，<font color=blue>**目标对象、属性名和proxy实例本身**（操作行为所针对的对象）</font>，且最后一个参数为可选参数。
+**参数**：可以接受三个参数，<font color=blue>**目标对象、属性名和proxy实例本身**（操作行为所针对的对象）</font>，且最后一个参数为可选参数。
+
+- 实现数组读取负数索引
 
 ```javascript
-//实现数组读取负数索引
 function createArray(...elements){
     let handler = {
         get(target,propKey,receiver){
@@ -935,8 +936,9 @@ let arr = ['a','b','c'];
 arr[-2]	//'b'
 ```
 
+- 实现生成DOM节点的通用函数dom
+
 ```javascript
-//实现一个生成各种DOM节点的通用函数dom
 const dom = new Proxy({}, {
     get(target,property){
         return function(attrs = {},...children){
@@ -981,7 +983,8 @@ document.body.appendChild(el);
 </div>
 ```
 
-​	如果一个属性不可配置且不可写，则 Proxy 不能修改该属性，否则通过 Proxy 对象访问该属性会报错。
+- 如果一个属性不可配置且不可写，则 Proxy 不能修改该属性，否则通过 Proxy 对象访问该属性会报错。
+
 
 ```javascript
 const target = Object.defineProperties({}, {
@@ -1000,3 +1003,82 @@ const proxy = new Proxy(target, handler);
 proxy.foo	// TypeError: Invariant check failed
 ```
 
+
+
+#### （2）set()
+
+**功能**：<font color=red>拦截某个属性的赋值操作</font>；
+
+**参数**：可以接受四个参数，**<font color=blue>目标对象、属性名、属性值和Proxy实例本身</font>**，且最后一个参数为可选参数。
+
+- 实现对象私有化属性（只要属性名用下划线开头），不可被外部使用
+
+```javascript
+const handler = {
+  get(target, key) {
+    invariant(key, "get");
+    return target[key];
+  },
+  set(target, key, value) {
+    invariant(key, "set");
+    target[key] = value;
+    return true;
+  },
+};
+function invariant (key, action) {
+  if (key[0] === '_') {
+    throw new Error(`Invalid attempt to ${action} private "${key}" property`);
+  }
+}
+const target = {};
+const proxy = new Proxy(target, handler);
+//只要读写的属性名的第一个字符是下划线，一律抛出错，从而实现禁止读写内部属性的目的
+proxy._prop
+// Error: Invalid attempt to get private "_prop" property
+proxy._prop = 'c'
+// Error: Invalid attempt to set private "_prop" property
+```
+
+- 如果目标对象自身的某个属性不可写，那么`set`方法将不起作用；
+
+- **<font color=deepred>set代理应当返回一个布尔值</font>**，**严格模式下**，set代理如果没有返回true，就会报错。
+
+```javascript
+'use strict';
+const handler = {
+  set:function(obj, prop, value){
+    obj[prop] = value;
+    return false;
+  }
+};
+const proxy = new Proxy({}, handler);
+proxy.foo = "bar";
+//严格模式下，set代理返回false或者undefined，都会报错。
+```
+
+
+
+#### （3）apply()
+
+**功能**：<font color=red>拦截函数的调用、call和apply操作</font>；
+
+**参数**：可以接受三个参数，**<font color=blue>目标对象、目标对象（this）的上下文和目标对象的参数数组</font>**。
+
+```javascript
+var target = function () {
+  return "I am the target";
+};
+var handler = {
+  apply: function () {
+    return "I am the proxy";
+  },
+};
+var p = new Proxy(target, handler);	
+//"I am then proxy"
+```
+
+变量p是Proxy的实例，当它作为函数调用时p()，就会被apply方法拦截，返回一个字符串。
+
+
+
+#### （4）has
