@@ -1081,4 +1081,180 @@ var p = new Proxy(target, handler);
 
 
 
-#### （4）has
+#### （4）has()
+
+**功能**：<font color=red>判断对象是否具有某个属性</font>（典型操作是`in`运算符）；
+
+**参数**：可以接受两个参数，<font color=blue>**目标对象、需查询的属性名**</font>。
+
+```javascript
+var target = { _prop: "foo", prop: "foo" };
+let handler = {
+  has(target,key){
+    if(key[0] === "_"){
+      return false;
+    }
+    return key in target;
+  }
+};
+var proxy = new Proxy(target, handler);
+console.log("prop" in proxy)  //true
+console.log("_prop" in proxy)	 //false
+//当访问的属性名是_开头的就会返回false，不被in运算符发现
+```
+
+has()方法拦截的是`HasProperty`操作，而不是`HasOwnProperty`，has方法**不判断一个属性是对象自身属性还是继承的属性**。
+
+
+
+
+
+#### （5）construct()
+
+**功能**：<font color=red>拦截new命令</font>；
+
+**参数**：可以接受三个参数，<font color=blue>**目标对象、构造函数的参数数组和new命令的构造函数**</font>。
+
+```javascript
+const handler = {
+  construct(target, args ,newTarget){
+    return new target(...args);
+  }
+};
+```
+
+使用案例：
+
+```javascript
+const p = new Proxy(function(){}, {
+  construct(target, args){
+    return { value: args[0] * 10 };
+  }
+})
+console.log(new p(1))	//{value: 10}
+```
+
+注意⚠️：
+
+1. `construct()`方法**<font color=deepred>返回的必须是对象</font>**，否则会报错；
+2. `construct()`拦截的构造函数，所以**<font color=deepred>目标对象必须是函数</font>**，否则会报错；
+
+
+
+#### （6）deleteProperty()
+
+**功能**：<font color=red>拦截delete操作，该方法抛出错误或者false不能删除</font>；
+
+**参数**：可以接受两个参数，<font color=blue>**目标对象、属性名**</font>。
+
+```javascript
+var handler = {
+  deleteProperty (target, key) {
+    invariant(key, 'delete');
+    delete target[key];
+    return true;
+  }
+};
+function invariant (key, action) {
+  if (key[0] === '_') {
+    throw new Error(`禁止删除开头为_的属性`);
+  }
+}
+var target = { _prop: 'foo' };
+var proxy = new Proxy(target, handler);
+delete proxy._prop
+// Error: 禁止删除开头为_的属性
+```
+
+
+
+#### （7）defineProperty()
+
+**功能**：<font color=red>拦截`Object.defineProperty()`操作</font>；
+
+**参数**：可以接受三个参数，<font color=blue>**目标对象、属性名和proxy实例本身**</font>。
+
+```javascript
+var handler = {
+  defineProperty（target, key, descriptor）{
+  	return false;
+	}
+};
+var target = {};
+var proxy = new Proxy(target, handler);
+proxy.foo = "bar"
+```
+
+例子中defineProperty方法内部只返回false，从而导致添加新属性是无效的，这里的false表示操作失败。
+
+
+
+#### （8）getPrototypeOf()
+
+**功能**：<font color=red>拦截获取对象原型的操作</font>；
+
+**范围**：<font color=blue>拦截的方法包括以下几种：</font>
+
+- `Object.prototype.__proto__`
+- `Object.prototype.isPrototypeOf()`
+- `Object.getPrototypeOf()`
+- `Reflect.getPrototypeOf()`
+- `instanceof`
+
+`getPrototypeOf()`方法的返回值必须是对象或者`null`，否则报错。另外，如果目标对象不可扩展， `getPrototypeOf()`方法必须返回目标对象的原型对象。
+
+
+
+## 3、Proxy.revocable()
+
+`Proxy.revocable()`方法**<font color=blue>返回一个可取消的 Proxy 实例</font>**；
+
+```javascript
+let target = {};
+let handler = {};
+let {proxy,revoke} = Proxy.revocable(target,handler);
+proxy.foo = 123;
+proxy.foo //123
+revoke();
+proxy.foo // TypeError: Revoked
+```
+
+Proxy.revocable()方法返回一个对象，该对象的`proxy`属性是`Proxy`实例；
+
+revoke属性是一个函数，调用该属性可以取消Proxy实例，当再访问Proxy时就会抛出错误。
+
+
+
+## 4、this问题
+
+​	Proxy不是目标对象的透明代理，**不做任何拦截的情况下无法保证与目标对象的行为一致**。因为<font color=deepred>Proxy代理时，目标对象内部的this关键字会指向Proxy代理</font>。
+
+```javascript
+//举个栗子：一旦proxy代理target，target.m()内部的this就是指向proxy，而不是target。
+const target = {
+  m:function(){
+    console.log(this === proxy);
+  }
+};
+const handler = {};
+const proxy = new Proxy(target, handler);
+target.m();  //false
+proxy.m();	//true
+```
+
+
+
+### Proxy的缺陷：
+
+**<font color=blue>有些原生对象的内部属性，只有通过正确的`this`才能拿到，所以Proxy无法代理这些原生对象的属性</font>**。
+
+```javascript
+//getDate()方法只能在Date对象实例上面拿到
+const target = new Date();
+const handler = {};
+const proxy = new Proxy(target, handler);
+proxy.getDate();
+// TypeError: this is not a Date object.
+```
+
+**<font color=blue>Proxy 拦截函数内部的`this`，指向的是`handler`对象</font>**。
