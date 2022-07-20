@@ -368,7 +368,7 @@ function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
 <mark style="background-color: #40E0D0">位置：/src/core/util/options.js</mark>
 
 ```javascript
-//合并函数，将子类和基类的options合并起来，生成一个新的对象
+//合并函数，将子类和基类的options合并起来，生成一个新的配置对象
 export function mergeOptions (
   parent: Object, //父类构造函数上的options（基类实例本身构造函数上的options）--人话：Vue实例自带的options
   child: Object,//子类构造函数上的extendOptions（基于基类创建子类实例在实例化时传入的options）--人话：实例化时传入的配置项
@@ -424,6 +424,8 @@ export function mergeOptions (
   return options
 }
 ```
+
+![image-20220720185649410](https://raw.githubusercontent.com/Rainchen0504/picture/master/202207201856891.png)
 
 ⚠️**<font color=blue>拓展点</font>**：
 
@@ -539,6 +541,51 @@ export function mergeOptions (
 
      directive主要是实现自定义指令用。
 
-- **拓展3**：starts中的合并策略(实例化时每个实例的配置属性合并策略)
+- **拓展3**：starts中的合并策略总结(实例化时每个实例的配置属性合并策略)
 
 ![image-20220720180313213](https://raw.githubusercontent.com/Rainchen0504/picture/master/202207201803601.png)
+
+1. 钩子函数策略（mergeHook方法）
+
+   （1）child的options上不存在而parent的options上存在，则返回parent上的属性。
+
+   <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202207201820497.png" alt="image-20220720181958075" style="zoom:80%;" />
+
+   （2）child和parent都存在该属性，则返回concat之后的属性。
+
+   <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202207201821856.png" alt="image-20220720182110042" style="zoom:80%;" />
+
+   （3）child上存在该属性，parent不存在，且child上的该属性是Array，则直接返回child上的该属性
+
+   <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202207201822383.png" alt="image-20220720182216063" style="zoom:80%;" />
+
+   
+
+   （4）child上存在该属性，parent不存在，且child上的该属性不是Array，则把该属性先转换成Array，再返回。
+
+   <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202207201822925.png" alt="image-20220720182234673" style="zoom:80%;" />
+
+2. props/methods/inject/computed属性的策略
+
+   如果child的options上这些属性存在，则先判断是不是对象。
+
+   （1）如果parent options上没有该属性，则直接返回child的options上的属性；
+
+   （2）如果parent options和child options都有，则合并parent options和child options并生成一个新的对象。
+
+   ​	(如果parent和child上有同名属性，合并后的以child options上的为准)
+
+3. components/directives/filters属性的策略
+
+   道理同上
+
+4. data和provide的策略
+
+   （1）情况一，当前调用mergeOptions操作的是vm实例（调用new新建vue实例触发mergeOptions方法）
+
+   ​		  如果新建实例传入的options有data属性，则合并实例和构造该实例的构造函数上的data属性。
+
+   （2）情况二，当前调用mergeOptions操作的不是vm实例（通过Vue.extend/Vue.component调用了mergeOptions方法）
+
+   ​		  有一个没有则取有的，两个都有则合并处理。
+
