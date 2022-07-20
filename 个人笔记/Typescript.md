@@ -263,7 +263,7 @@ let n: null = null; //定义null
 
 ### 对象类型
 
-ts 中定义对象的方式用**interface**（接口），类似定义一种约束，让数据的结构满足约束
+ts 中定义对象的方式用**interface**（接口），类似定义一种约束，**<font color=deepred>对象模版</font>**，让数据的结构满足约束
 
 ```tsx
 interface Person {

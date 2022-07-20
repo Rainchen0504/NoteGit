@@ -442,17 +442,25 @@ ES6共有5中方法可以遍历对象的属性：
 
 循环遍历对象自身的和继承的可枚举属性（除了Synbol属性），一般不用于遍历数组
 
+
+
 ### （2）Object.keys(obj)
 
 返回一个数组，包括对象自身的（不含继承的）所有可枚举属性（不含 Symbol 属性）的键名
+
+
 
 ### （3）Object.getOwnPropertyNames(obj)
 
 返回一个数组，包含对象自身的所有属性（不含 Symbol 属性，但是包括不可枚举属性）的键名
 
+
+
 ### （4）Object.getOwnPropertySymbols(obj)
 
 返回一个数组，包含对象自身的所有 Symbol 属性的键名
+
+
 
 ### （5）Reflect.ownKeys(obj)
 
@@ -470,7 +478,69 @@ Reflect.ownKeys({ [Symbol()]:0, b:0, 10:0, 2:0, a:0 })
 
 
 
-## 3、扩展运算符
+## 3、Object.defineProperty()
+
+**功能**：<font color=deepred>直接在一个对象上定义一个新属性，或者修改一个对象的现有属性，并返回此对象</font>；
+
+**语法**：`Object.defineProperty(obj, prop, descriptor)`；
+
+**参数**：三个参数，包括<font color=blue>要定义属性的对象、要定义或修改的属性名称、要定义或修改的属性描述符</font>；
+
+**返回值**：被传递给函数的对象；
+
+```javascript
+const object1 = {};
+Object.defineProperty(object1, 'property1', {
+  value:25,
+  writable:false
+});
+object1.property1 = 77;  // throws an error in strict mode
+console.log(object1.property1);  //expected output: 25
+```
+
+默认情况下，使用 `Object.defineProperty()` 添加的属性值是不可修改的。
+
+#### 属性描述符有两种主要形式
+
+- 数据描述符
+
+*数据描述符*是一个具有值的属性，该值可以是可写的，也可以是不可写的；
+
+- 存取描述符
+
+*存取描述符*是由 getter 函数和 setter 函数所描述的属性；
+
+**这两种描述符共享以下可选键值**：
+
+1. configurable
+
+   值为`true`时，该属性的描述符才能够被改变，同时该属性也能从对应的对象上被删除。**默认为** **`false`**。
+
+2. enumerable
+
+   值为 `true` 时，该属性才会出现在对象的枚举属性中。**默认为 `false`**。
+
+**数据描述符还具有以下可选键值**：
+
+1. value
+
+   属性对应的值，可以是任何有效的 JavaScript 值（数值，对象，函数等），**默认为`undefined`**。
+
+2. writable
+
+   值为 `true` 时，value的值才能被赋值运算符改变。**默认为 `false`。**
+
+3. get
+
+   属性的 **getter** 函数，**当访问该属性时，会调用此函数**。执行时不传入任何参数，但是会传入 `this` 对象（由于继承关系，这里的`this`并不一定是定义该属性的对象）。<font color=deepred>该函数的返回值会被用作属性的值</font>。**默认为 `undefined`**。
+
+4. set
+
+   属性的 **setter** 函数。**当属性值被修改时，会调用此函数**。该方法接受一个参数即被赋予的新值，会传入赋值时的 `this` 对象。**默认为 `undefined`**。
+
+
+
+## 4、扩展运算符
 
 ### （1）解构赋值
 
@@ -496,9 +566,11 @@ o3 // { b: 2 }
 o3.a // undefined
 ```
 
+注意⚠️：<font color=deepred>如果解构的原对象是一维数组或对象，就**是深拷贝**；如果是多为数组或对象，就**是浅拷贝**</font>。总体上说解构赋值是浅拷贝。
 
 
-## 4、对象新增方法
+
+## 5、对象新增方法
 
 ### （1）Object.is()
 
@@ -868,7 +940,7 @@ objToStrMap({yes: true, no: false})
 
 ## 1、基本用法
 
-​	用于修改某些操作的默认行为，属于一种"元编程"，对编程语言进行编程。
+​	Proxy对象用于创建一个对象的代理，从而实现基本操作的拦截和自定义。
 
 ​	**<font color=deepred>在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这层拦截，可以对外界的访问进行过滤和改写。</font>**
 
@@ -877,8 +949,8 @@ var proxy = new Proxy(target, handler)
 ```
 
 1. new Proxy()表示生成一个Proxy实例；
-2. target表示要拦截的目标对象；
-3. <font color=deepred>handler**也是对象**，指定拦截的行为</font>；
+2. target表示要拦截的目标对象（可以是任意类型的对象，包括原生数组、函数、甚至另一个代理）；
+3. <font color=deepred>handler**也是对象**，指定拦截的行为</font>，处理器对象；
 
 **注意⚠️：要使Proxy起作用，必须针对proxy实例进行操作，而不是针对目标对象进行操作。**
 
@@ -892,10 +964,9 @@ var proxy = new Proxy({}, {
 proxy.time // 35
 ```
 
-
+无操作转发代理：如果handler没有设置任何拦截，即空对象，那就等同于直接访问target。
 
 ```javascript
-//如果handler没有设置任何拦截，即空对象，那就等同于直接访问target。
 var target = {};
 var hadnler = {};
 var proxy = new Proxy(target, handler);
@@ -914,6 +985,8 @@ Proxy支持的拦截操作共13种。
 **功能**：<font color=red>拦截某个属性的读取操作</font>；
 
 **参数**：可以接受三个参数，<font color=blue>**目标对象、属性名和proxy实例本身**（操作行为所针对的对象）</font>，且最后一个参数为可选参数。
+
+**this指向**：this上下文绑定在handler对象上。
 
 - 实现数组读取负数索引
 
@@ -991,7 +1064,8 @@ const target = Object.defineProperties({}, {
   foo: {
     value: 123,
     writable: false,
-    configurable: false
+    configurable: false，
+    enumerable: false
   },
 });
 const handler = {
@@ -1000,7 +1074,7 @@ const handler = {
   }
 };
 const proxy = new Proxy(target, handler);
-proxy.foo	// TypeError: Invariant check failed
+proxy.foo	// 违反约束会抛出 TypeError
 ```
 
 
@@ -1083,7 +1157,7 @@ var p = new Proxy(target, handler);
 
 #### （4）has()
 
-**功能**：<font color=red>判断对象是否具有某个属性</font>（典型操作是`in`运算符）；
+**功能**：<font color=red>判断对象是否具有某个属性</font>（针对`in`操作符的代理方法）；
 
 **参数**：可以接受两个参数，<font color=blue>**目标对象、需查询的属性名**</font>。
 
@@ -1258,3 +1332,136 @@ proxy.getDate();
 ```
 
 **<font color=blue>Proxy 拦截函数内部的`this`，指向的是`handler`对象</font>**。
+
+
+
+# 十一、Reflect
+
+## 1、基本用法
+
+​	**内置对象**，提供拦截Javascript操作的方法，方法与proxy相同。但是<font color=deepred>Reflect不是一个函数对象，是不可构造的，不能通过new运算符调用</font>。Reflect所有属性和方法都是静态的。
+
+```javascript
+//检测对象窜爱
+const duck = {
+  name: "zhang",
+  color: "red",
+  greet: function () {
+    console.log(`my name is ${this.name}`);
+  },
+};
+console.log(Reflect.has(duck, "name"));	 //true
+console.log(Reflect.has(duck, "zzz"));	//false
+//返回对象自身属性
+console.log(Reflect.ownKeys(duck));	 //[ "name", "color", "greeting" ]
+//为对象添加属性
+Reflect.set(duck, 'eyes', 'black')
+console.log(duck);  //{name:'zhang', color:'red', greet:[Function:greet], eyes:'black'}
+```
+
+
+
+## 2、静态方法
+
+大部分与Object对象的同名方法的作用相同，与Proxy对象的方法一一对应。
+
+#### （1）Reflect.get()
+
+**功能**：<font color=red>从目标对象中查找并返回属性值</font>；
+
+**语法**：`Reflect.get(target, propertyKey[, receiver])`；
+
+**参数**：可以接受三个参数，<font color=blue>**目标对象、需获取的属性名、实例本身或指定getter调用时的this**</font>。
+
+**返回值**：<font color=blue>对应属性的值，没找到则返回undefined</font>。
+
+```javascript
+var obj = {x:1, y:2};
+Reflect.get(obj, "x");	//1
+Reflect.get(obj, "z");	//undefined
+```
+
+
+
+#### （2）Reflect.set()
+
+**功能**：<font color=red>在目标对象上设置属性</font>；
+
+**语法**：`Reflect.set(target, propertyKey, value[, receiver])`；
+
+**参数**：可以接受四个参数，<font color=blue>**目标对象、设置的属性名、设置的值、实例本身或指定setter调用时的this**</font>。
+
+**返回值**：<font color=blue>返回布尔值表示是否成功</font>，如果目标不是对象，则返回类型错误。
+
+```javascript
+//操作对象
+var obj = {};
+Reflect.set(obj, "prop", "value");
+console.log(obj); 	//{ prop: 'value' }
+//操作数组
+var arr = ["duck", "duck", "duck"];
+Reflect.set(arr, 2, "goose"); // true
+arr[2]; // "goose"
+```
+
+
+
+#### （3）Reflect.has()
+
+**功能**：<font color=red>静态方法，作用和in操作符相同</font>；
+
+**语法**：`Reflect.has(target, propertyKey)`；
+
+**参数**：可以接受两个参数，<font color=blue>**目标对象、属性名**</font>。
+
+**返回值**：<font color=blue>返回布尔值表示是否存在此属性</font>，如果目标不是对象，则返回类型错误。
+
+```javascript
+Reflect.has({x: 0}, "x");  // true
+Reflect.has({x: 0}, "toString");	//true
+```
+
+
+
+#### （4）Reflect.apply()
+
+**功能**：<font color=red>通过指定的参数列表发起对目标函数的调用</font>；
+
+**语法**：`Reflect.apply(target, thisArgument, argumentsList)`；
+
+**参数**：可以接受三个参数，<font color=blue>**目标函数、目标函数调用时的this、参数数组**</font>。
+
+**返回值**：<font color=blue>带着指定参数和this值的给定的函数后返回的结果</font>，如果目标对象不可调用，则返回类型错误。
+
+```javascript
+console.log(Reflect.apply(Math.floor, undefined, [1.75]));
+// expected output: 1
+console.log(Reflect.apply(String.fromCharCode, undefined, [104, 101, 108, 108, 111]));
+// expected output: "hello"
+```
+
+
+
+#### （5）Reflect.defineProperty
+
+**功能**：<font color=red>通过指定的参数列表发起对目标函数的调用</font>；
+
+**语法**：`Reflect.apply(target, thisArgument, argumentsList)`；
+
+**参数**：可以接受三个参数，<font color=blue>**目标函数、目标函数调用时的this、参数数组**</font>。
+
+**返回值**：<font color=blue>带着指定参数和this值的给定的函数后返回的结果</font>，如果目标对象不可调用，则返回类型错误。
+
+```javascript
+console.log(Reflect.apply(Math.floor, undefined, [1.75]));
+// expected output: 1
+console.log(Reflect.apply(String.fromCharCode, undefined, [104, 101, 108, 108, 111]));
+// expected output: "hello"
+```
+
+
+
+
+
+## 3、使用Proxy实现观察者模式
+
