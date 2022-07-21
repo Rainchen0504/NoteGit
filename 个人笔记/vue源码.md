@@ -76,6 +76,14 @@ commit标签：<font color=deepred>**612fb89547711cacb030a3893a0065b785802860 (H
 
 ## 初始化过程
 
+入口地址：<mark style="background-color: #40E0D0">/src/core/index.js</mark>
+
+初始化流程图
+
+
+
+
+
 按照官方文档构建一个案例，引入打包后的vue.js文件，在创建实例之前打上断点
 
 ```html
@@ -105,7 +113,7 @@ commit标签：<font color=deepred>**612fb89547711cacb030a3893a0065b785802860 (H
 
 
 
-### （1）fucntion Vue
+### （1）创建Vue实例(new Vue流程)
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/index.js</mark>
 
@@ -153,7 +161,7 @@ function Vue (options) {
 
 
 
-### （2）Vue.prototype._init
+#### 方法：Vue.prototype._init
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/init.js</mark>
 
@@ -193,18 +201,23 @@ export function initMixin (Vue: Class<Component>) {
        *  2、{components:{xx}} 方式注册的局部组件在执行编译器生成的render函数时做了选项合并，包括根组件中的components配置
        */
       vm.$options = mergeOptions(
-        //把当前Vue实例传过去
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
       )
     }
+    
+    //设置代理，将vm实例上的属性代理到vm._renderProxy属性上
+    //开发环境设置代理主要是起提示作用，开发环境中会提供较多警告帮助解决常见错误，而生产环境不具备此功能
     if (process.env.NODE_ENV !== 'production') {
+      //开发环境调initProxy方法
       initProxy(vm)
     } else {
+      //生产环境下Vue实例的_renderProxy属性指向vue实例本身
       vm._renderProxy = vm
     }
     vm._self = vm
+    //初始化生命周期相关的属性
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
@@ -243,9 +256,9 @@ export function initMixin (Vue: Class<Component>) {
   //  }
   ```
 
-  
 
-### （3）resolveConstructorOptions
+
+#### 方法：resolveConstructorOptions
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/init.js</mark>
 
@@ -338,7 +351,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
 
   
 
-### （4）resolveModifiedOptions
+#### 方法：resolveModifiedOptions
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/init.js</mark>
 
@@ -363,7 +376,7 @@ function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
 
 
 
-### （5）mergeOptions
+#### 方法：mergeOptions
 
 <mark style="background-color: #40E0D0">位置：/src/core/util/options.js</mark>
 
@@ -589,3 +602,27 @@ export function mergeOptions (
 
    ​		  有一个没有则取有的，两个都有则合并处理。
 
+
+
+#### 方法：initProxy
+
+<mark style="background-color: #40E0D0">位置：/src/core/instance/proxy.js</mark>
+
+```javascript
+initProxy = function initProxy (vm) {
+  //判断当前环境中Proxy属性是否可用
+  if (hasProxy) {
+    //如果Proxy属性存在，把处理过后的vm属性赋值给_renderProxy属性；
+    const options = vm.$options
+    const handlers = options.render && options.render._withStripped
+    ? getHandler
+    : hasHandler
+    vm._renderProxy = new Proxy(vm, handlers)
+  } else {
+    //否则把vm实例本身赋值给_renderProxy属性；
+    vm._renderProxy = vm
+  }
+}
+```
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202207211742695.png" alt="image-20220721174246246" style="zoom:80%;" />
