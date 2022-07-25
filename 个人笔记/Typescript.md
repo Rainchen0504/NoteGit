@@ -16,10 +16,6 @@
 
 
 
-
-
-
-
 ### 2.类型区别
 
 - 按照<font color=red>类型检查的时机</font>分为动态类型和静态类型
@@ -48,9 +44,9 @@
 
  **TypeScript 是拥有类型的<font color=red>Javascript 超集</font>，可以编译成<font color=red>普通、干净、完整的 Javascript 代码</font>。**
 
-**TS 的特点**
 
-**采用 TS 的项目**
+
+### 4.采用 TS 的项目
 
 - Angular 源码在很早就使用 TypeScript 来进行了重写，并且开发 Angular 也需要掌握 TypeScript;
 
@@ -62,7 +58,9 @@
 
 
 
-# 4、TS 的编译和运行
+# 2、TS 的编译和运行
+
+### 1.安装
 
 TS 最终会被编译成 JS 来执行，所以需要搭建对应的环境：
 
@@ -75,9 +73,7 @@ tsc --version
 
 我们约定使用 TypeScript 编写的文件以 `.ts` 为后缀，用 TypeScript 编写 React 时，以 `.tsx` 为后缀。
 
-
-
-### 运行 TS 代码的三种方法
+### 2.运行
 
 #### 方法一：使用默认的 tsc
 
@@ -105,15 +101,15 @@ ts-node '文件名'
 
 
 
-# 6、类型
+# 3、类型
 
-#### 基础类型：Boolean、Number、String、null、undefined 以及 ES6 的 Symbol 和 ES10 的 BigInt。
+原始数据类型：Boolean、Number、String、null、undefined 以及 ES6 的 Symbol 和 ES10 的 BigInt。
 
-#### 引用类型：Array、Tuple 元组、object 包含{}、function。
+引用类型：Array、Tuple 元组、object 包含{}、function。
 
-#### 特殊类型：any、unknow、void、never、Enum 枚举。
+特殊类型：any、unknow、void、never、Enum 枚举。
 
-#### 其他类型：类型推理、字面量类型、交叉类型。
+其他类型：类型推理、字面量类型、交叉类型。
 
 
 
@@ -154,7 +150,7 @@ let booleand2: boolean = Boolean(1); //也可以通过函数返回布尔值
 
 
 
-## （4）空值类型
+## （4）空值void类型
 
 用 `void` 表示没有任何返回值的函数，主要用在不希望关心函数返回值的情况下。
 
@@ -178,15 +174,16 @@ let n: void = null;
 ```tsx
 let u: undefined = undefined; //定义undefined
 let n: null = null; //定义null
+let num:number = undefined;//不会报错
 ```
 
-**<font color=deepred>null和undefined是所有类型的字类型</font>**
+**<font color=deepred>null和undefined是所有类型的子类型</font>**
 
 
 
-## （6）Any 和 unknown 类型
+## （6）Any 类型
 
-1. 没有强制限定类型，随时切换类型都可以
+1. 没有强制限定类型，随时切换类型都可以，相当于关闭了类型检测
 
    ```tsx
    let anys: any = 123;
@@ -204,54 +201,91 @@ let n: null = null; //定义null
 
 3. 使用 any 意味着失去 TS 类型检测作用；
 
-4. TS3.0 中引入 unknow 类型更安全，所有类型都可以分配给 unknown
 
-   ```typescript
-   let value: unknown; //unknown 可以定义任何类型的值
-   value = true; // OK
-   value = 42; // OK
-   value = "Hello World"; // OK
-   value = []; // OK
-   value = {}; // OK
-   value = null; // OK
-   value = undefined; // OK
-   value = Symbol("type"); // OK
-   
-   //unknown类型不能赋值给其他类型
-   let names: unknown = "123";
-   let names2: string = names;//报错
-   
-   //不能直接参与运算
-   let a:unknow = 5;
-   //console.log(a * 2)会报错
-   //除非进行类型检查
-   if (typeof a == "number") {
-     console.log(a * 2);
-   } else if (typeof a == "string") {
-     console.log(a.length);
-   }
-   ```
 
-5. unknow 类型在对象上不能调用属性和方法
+## （7）unknown类型 
 
-   ```tsx
-   let obj: unknow = { b: 1, ccc: (): number => 213 };
-   obj.b;
-   obj.ccc(); //报错
-   
-   let obj: any = { b: 1 };
-   obj.a; //不报错
-   ```
+TS3.0 中引入 unknow 类型，比any类型更安全，所有类型都可以分配给 unknown
 
-6. 如果没有对类型进行检查之前，不允许有任何操作，unknow是一个类型安全的any
+```typescript
+//unknown 可以定义任何类型的值
+let value: unknown; 
+value = true; // OK
+value = 42; // OK
+
+//unknown类型不能赋值给其他类型
+let names: unknown = "123";
+let names2: string = names;//报错
+
+//不能直接参与运算
+let a:unknow = 5;
+//console.log(a * 2)会报错
+//除非进行类型检查
+if (typeof a == "number") {
+  console.log(a * 2);
+} else if (typeof a == "string") {
+  console.log(a.length);
+}
+```
+
+要想使用unknow类型必须进行类型检查，否则不允许有任何操作，unknow**是一个类型安全的any**；
 
 
 
-## （7）对象和接口类型
+## （8）数组类型
 
-### 对象类型
+- 最常见的写法是：类型[]
 
-ts 中定义对象的方式用**interface**（接口），类似定义一种约束，**<font color=deepred>对象模版</font>**，让数据的结构满足约束
+```typescript
+let arr: number[] = [1, 2, 3];
+```
+
+- 或者采用数组泛型的形式
+
+```tsx
+let arr: Array<number> = [1, 2, 3, 4];
+```
+
+数组中不允许出现其他数据类型的子项
+
+- 用接口表示数组
+
+```tsx
+interface NumberArray {
+  [index: number]: number;
+}
+let fibonacci: NumberArray = [1, 1, 2, 3, 5];
+```
+
+- 多维数组
+
+```tsx
+let data: number[][] = [[1, 2],[3, 4]];
+```
+
+- arguments 类数组
+
+```tsx
+function Arr(...args: any): void {
+  console.log(arguments); //{ '0': 111, '1': 222, '2': 333 }
+  //ts内置对象IArguments 定义
+  let arr: IArguments = arguments;
+}
+Arr(111, 222, 333);
+
+//其中 IArguments 是 TypeScript 中定义好了的类型，它实际上就是：
+interface IArguments {
+  [index: number]: any;
+  length: number;
+  callee: Function;
+}
+```
+
+
+
+## （9）对象和接口类型
+
+ts 中定义对象的方式通常使用**interface**（接口），类似定义一种约束，**<font color=deepred>对象模版</font>**，让数据的结构满足约束
 
 ```tsx
 interface Person {
@@ -280,17 +314,37 @@ interface A {
 interface B extends A {
   age: number;
 }
+//只要存在接口继承，实现接口的对象必须同时实现该接口以及所继承接口的所有属性
 let obj: B = {
   age: 18,
   name: "string",
 };
+//一个接口可以被多个接口继承，一个接口也可以继承多个对象
+interface Animals{
+    name:String 
+}
+interface Friends{
+    like:String 
+}
+interface Cat extends Animals {
+    name:string, 
+    age:number 
+}
+interface Dog extends Animals,Friends{
+    name:string, 
+    color:string 
+}
+const dog:Dog={ 
+    name:"旺财", 
+    color:"white", 
+    like:"sleep" 
+}
 ```
 
-
-
-### 可选属性?操作符
+可选属性?操作符
 
 ```tsx
+//属性后面加问号，表示该属性可有可无
 interface Person {
   b?: string;
   a: string;
@@ -298,95 +352,27 @@ interface Person {
 const person: Person = { a: "123" };
 ```
 
-
-
-### 任意属性 [propName: string]
+任意属性 [propName: string]
 
 **一旦定义了任意属性，那么<font color=deepred>确定属性和可选属性的类型都必须是它的类型的子集</font>**
 
 ```tsx
-//定义[propName: string]: any，允许添加新的任意属性
-interface Person {
-  b?: string;
-  a: string;
-  [propName: string]: any;
+interface Person { 
+    name: string; 
+    age?: number; 
+    [propName: string]: string; 
 }
-
-const person: Person = {
-  a: "213",
-  c: "123",
+let tom: Person = {
+    name: 'Tom', 
+    age: 25, 
+    gender: 'male' 
 };
+//报错，任意属性的值允许是string，但是可选属性age的值却是number，number不是 string 的子属性。
 ```
 
 
 
-### 只读属性 readonly
-
-只读属性不允许重新赋值，会报错
-
-
-
-## （8）数组类型
-
-### 类型[]
-
-```tsx
-let arr: number[] = [1, 2, 3];
-```
-
-
-
-### 数组泛型
-
-```tsx
-let arr: Array<number> = [1, 2, 3, 4];
-```
-
-
-
-### 用接口表示数组
-
-```tsx
-interface NumberArray {
-  [index: number]: number;
-}
-let fibonacci: NumberArray = [1, 1, 2, 3, 5];
-```
-
-
-
-### 多维数组
-
-```tsx
-let data: number[][] = [
-  [1, 2],
-  [3, 4],
-];
-```
-
-
-
-### arguments 类数组
-
-```tsx
-function Arr(...args: any): void {
-  console.log(arguments); //{ '0': 111, '1': 222, '2': 333 }
-  //ts内置对象IArguments 定义
-  let arr: IArguments = arguments;
-}
-Arr(111, 222, 333);
-
-//其中 IArguments 是 TypeScript 中定义好了的类型，它实际上就是：
-interface IArguments {
-  [index: number]: any;
-  length: number;
-  callee: Function;
-}
-```
-
-
-
-## （9）函数类型
+## （10）函数类型
 
 ### 1、函数的类型
 
@@ -402,8 +388,6 @@ let sum = function (x, y) {
   return x + y;
 };
 ```
-
-
 
 #### （1）函数声明
 
@@ -585,27 +569,93 @@ function reverse(x: number | string): number | string | void {
 
 
 
-## （10）类型断言｜联合类型｜交叉类型
+## （11）类型推论｜类型别名
+
+### 类型推论
+
+TS 会在没有明确指定类型的时候推测出一个类型，这就是类型推论。
+
+```typescript
+let myFav = "six";
+myFav = 6; //报错，不能赋值给别的类型
+```
+
+上面的代码等价于
+
+```typescript
+let myFav: string = "six";
+myFav = 6; //6是number不是string
+```
+
+**如果定义的时候没有赋值，不管之后有没有赋值，都会被推断成`any`类型**而完全不被类型检查。
+
+```typescript
+let zhang;
+zhang = 123;
+zhang = "chenge";
+zhang = true;
+```
+
+
+
+### 类型别名
+
+**类型别名就是给一个类型起一个新的名字**（使用 type 关键字定义）。
+
+- 定义类型别名
+
+```typescript
+type str = string;
+let s: str = "我是晨哥";
+```
+
+- 定义函数别名
+
+```typescript
+type str = () => string;
+let s: str = () => "我是雨晨";
+
+type a = (a:number,b:number) => number;
+let add:a = (x:number,y:number):number => {return x + y};
+```
+
+- 定义联合类型别名
+
+```typescript
+type str = string | number;
+let s: str = 123;
+let s2: str = "123";
+```
+
+- 定义值别名
+
+```typescript
+type value = boolean | 0 | "123";
+let s: value = true; //变量s的值，只能是value定义的值
+```
+
+
+
+## （12）类型断言｜联合类型｜交叉类型
 
 ### 联合类型
 
 取值可以为多种类型中的一种
 
 ```tsx
-let myFavoriteNumber: string | number;
-myFavoriteNumber = "seven";
-myFavoriteNumber = 7;
-```
-
-函数使用联合类型
-
-```tsx
-const fn = (something: number | boolean): boolean => {
-  return !!something;
-};
+var val:string|number 
+val = 12 //ok 
+val = "Runoob" //ok
 ```
 
 当 ts 不确定一个联合类型的变量类型时，只能访问联合类型的所有类型里共有的属性或方法。
+
+```typescript
+function getLength(something: string | number): number {
+    return something.length; 
+}
+// error:number类型没有length属性
+```
 
 
 
@@ -633,16 +683,15 @@ jiaocha({ age: 18, height: 180, sex: "male" });
 
 ### 类型断言
 
-**语法为 值 `as` 类型**
+明确告知编译器数据的类型，**语法为值 `as` 类型**
 
-```tsx
+```typescript
 interface A {run:string}
 interface B {build:string}
 const fn = (type: A | B)string => {
-  return type.run	//类型“A | B”上不存在属性“run”
+  return type.run
 }
-
-//应该写为
+//报错，run属性只在A上有
 interface A {run:string}
 interface B {build:string}
 const fn = (type: A | B): string => {
@@ -650,15 +699,21 @@ const fn = (type: A | B): string => {
 }
 ```
 
-类型断言只能够「欺骗」TypeScript 编译器，无法避免运行时的错误，反而滥用类型断言可能会导致运行时错误。
+类型断言的用途：
 
-- 使用 any 临时断言
+- 将一个联合类型断言为其中一个类型
+- 将任何一个类型断言为any
 
-```tsx
+```typescript
 window.abc = 123; //报错
 (window as any).abc = 123; //不报错
 //可以使用any临时断言在 any 类型的变量上，访问任何属性都是允许的。
 ```
+
+- 将any断言为任意类型
+- 将父类断言为子类
+
+​	类型断言**只能够「欺骗」TypeScript 编译器，无法避免运行时的错误**，反而滥用类型断言可能会导致运行时错误。
 
 - as const
 
@@ -678,9 +733,7 @@ a1.unshift(30); // 错误，此时已经断言字面量为[10, 20],数据无法�
 a2.unshift(30); // 通过，没有修改指针
 ```
 
-
-
-### 类型断言不具影响力
+- 类型断言不具影响力
 
 将 something 断言为 boolean 虽然可以通过编译，但是并没有什么用 并不会影响结果, 因为编译过程中会删除类型断言
 
@@ -693,13 +746,11 @@ toBoolean(1);	//返回值为1
 
 
 
-## （11）内置对象
+## （13）内置对象
 
 JS 中有很多内置对象，可以在 TS 中当作定义好的类型。
 
-
-
-### ECMAScript 内置对象
+- ECMAScript 内置对象
 
 **`Boolean`、`Number`、`string`、`RegExp`、`Date`、`Error`**
 
@@ -718,24 +769,18 @@ let e: Error = new Error("error!");
 console.log(e); //报错提示
 ```
 
-
-
-### DOM 和 BOM 的内置对象
+- DOM 和 BOM 的内置对象
 
 **`Document`、`HTMLElement`、`Event`、`NodeList` 等。**
 
 ```tsx
 let body: HTMLElement = document.body;
-
 let allDiv: NodeList = document.querySelectorAll("div");
-
 //读取div 这种需要类型断言 或者加个判断应为读不到返回null
 let div: HTMLElement = document.querySelector("div") as HTMLDivElement;
-
 document.addEventListener("click", function (e: MouseEvent) {
   // Do something
 });
-
 //dom元素的类型声明，可以直接使用
 interface HTMLElementTagNameMap {
   a: HTMLAnchorElement;
@@ -859,9 +904,7 @@ interface HTMLElementTagNameMap {
 }
 ```
 
-
-
-### 定义 promise
+- 定义 promise
 
 如果不指定返回的类型 TS 无法推断出返回类型，函数定义返回 promise 语法规则：Promise<T>类型
 
@@ -876,25 +919,13 @@ promise().then((res) => {
 });
 ```
 
-
-
-### TS 核心库
+- TS 核心库
 
 [TypeScript 核心库的定义文件](https://github.com/Microsoft/TypeScript/tree/master/src/lib)中定义了所有浏览器环境需要用到的类型，并且是预置在 TypeScript 中的。常见体现在报错和提示中。TS 核心库的定义中不包含 Node.js 部分。
 
 
 
-### 用 TS 写 Node.js
-
-node.js 不是内置对象的一部分，如果用 ts 写 node，需要引入第三方声明文件：
-
-```tsx
-npm install @type/node --save-dev
-```
-
-
-
-## （12）Class 类
+## （14）Class 类
 
 ### 类的概念
 
@@ -1070,12 +1101,12 @@ console.log(b.getName());
 
 
 
-## （13）元祖类型
+## （15）元祖类型
 
 ### 元组就是数组的变种
 
 数组合并了相同类型的对象，而**元组合并了不同类型的对象**。
-元组与集合的不同之处在于，元组中的元素类型可以是不同的，而且数量固定。元组的好处在于可以把多个元素作为一个单元传递。如果一个方法需要返回多个值，可以把这多个值作为元组返回，而不需要创建额外的类来表示。
+	元组中的元素类型可以是不同的，而且数量固定。元组的好处在于可以把多个元素作为一个单元传递。如果一个方法需要返回多个值，可以把这多个值作为元组返回，而不需要创建额外的类来表示。
 
 ```typescript
 let arr: [number, string] = [1, "string"];
@@ -1259,71 +1290,6 @@ var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 ```
 
 
-
-## （15）类型推论｜类型别名
-
-### 类型推论
-
-TS 会在没有明确指定类型的时候推测出一个类型，这就是类型推论。
-
-```typescript
-let myFav = "six";
-myFav = 6; //报错，不能赋值给别的类型
-```
-
-上面的代码等价于
-
-```typescript
-let myFav: string = "six";
-myFav = 6; //6是number不是string
-```
-
-**如果定义的时候没有赋值，不管之后有没有赋值，都会被推断成`any`类型**而完全不被类型检查。
-
-```typescript
-let zhang;
-zhang = 123;
-zhang = "chenge";
-zhang = true;
-```
-
-
-
-### 类型别名
-
-**类型别名就是给一个类型起一个新的名字**（使用 type 关键字定义）。
-
-- 定义类型别名
-
-```typescript
-type str = string;
-let s: str = "我是晨哥";
-```
-
-- 定义函数别名
-
-```typescript
-type str = () => string;
-let s: str = () => "我是雨晨";
-
-type a = (a:number,b:number) => number;
-let add:a = (x:number,y:number):number => {return x + y};
-```
-
-- 定义联合类型别名
-
-```typescript
-type str = string | number;
-let s: str = 123;
-let s2: str = "123";
-```
-
-- 定义值别名
-
-```typescript
-type value = boolean | 0 | "123";
-let s: value = true; //变量s的值，只能是value定义的值
-```
 
 
 
