@@ -1657,3 +1657,8 @@ str.add("123");
 
 默认 common.js 可选 es6 模式 amd umd 等
 
+
+
+
+
+项目中父组件通过ref获取子组件时，通过instanceType获取子组件的类型，其作用是获取构造函数类型的实例类型。
