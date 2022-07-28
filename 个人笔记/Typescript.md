@@ -1,6 +1,6 @@
 # TypeScript
 
-# 1、认识 TS
+## 1、认识 TS
 
 ![image-20220725180812923](https://raw.githubusercontent.com/Rainchen0504/picture/master/202207251808192.png)
 
@@ -58,7 +58,7 @@
 
 
 
-# 2、TS 的编译和运行
+## 2、TS 的编译和运行
 
 ### 1.安装
 
@@ -101,7 +101,7 @@ ts-node '文件名'
 
 
 
-# 3、类型
+## 3、类型
 
 原始数据类型：Boolean、Number、String、null、undefined 以及 ES6 的 Symbol 和 ES10 的 BigInt。
 
@@ -113,7 +113,7 @@ ts-node '文件名'
 
 
 
-## （1）字符串类型
+### （1）字符串类型
 
 使用 string 定义的
 
@@ -125,7 +125,7 @@ let str: string = `dddd${a}`;
 
 
 
-## （2）数字类型
+### （2）数字类型
 
 不区分整数和浮点数，统一为 number 类型。支持十六进制、十进制、八进制和二进制。
 
@@ -141,7 +141,7 @@ let octal: number = 0o744; //八进制
 
 
 
-## （3）布尔类型
+### （3）布尔类型
 
 ```tsx
 let booleand: boolean = true; //可以直接使用布尔值
@@ -150,7 +150,7 @@ let booleand2: boolean = Boolean(1); //也可以通过函数返回布尔值
 
 
 
-## （4）空值void类型
+### （4）空值void类型
 
 用 `void` 表示没有任何返回值的函数，主要用在不希望关心函数返回值的情况下。
 
@@ -169,7 +169,7 @@ let n: void = null;
 
 
 
-## （5）Null 和 undefined 类型
+### （5）Null 和 undefined 类型
 
 ```tsx
 let u: undefined = undefined; //定义undefined
@@ -181,7 +181,7 @@ let num:number = undefined;//不会报错
 
 
 
-## （6）Any 类型
+### （6）Any 类型
 
 1. 没有强制限定类型，随时切换类型都可以，相当于关闭了类型检测
 
@@ -203,7 +203,7 @@ let num:number = undefined;//不会报错
 
 
 
-## （7）unknown类型 
+### （7）unknown类型 
 
 TS3.0 中引入 unknow 类型，比any类型更安全，所有类型都可以分配给 unknown
 
@@ -232,7 +232,7 @@ if (typeof a == "number") {
 
 
 
-## （8）数组类型
+### （8）数组类型
 
 - 最常见的写法是：类型[]
 
@@ -283,7 +283,7 @@ interface IArguments {
 
 
 
-## （9）对象和接口类型
+### （9）对象和接口类型
 
 ts 中定义对象的方式通常使用**interface**（接口），类似定义一种约束，**<font color=deepred>对象模版</font>**，让数据的结构满足约束
 
@@ -319,6 +319,7 @@ let obj: B = {
   age: 18,
   name: "string",
 };
+
 //一个接口可以被多个接口继承，一个接口也可以继承多个对象
 interface Animals{
     name:String 
@@ -352,9 +353,9 @@ interface Person {
 const person: Person = { a: "123" };
 ```
 
-任意属性 [propName: string]
+**任意属性 [propName: string]**
 
-**一旦定义了任意属性，那么<font color=deepred>确定属性和可选属性的类型都必须是它的类型的子集</font>**
+一旦定义了任意属性，那么<font color=deepred>确定属性和可选属性的类型都必须是它的类型的子集</font>
 
 ```tsx
 interface Person { 
@@ -372,9 +373,9 @@ let tom: Person = {
 
 
 
-## （10）函数类型
+### （10）函数类型
 
-### 1、函数的类型
+#### 1、函数的类型
 
 <font color=red>**在 JS 中，有两种常见的定义函数的方式——函数声明和函数表达式**</font>
 
@@ -389,7 +390,7 @@ let sum = function (x, y) {
 };
 ```
 
-#### （1）函数声明
+##### （1）函数声明
 
 一个函数有输入和输出，要在 TS 中进行约束，需要要把输入和输出都考虑到，函数声明类型定义较简单：
 
@@ -411,7 +412,7 @@ sum(1); //Supplied parameters do not match any signature of call target.
 
 
 
-#### （2）函数表达式
+##### （2）函数表达式
 
 ```typescript
 //对函数表达式的定义：
@@ -434,7 +435,7 @@ fn('张三',18)
 
 
 
-#### （3）用接口定义函数的形状
+##### （3）用接口定义函数的形状
 
 ```typescript
 interface SearchFunc {
@@ -459,7 +460,7 @@ fn(5, 5);
 
 
 
-#### （4）可选参数
+##### （4）可选参数
 
 与接口中的可选属性类似，用`？`表示可选的参数
 
@@ -492,7 +493,7 @@ let tom = buildName(undefined, "Tom");
 
 
 
-#### （5）参数默认值
+##### （5）参数默认值
 
 TS 会将添加了默认值的参数识别为可选参数：
 
@@ -516,7 +517,7 @@ let cat = buildName(undefined, "Cat"); //Tom Cat
 
 
 
-#### （6）剩余参数
+##### （6）剩余参数
 
 ES6 中，可以使用`...rest`的方式获取函数中的剩余参数:
 
@@ -533,7 +534,7 @@ fn(a, "4", "5", "6"); //返回['4','5','6']
 
 
 
-#### （7）重载
+##### （7）重载
 
 重载是方法名字相同，而参数不同，返回类型可以相同也可以不同。给一个函数提供多个函数类型定义。
 
@@ -569,9 +570,9 @@ function reverse(x: number | string): number | string | void {
 
 
 
-## （11）类型推论｜类型别名
+### （11）类型推论｜类型别名
 
-### 类型推论
+#### 类型推论
 
 TS 会在没有明确指定类型的时候推测出一个类型，这就是类型推论。
 
@@ -598,7 +599,7 @@ zhang = true;
 
 
 
-### 类型别名
+#### 类型别名
 
 **类型别名就是给一个类型起一个新的名字**（使用 type 关键字定义）。
 
@@ -636,9 +637,9 @@ let s: value = true; //变量s的值，只能是value定义的值
 
 
 
-## （12）类型断言｜联合类型｜交叉类型
+### （12）类型断言｜联合类型｜交叉类型
 
-### 联合类型
+#### 联合类型
 
 取值可以为多种类型中的一种
 
@@ -659,7 +660,7 @@ function getLength(something: string | number): number {
 
 
 
-### 交叉类型
+#### 交叉类型
 
 多种类型的集合，联合对象将具有所有联合类型的所有成员。
 
@@ -681,7 +682,7 @@ jiaocha({ age: 18, height: 180, sex: "male" });
 
 
 
-### 类型断言
+#### 类型断言
 
 明确告知编译器数据的类型，**语法为值 `as` 类型**
 
@@ -746,7 +747,7 @@ toBoolean(1);	//返回值为1
 
 
 
-## （13）内置对象
+### （13）内置对象
 
 JS 中有很多内置对象，可以在 TS 中当作定义好的类型。
 
@@ -925,9 +926,9 @@ promise().then((res) => {
 
 
 
-## （14）Class 类
+### （14）Class 类
 
-### 类的概念
+#### 类的概念
 
 - 类：定义了一些事物的抽象特点，包含属性和方法；
 - 对象：类的实例，通过 `new` 生成；
@@ -942,7 +943,7 @@ promise().then((res) => {
 
 
 
-### 类的属性和方法
+#### 类的属性和方法
 
 ```tsx
 //使用class定义类、constructor定义构造函数。通过 new 生成新实例的时候，会自动调用构造函数。
@@ -961,7 +962,7 @@ console.log(a.sayHi()); //我的名字叫老八
 
 
 
-### TS 中定义类
+#### TS 中定义类
 
 在 TS 中是不允许直接在 constructor 定义变量的，需要在 constructor 上先声明
 
@@ -979,7 +980,7 @@ console.log(a.sayHi()); //我的名字叫老八
 
 
 
-### 类的修饰符
+#### 类的修饰符
 
 修饰符有三个：private、public、protected
 
@@ -1019,7 +1020,7 @@ console.log(man.some); //报错
 
 
 
-### static 静态属性和静态方法
+#### static 静态属性和静态方法
 
 用 static 定义的属性不可以通过 this 去访问**只能通过类名去调用**；
 
@@ -1031,7 +1032,7 @@ static 静态函数同样也是不能通过 this 去调用也是**通过类名�
 
 
 
-### interface 定义类
+#### interface 定义类
 
 一般来讲，一个类只能继承自另一个类，有时候不同类之间可以有一些共有的特性，这时候就可以把特性提取成接口（interfaces），用 `implements` 关键字来实现。
 
@@ -1067,7 +1068,7 @@ class Person extends A implements PersonClass, PersonClass2 {
 
 
 
-### 抽象类
+#### 抽象类
 
 `abstract` 用于定义抽象类和其中的抽象方法。如果写的类实例化之后毫无用处此时可以把他定义为抽象类，或者把它作为一个基类， 通过继承一个派生类去实现基类的一些方法。
 
@@ -1101,9 +1102,9 @@ console.log(b.getName());
 
 
 
-## （15）元祖类型
+### （15）元祖类型
 
-### 元组就是数组的变种
+#### 元组就是数组的变种
 
 数组合并了相同类型的对象，而**元组合并了不同类型的对象**。
 	元组中的元素类型可以是不同的，而且数量固定。元组的好处在于可以把多个元素作为一个单元传递。如果一个方法需要返回多个值，可以把这多个值作为元组返回，而不需要创建额外的类来表示。
@@ -1122,7 +1123,7 @@ arr[1].length; //success
 
 
 
-### 越界元素
+#### 越界元素
 
 ```typescript
 let arr: [number, string] = [1, "string"];
@@ -1133,7 +1134,7 @@ arr.push(true); //报错，只能是定义过的联合类型number|string
 
 
 
-### 应用场景
+#### 应用场景
 
 常见应用在 execl 返回的数据
 
@@ -1147,11 +1148,11 @@ let excel: [string, string, number, string][] = [
 
 
 
-## （14）枚举类型
+### （14）枚举类型
 
 枚举类型用于取值被限定在一定范围内的场景，通过**enum 关键字**定义枚举。
 
-### 数字枚举
+#### 数字枚举
 
 ```typescript
 //基础枚举
@@ -1170,7 +1171,7 @@ enum Types {
 
 
 
-### 字符串枚举
+#### 字符串枚举
 
 在一个字符串枚举里，每个成员都必须用字符串字面量，或另外一个字符串枚举成员进行初始化。
 
@@ -1186,7 +1187,7 @@ enum Types {
 
 
 
-### 异构枚举
+#### 异构枚举
 
 枚举可以混合字符串和数字成员
 
@@ -1199,7 +1200,7 @@ enum Types {
 
 
 
-### 接口枚举
+#### 接口枚举
 
 声明对象的时候要遵循接口规则
 
@@ -1219,7 +1220,7 @@ let obj: A = {
 
 
 
-### 常数枚举
+#### 常数枚举
 
 常数枚举是使用`const enum`定义的枚举类型，let 和 var 都不允许的声明。常数枚举与普通枚举的区别是，它会在编译阶段被删除，并且不能包含计算成员，如果包含计算成员也就是使用计算符的成员时会报错。
 const 声明的枚举会被编译成常量，普通声明的枚举编译完后是个对象。这样避免在额外生成的代码上的开销和额外的非直接的对枚举成员的访问。
@@ -1244,7 +1245,7 @@ var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 
 
 
-### 外部枚举
+#### 外部枚举
 
 外部枚举是使用`declare enum`定义的枚举类型，
 
@@ -1293,7 +1294,7 @@ var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */];
 
 
 
-## （16）never 类型
+### （15）never 类型
 
 TS 使用 never 类型表示不应该存在的状态。
 
@@ -1311,7 +1312,7 @@ function loop(): never {
 
 
 
-### never 和 void 的区别
+#### never 和 void 的区别
 
 ```typescript
 //void类型用于没有返回值，本身不会出错
@@ -1327,7 +1328,7 @@ function Never(message: string): never {
 
 
 
-### never 使用场景
+#### never 使用场景
 
 举个例子：
 
@@ -1356,7 +1357,7 @@ function handleValue(val:All){1
 
 
 
-## （17）symbol 类型
+### （16）symbol 类型
 
 symbol 类型的值是通过**Symbol 构造函数**创建的。它可以传递参数作为唯一的标识，只支持 string 和 number 类型的参数。
 
@@ -1367,7 +1368,7 @@ let sym2 = Symbol("key"); //可选的字符串key
 
 
 
-### Symbol 值是唯一的
+#### Symbol 值是唯一的
 
 ```typescript
 const s1 = Symbol();
@@ -1377,7 +1378,7 @@ const s2 = Symbol();
 
 
 
-### 用作对象属性的键
+#### 用作对象属性的键
 
 ```typescript
 let sym = Symbol();
@@ -1405,13 +1406,11 @@ Reflect.ownKeys(对象);
 
 
 
-## （18）泛型
+### （17）泛型
 
 泛型是指在定义函数、接口或类的时候，不预先指定具体的类型，而在使用的时候再指定类型的一种特性。
 
-
-
-### 函数泛型
+#### 函数泛型
 
 举个例子：两个函数一个是数字类型函数，另一个是字符串类型函数
 
@@ -1451,7 +1450,7 @@ Sub<Boolean, number>(true, 1);
 
 
 
-### 定义泛型接口
+#### 定义泛型接口
 
 声明接口的时候在名字后面加一个`<参数>`，使用时传递类型，使用接口的方式来定义一个函数需要符合的形状。
 
@@ -1470,7 +1469,7 @@ result(123);
 
 
 
-### 对象字面量泛型
+#### 对象字面量泛型
 
 ```typescript
 let foo: { <T>(arg: T): T };
@@ -1482,7 +1481,7 @@ foo(123);
 
 
 
-### 泛型约束
+#### 泛型约束
 
 **在函数内部使用泛型变量的时候，由于事先不知道该变量的类型，所以不能随便操作其属性和方法**
 
@@ -1507,7 +1506,7 @@ getLength<string>("123");
 
 
 
-### 使用 keyof 约束对象
+#### 使用 keyof 约束对象
 
 先定义 T 类型；使用 keyof 操作符获取 T 类型的所有键，返回联合类型；利用 extends 约束 K 类型必须为 T 键的联合类型的子类型。
 
@@ -1522,7 +1521,7 @@ console.log("6", prop(o, "a")); //1
 
 
 
-### 泛型类
+#### 泛型类
 
 与泛型接口类似，泛型也可以用于类的类型定义中
 
@@ -1545,7 +1544,7 @@ str.add("123");
 
 
 
-# 7、tsconfig.json 配置文件
+## 4、tsconfig.json 配置文件
 
 该文件通过 tsc --init 命令生成
 
@@ -1617,48 +1616,196 @@ str.add("123");
 
 ### 常用属性
 
-#### include
+include：指定编译文件默认是编译当前目录下所有的 ts 文件
 
-指定编译文件默认是编译当前目录下所有的 ts 文件
+exclude：指定排除的文件
 
-#### exclude
+target：指定编译 js 的版本例如 es5 es6
 
-指定排除的文件
+allowJS：是否允许编译 js 文件
 
-#### target
+removeComments：是否在编译过程中删除文件中的注释
 
-指定编译 js 的版本例如 es5 es6
+rootDir：编译文件的目录
 
-#### allowJS
+outDir：输出的目录
 
-是否允许编译 js 文件
+sourceMap：生成代码的源文件
 
-#### removeComments
+strict：严格模式
 
-是否在编译过程中删除文件中的注释
+module：默认 common.js 可选 es6 模式 amd umd 等
 
-#### rootDir
 
-编译文件的目录
 
-#### outDir
+## 5、三斜线指令
 
-输出的目录
+​	三斜线指令仅可放在包含它的文件的最顶端。 一个三斜线指令的前面只能出现单行或多行注释，这包括其它的三斜线指令。 如果它们出现在一个语句或声明之后，那么它们会被当做普通的单行注释，并且不具有特殊的涵义。
 
-#### sourceMap
+可以理解为`import`，告诉编译器在编译过程中要引入 的额外的文件。
 
-代码源文件
+`/// <reference path="..." />`指令是三斜线指令中最常见的一种。 它用于声明文件间的依赖。
 
-#### strict
 
-严格模式
 
-#### module
+## 6、namespace命名空间
 
-默认 common.js 可选 es6 模式 amd umd 等
+​	命名空间中通过`export`将想要暴露的部分导出，如果不用export 导出是无法读取其值的。
+
+```typescript
+namespace a {
+    export const Time: number = 1000
+}
+a.Time
+```
+
+- 命名空间嵌套
+
+```typescript
+namespace a {
+  export namespace b {
+    export class Vue{
+      param: string
+      constructor(param: string){
+        this.param = param
+      }
+    }
+  }
+}
+let v = a.b.Vue
+new v("1")
+```
+
+- 抽离命名空间
+
+```typescript
+//a.ts文件
+export namespace V {
+    export const a = 1
+}
+//b.ts文件
+//使用import关键字进行重新命名
+import {V} from './a.ts'
+console.log(V);//{a:1}
+```
+
+- 简化命名空间
+
+```typescript
+namespace A  {
+    export namespace B {
+        export const C = 1
+    }
+}
+import X = A.B.C
+console.log(X);
+```
+
+- 合并命名空间
+
+重名的命名空间会合并
+
+
+
+## 7、声明文件d.ts
+
+​	使用第三方库时需要引入对应的声明文件，才能回获得对应的代码补全和接口提示功能。
+
+```typescript
+declare var 声明全局变量
+declare function 声明全局方法
+declare class 声明全局类
+declare enum 声明全局枚举类型
+declare namespace 声明（含有子属性的）全局对象
+interface 和 type 声明全局类型
+```
+
+举个例子：
+
+在项目中引入express和axios
+
+```typescript
+import axios from "axios";//不报错
+import express from "express";//此处express会报错
+```
+
+进入node_modules文件下查看axios的packjson发现types已经指定了声明文件，声明文件index.d.ts最后有`declare const axios: AxiosStatic;`通过declare暴露声明的axios对象，所以直接使用不会报错而且会有类型提示。
+
+而express没有types指定声明文件所以会报错：
+
+​	方法一：所以需要自己定义，在根目录下创建express.d.ts声明文件`declare const express: ()=> any;`；
+
+​	方法二：安装`npm install @types/node -D`这个包然后在tsconfig中设置`"allowSyntheticDefaultImports": true`即可。
+
+
+
+## 8、装饰器Decorator
+
+试验性特性，未来版本可能会改变
+
+要启用装饰器特性，需要在tsconfig.json中开启配置项：`"experimentalDecorators": true `
+
+#### 基本结构
+
+```typescript
+//这里把类class A的构造函数当作参数传递给了装饰器函数作为参数
+//定义装饰器函数
+const chenge: ClassDecorator = (target: Function) => {
+  target.prototype.getName = <T>(name: T): T => {
+    return name;
+  };
+};
+//使用时通过@函数名使用
+@chenge
+class A {}
+let a = new A();
+console.log((a as any).getName("123"));//123
+```
+
+
+
+#### 装饰器工厂
+
+实际上就是一个高阶函数 外层的函数接受值 里层的函数最终接受类的构造函数
+
+```typescript
+const watcher = (name: string): ClassDecorator => {
+    return (target: Function) => {
+        target.prototype.getParams = <T>(params: T): T => {
+            return params
+        }
+        target.prototype.getOptions = (): string => {
+            return name
+        }
+    }
+}
+@watcher('张雨晨')
+class A {
+}
+const a = new A();
+console.log((a as any).getParams('123'));//123
+console.log((a as any).getOptions());//张雨晨
+```
+
+
+
+## 9、rollup构建TS项目
+
+
+
+
+
+
+
+
+
+## 10、Webpack构架TS项目
+
+
 
 
 
 
 
 项目中父组件通过ref获取子组件时，通过instanceType获取子组件的类型，其作用是获取构造函数类型的实例类型。
+
