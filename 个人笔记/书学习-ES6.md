@@ -1423,9 +1423,31 @@ Reflect.has({x: 0}, "toString");	//true
 
 
 
-#### （4）Reflect.apply()
+#### （4）Reflect.construct()
 
-**功能**：<font color=red>通过指定的参数列表发起对目标函数的调用</font>；
+**功能**：<font color=red>等同于new操作符构造函数，即运行`new target(...args)`</font>；
+
+**语法**：`Reflect.construct(target, argumentsList)`；
+
+**参数**：可以接受三个参数，<font color=blue>**被运行的目标构造函数；类数组，目标构造函数调用时的参数**</font>。
+
+**返回值**：以`target`函数为构造函数，`argumentList`为其初始化参数的对象实例。。
+
+```javascript
+function Metting(time){
+    this.time = time;
+}
+//new构造函数的写法
+const instance = new Metting("今天");
+//使用Reflect.construct的写法
+const instance = Reflect.construct(Metting,['明天']);
+```
+
+
+
+#### （5）Reflect.apply()
+
+**功能**：<font color=red>通过指定的参数发起对目标函数的调用</font>，可用于绑定`this`对象后执行给定函数；
 
 **语法**：`Reflect.apply(target, thisArgument, argumentsList)`；
 
@@ -1434,15 +1456,21 @@ Reflect.has({x: 0}, "toString");	//true
 **返回值**：<font color=blue>带着指定参数和this值的给定的函数后返回的结果</font>，如果目标对象不可调用，则返回类型错误。
 
 ```javascript
-console.log(Reflect.apply(Math.floor, undefined, [1.75]));
-// expected output: 1
-console.log(Reflect.apply(String.fromCharCode, undefined, [104, 101, 108, 108, 111]));
-// expected output: "hello"
+Reflect.apply(Math.floor, undefined, [1.75]); //1
+Reflect.apply(String.fromCharCode, undefined, [104, 101, 108, 108, 111]); //"hello"
+
+const ages = [11,33,12,54,18]
+//apply.call旧写法
+const young = Math.min.apply(Math,ages); //11
+const old = Math.max.apply(Math, ages); //54
+//新写法
+const young = Reflect.apply(Math.min, Math, ages); //11
+const old = Reflect.apply(Math.max, Math, ages); //54
 ```
 
 
 
-#### （5）Reflect.defineProperty
+#### （5）Reflect.defineProperty()
 
 **功能**：<font color=red>通过指定的参数列表发起对目标函数的调用</font>；
 
