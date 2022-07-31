@@ -113,7 +113,7 @@ commit标签：<font color=deepred>**612fb89547711cacb030a3893a0065b785802860 (H
 
 
 
-### （1）创建Vue实例(new Vue流程)
+### 1、创建Vue实例(new Vue流程)
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/index.js</mark>
 
@@ -161,7 +161,7 @@ function Vue (options) {
 
 
 
-#### 方法：Vue.prototype._init
+#### 1.1方法：Vue.prototype._init
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/init.js</mark>
 
@@ -258,7 +258,7 @@ export function initMixin (Vue: Class<Component>) {
 
 
 
-#### 方法：resolveConstructorOptions
+#### 1.1.1方法：resolveConstructorOptions
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/init.js</mark>
 
@@ -351,7 +351,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
 
   
 
-#### 方法：resolveModifiedOptions
+#### 1.1.1.1方法：resolveModifiedOptions
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/init.js</mark>
 
@@ -376,7 +376,7 @@ function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
 
 
 
-#### 方法：mergeOptions
+#### 1.1.2方法：mergeOptions
 
 <mark style="background-color: #40E0D0">位置：/src/core/util/options.js</mark>
 
@@ -604,7 +604,7 @@ export function mergeOptions (
 
 
 
-#### 方法：initProxy
+#### 1.1.3方法：initProxy
 
 <mark style="background-color: #40E0D0">位置：/src/core/instance/proxy.js</mark>
 
@@ -626,3 +626,9 @@ initProxy = function initProxy (vm) {
 ```
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202207211742695.png" alt="image-20220721174246246" style="zoom:80%;" />
+
+
+
+#### 1.1.4方法：initLifecycle
+
+<mark style="background-color: #40E0D0">位置：/src/core/instance/lifecycle.js</mark>

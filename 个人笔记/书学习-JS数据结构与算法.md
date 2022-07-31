@@ -54,25 +54,19 @@ console.log(...fibonacci);
 
 ### 4、ES6和数组新功能
 
-#### 新增数组方法
+#### (1)新增数组方法
 
 ##### includes方法：
 
 ​	数组中存在某个元素返回true，否则返回false；
 
-
-
 ##### find方法：
 
 ​	根据回调函数给定的条件从数组中查找元素，如果找到则返回该元素；
 
-
-
 ##### findIndex方法：
 
 ​	根据回调函数给定的条件从数组中查找元素，如果找到则返回该元素在数组中的索引；
-
-
 
 ##### @@iterator：
 
@@ -80,15 +74,13 @@ console.log(...fibonacci);
 
 
 
-#### 迭代方法
+#### (2)迭代方法
 
-##### for...of循环迭代：
+##### 1.for...of循环迭代：
 
 ​	迭代数组值的循环；
 
-
-
-##### @@iterator对象：
+##### 2.@@iterator对象：
 
 ​	为 Array 类增加了一个@@iterator 属性，需要通过 Symbol.iterator 来访问；
 
@@ -101,9 +93,7 @@ console.log(iterator.next().value);	//2
 
 不断通过迭代器的next方法可以依次得到数组中的值，所有值迭代完后iterator.next().value返回undefined。
 
-
-
-##### 数组的entries、keys和values方法
+##### 3.数组的entries、keys和values方法
 
 entries方法返回包含键值对的@@iterator
 
@@ -125,9 +115,7 @@ let aEntries = number.entries();
 console.log(aEntries.next().value); // [0, 1] - 位置0的值为1 console.log(aEntries.next().value); // [1, 2] - 位置1的值为2 console.log(aEntries.next().value); // [2, 3] - 位置2的值为3
 ```
 
-
-
-##### from方法：
+##### 4.from方法：
 
 Array.from()方法根据已有数组创建一个新数组；
 
