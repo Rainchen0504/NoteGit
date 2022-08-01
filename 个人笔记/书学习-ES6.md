@@ -1531,3 +1531,49 @@ person.name = '李四';
 
 # 十二、Promse对象
 
+## 1、基本用法
+
+​	异步编程的一种解决方案，Promise 是一个对象，从它可以获取异步操作的消息。
+
+**Promise对象有两个特点**：
+
+1. 对象的状态不受外界影响。`Promise`对象代表一个异步操作，有三种状态：`pending`（进行中）、`fulfilled`（已成功）和`rejected`（已失败)，只有异步操作的结果，可以决定当前是哪一种状态。
+2. 一旦状态改变，就不会再变。
+
+**Promise对象的缺点**：
+
+1. 无法取消，一旦新建就会立即执行，无法中途取消。
+2. 不设置回调函数，如果内部抛出错误就不会反应到外部。
+3. 处于`pending`状态时，无法得知当前进展的阶段。
+
+
+
+`Promise`对象是一个构造函数，用来生成`Promise`实例
+
+```javascript
+const promise = new Promise(function(resolve, reject) {
+  if (/* 异步操作成功 */){
+    resolve(value);
+  } else {
+    reject(error);
+  }
+});
+```
+
+
+
+## 2、对象方法
+
+### （1）then()
+
+​	Promise 实例具有`then`方法，即`then`方法是定义在原型对象`Promise.prototype`上的。它的作用是为 Promise 实例<font color=deepred>**添加状态改变时的回调函数**</font>。可以进行链式调用。
+
+### （2）catch()
+
+​	用于<font color=deepred>**指定发生错误时的回调函数**</font>。如果异步操作抛出错误，状态就会变为`rejected`，就会调用`catch()`方法指定的回调函数。另外，`then()`方法指定的回调函数，如果运行中抛出错误，也会被`catch()`方法捕获。
+
+​	如果 Promise 状态已经变成`resolved`，再抛出错误是无效的。Promise 对象的错误具有“冒泡”性质，会一直向后传递，直到被捕获为止。
+
+​	如果没有使用`catch()`方法指定错误处理的回调函数，Promise 对象抛出的错误不会传递到外层代码，即不会有任何反应。
+
+### （3）finally()
