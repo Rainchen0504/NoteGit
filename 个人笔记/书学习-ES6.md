@@ -1460,7 +1460,7 @@ Reflect.apply(Math.floor, undefined, [1.75]); //1
 Reflect.apply(String.fromCharCode, undefined, [104, 101, 108, 108, 111]); //"hello"
 
 const ages = [11,33,12,54,18]
-//apply.call旧写法
+//旧写法
 const young = Math.min.apply(Math,ages); //11
 const old = Math.max.apply(Math, ages); //54
 //新写法
@@ -1470,26 +1470,64 @@ const old = Reflect.apply(Math.max, Math, ages); //54
 
 
 
-#### （5）Reflect.defineProperty()
+#### （6）Reflect.defineProperty()
 
-**功能**：<font color=red>通过指定的参数列表发起对目标函数的调用</font>；
+**功能**：<font color=red>通过指定的参数列表发起对目标函数的调用</font>，基本等同于`Object.defineProperty`；
 
-**语法**：`Reflect.apply(target, thisArgument, argumentsList)`；
+**语法**：`Reflect.defineProperty(target, propKey, attr)`；
 
-**参数**：可以接受三个参数，<font color=blue>**目标函数、目标函数调用时的this、参数数组**</font>。
+**参数**：可以接受三个参数，<font color=blue>**目标对象、要操作的目标属性、属性描述**</font>。
 
-**返回值**：<font color=blue>带着指定参数和this值的给定的函数后返回的结果</font>，如果目标对象不可调用，则返回类型错误。
+**返回值**：<font color=blue>布尔值，表示属性是否被定义成功</font>。
 
 ```javascript
-console.log(Reflect.apply(Math.floor, undefined, [1.75]));
-// expected output: 1
-console.log(Reflect.apply(String.fromCharCode, undefined, [104, 101, 108, 108, 111]));
-// expected output: "hello"
+let obj = {};
+Reflect.defineProperty(obj,"x",{value:6});	//true
+obj.x	//6
+
+//对属性赋值先进行拦截，然后用Reflect完成赋值。
+const p = new Proxy({}, {
+  defineProperty(target, prop, descriptor) {
+    console.log(prop);
+    console.log(descriptor);
+    return Reflect.defineProperty(target, prop, descriptor);
+  }
+});
+p.foo = 'bar';
+// foo
+// {value: "bar", writable: true, enumerable: true, configurable: true}
 ```
 
 
 
-
-
 ## 3、使用Proxy实现观察者模式
+
+观察者模式是指<font color=deepred>**函数自动观察数据对象，一旦对象有变化，函数就自动执行**</font>。
+
+```javascript
+const queuedObservers = new Set();
+const observe = fn => queuedObservers.add(fn);
+const observable = obj => new Proxy(obj, {set});
+function set(target, key, value, receiver) {
+  const result = Reflect.set(target, key, value, receiver);
+  queuedObservers.forEach(observer => observer());
+  return result;
+}
+//上面代码中，先定义了一个Set集合，所有观察者函数都放进这个集合。然后，observable函数返回原始对象的代理，拦截赋值操作。拦截函数set之中，会自动执行所有观察者。
+const person = observable({
+  name: '张三',
+  age: 20
+});
+function print() {
+  console.log(`${person.name}, ${person.age}`)
+}
+observe(print);
+person.name = '李四';
+// 输出
+// 李四, 20
+```
+
+
+
+# 十二、Promse对象
 
