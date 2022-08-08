@@ -1537,7 +1537,7 @@ person.name = '李四';
 
 **Promise对象有两个特点**：
 
-1. 对象的状态不受外界影响。`Promise`对象代表一个异步操作，有三种状态：`pending`（进行中）、`fulfilled`（已成功）和`rejected`（已失败)，只有异步操作的结果，可以决定当前是哪一种状态。
+1. 对象的状态不受外界影响。`Promise`对象代表一个异步操作，<font color=red>有三种状态：`pending`（进行中）、`fulfilled`（已成功）和`rejected`（已失败)，</font>只有异步操作的结果，可以决定当前是哪一种状态。
 2. 一旦状态改变，就不会再变。
 
 **Promise对象的缺点**：

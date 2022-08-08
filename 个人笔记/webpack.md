@@ -913,11 +913,7 @@ compress是否为静态文件开启gzip compression，默认是fasle；
 
 ### （7）resolve模块解析
 
-​	resolve可以帮助webpack从每个 re
-
-
-
-
+​	resolve可以帮助webpack从每个 require/import语句中找到合适引入的模块代码。
 
 #### ①<u>**webpack能解析三种文件的路径**</u>：
 

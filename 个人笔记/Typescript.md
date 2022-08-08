@@ -1791,19 +1791,303 @@ console.log((a as any).getOptions());//张雨晨
 
 ## 9、rollup构建TS项目
 
+#### 安装依赖
+
+```javascript
+//安装rollup
+npm install rollup -g
+//安装Typescript
+npm install typescript -D
+//安装Typescript转换器
+npm install rollup-plugin-typescript2 -D
+//安装代码压缩插件
+npm install rollup-plugin-terser -D
+//安装rollup的web服务
+npm install rollup-plugin-serve -D
+//安装热更新模块
+npm install rollup-plugin-livereload -D
+//安装外部依赖，允许引入第三方模块
+npm install rollup-plugin-node-resolve -D
+//安装配置环境变量区分开发环境和生产环境
+npm install cross-env -D
+//打包时动态替换代码中的内容
+npm install rollup-plugin-replace -D
+```
 
 
 
+#### 配置package.json文件
+
+`npm init -y`
+
+配置dev和build命令，其中-c表示遵从config.js文件，-w表示watch跟踪更新。
+
+```json
+{
+  "name": "rollupTs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=development  rollup -c -w",
+    "build":"cross-env NODE_ENV=produaction  rollup -c"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-serve": "^1.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.31.1",
+    "typescript": "^4.5.5"
+  }
+}
+```
 
 
+
+#### 配置rollup.config.js文件
+
+```javascript
+import ts from 'rollup-plugin-typescript2'
+import path from 'path'
+import serve from 'rollup-plugin-serve'
+import livereload from 'rollup-plugin-livereload'
+import { terser } from 'rollup-plugin-terser'
+import resolve from 'rollup-plugin-node-resolve'
+import repacle from 'rollup-plugin-replace'
+ 
+const isDev = () => {
+    return process.env.NODE_ENV === 'development'
+}
+export default {
+    input: "./src/main.ts",
+    output: {
+        file: path.resolve(__dirname, './lib/index.js'),
+        format: "umd",
+        sourcemap: true
+    },
+ 
+    plugins: [
+        ts(),
+        terser({
+            compress: {
+                drop_console: !isDev()
+            }
+        }),
+        repacle({
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+        }),
+        resolve(['.js', '.ts']),
+        isDev() && livereload(),
+        isDev() && serve({
+            open: true,
+            openPage: "/public/index.html"
+        })
+    ]
+}
+```
+
+
+
+#### 配置tsconfig.json文件
+
+`tsc --init`
 
 
 
 ## 10、Webpack构架TS项目
 
+#### 安装依赖
+
+```javascript
+//webpack
+npm install webpack -D
+//安装webpack-cli(4版本以上)
+npm install  webpack-cli -D
+//编译TS的loader
+npm install ts-loader -D
+//TS环境
+npm install typescript -D
+//热更新服务
+npm install webpack-dev-server -D
+//HTML模板
+npm install html-webpack-plugin -D
+```
 
 
 
+#### 配置package.json文件
+
+`npm init -y`
+
+配置dev和build命令，其中-c表示遵从config.js文件，-w表示watch跟踪更新。
+
+```json
+{
+  "name": "webpackTs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=development  webpack -c -w",
+    "build":"cross-env NODE_ENV=produaction  webpack -c"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-serve": "^1.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.31.1",
+    "typescript": "^4.5.5"
+  }
+}
+```
+
+
+
+#### 配置webpack.config.js文件
+
+```javascript
+const path = require('path')
+const htmlWebpackPlugin = require('html-webpack-plugin')
+module.exports = {
+    entry: "./src/index.ts",
+    mode: "development",
+    output: {
+        path: path.resolve(__dirname, './dist'),
+        filename: "index.js"
+    },
+    stats: "none",
+    resolve: {
+        extensions: ['.ts', '.js'],
+        alias: {
+            '@': path.resolve(__dirname, './src')
+        }
+    },
+    module: {
+        rules: [
+            {
+                test: /\.ts$/,
+                use: "ts-loader"
+            }
+        ]
+    },
+    devServer: {
+        port: 1988,
+        proxy: {}
+    },
+    plugins: [
+        new htmlWebpackPlugin({
+            template: "./public/index.html"
+        })
+    ]
+}
+```
+
+
+
+#### 配置tsconfig.json文件
+
+`tsc --init`
+
+
+
+## 11、编写发布订阅模式
+
+​	即对象间的一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到状态改变的通知。
+
+​	订阅者把自自己想订阅的事件注册到调度中心，当发布者发布该事件到调度中心，也就是该事件触发时，由调度中心统一调度订阅者注册到调度中心的处理代码。
+
+- 举个例子
+
+  小王去书店买书
+
+  ​	去书店，问，没有，回家
+
+  ​	过一会 再去问，没有，回家…
+
+  发布订阅模式
+
+  ​	去书店，问，没有，订阅($on)一个联系方式给店员
+
+  ​	一旦有书，店员($emit)一个短信给小王
+
+  ​	触发消息队列(message)去买书
+
+```typescript
+//on订阅/监听		emit发布/注册		once执行一次	 //off解除注册
+interface EventType {
+  on:(name:string, callback:Function) => void,
+  emit:(name:string, ...args:Array<any>) => void,
+  off:(name:string, fn:Function) => void,
+  once:(name:string, fn:Function) => void,
+}
+
+interface List {
+  [key:string]: Array<Function>
+}
+
+class Dispatch implements EventType {
+  list:List
+  constructor(){
+    this.list = {}
+  }
+  on(name:string,callback:Function){
+    const callbackList:Array<Function> = this.list[name] || [];
+    callbackList.push(callback)
+    this.list[name] = callbackList
+  }
+  emit(name: string, ...args: Array<any>) {
+    let evnetName = this.list[name]
+    if (evnetName) {
+      evnetName.forEach(fn => {
+        fn.apply(this, args)
+      })
+    } else {
+      console.error('该事件未监听');
+    }
+  }
+  off(name: string, fn: Function) {
+    let evnetName = this.list[name]
+    if (evnetName && fn) {
+      let index = evnetName.findIndex(fns => fns === fn)
+      evnetName.splice(index, 1)
+    } else {
+      console.error('该事件未监听');
+    }
+  }
+  once(name: string, fn: Function) {
+    let decor = (...args: Array<any>) => {
+      fn.apply(this, args)
+      this.off(name, decor)
+    }
+    this.on(name, decor)
+  }
+}
+const observe = new Dispatch();
+
+
+observe.on("abc", (...arg: Array<any>) => {
+  console.log(arg, 1);//[ '我是你晨哥' ] 1
+});
+observe.on("abc", (aaa: string) => {
+  console.log("aaa", aaa);//aaa 我是你晨哥
+});
+
+observe.emit("abc", "我是你晨哥");
+```
 
 
 
