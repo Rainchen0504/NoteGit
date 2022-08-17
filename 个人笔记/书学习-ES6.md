@@ -1568,6 +1568,8 @@ const promise = new Promise(function(resolve, reject) {
 
 ​	Promise 实例具有`then`方法，即`then`方法是定义在原型对象`Promise.prototype`上的。它的作用是为 Promise 实例<font color=deepred>**添加状态改变时的回调函数**</font>。可以进行链式调用。
 
+
+
 ### （2）catch()
 
 ​	用于<font color=deepred>**指定发生错误时的回调函数**</font>。如果异步操作抛出错误，状态就会变为`rejected`，就会调用`catch()`方法指定的回调函数。另外，`then()`方法指定的回调函数，如果运行中抛出错误，也会被`catch()`方法捕获。
@@ -1576,4 +1578,385 @@ const promise = new Promise(function(resolve, reject) {
 
 ​	如果没有使用`catch()`方法指定错误处理的回调函数，Promise 对象抛出的错误不会传递到外层代码，即不会有任何反应。
 
+
+
 ### （3）finally()
+
+<font color=deepred>**不管 Promise 对象最后状态如何，都会执行的操作**</font>。
+
+```javascript
+promise
+.then(result => {···})
+.catch(error => {···})
+.finally(() => {···});
+```
+
+不接收任何参数，即无法知道前面的结果，所以执行的操作应与状态无关，不依赖Promise的结果。
+
+
+
+### （4）Promise.all()
+
+<font color=deepred>**将多个promise实例包装成一个新的Promise实例，接收一个数组作为参数**</font>。
+
+​	**所有参数实例都返回成功，promise.all()函数的状态才会变成`fulfilled`**，同时所有参数实例的返回值组成一个数组传递给后面的回调函数。
+
+​	**如果参数实例有一个被`rejected`，则promise.all()函数的状态就变成`rejected`**，第一个失败的返回值回传递给后面的回调函数。
+
+```javascript
+//如果作为参数的 Promise 实例，自己定义了catch方法，那么一旦被rejected，并不会触发Promise.all()的catch方法
+const p1 = new Promise((resolve, reject) => {
+  resolve('hello');
+})
+.then(result => result)
+.catch(e => e);
+
+const p2 = new Promise((resolve, reject) => {
+  throw new Error('报错了');
+})
+.then(result => result)
+.catch(e => e);
+//这里会执行.then里的内容，因为p2有自己的catch方法，执行完后也会变成resolved状态，因为p1和p2都会resolved，所以进入.then
+Promise.all([p1, p2])
+.then(result => console.log(result))
+.catch(e => console.log(e));
+```
+
+
+
+### （5）Promise.race()
+
+<font color=deepred>**只要参数实例中有一个实例改变状态，promise.race()的状态就跟着改变**</font>。率先改变的 参数实例的返回值，就传递给后面的回调函数。
+
+
+
+### （6）Promise.allSettled()
+
+ES2020引入，<font color=deepred>**用来确定一组异步操作是否都结束(无论成功还是失败)**</font>，接收数组作为参数，每个参数都是Promise对象并返回新的promise对象。
+
+```javascript
+const resolved = Promise.resolve(42);
+const rejected = Promise.reject(-1);
+
+const allSettledPromise = Promise.allSettled([resolved, rejected]);
+//allSettled返回的状态一定是成功的
+allSettledPromise.then(function (results) {
+  console.log(results);
+});
+//返回的回调函数结果是参数实例的结果
+// [
+//    { status: 'fulfilled', value: 42 },
+//    { status: 'rejected', reason: -1 }
+// ]
+```
+
+
+
+### （7）Promise.any()
+
+ES2021引入，和race()方法类似，但是不会因为某一个参数实例状态改变而结束，必须等到所有参数实例完成才结束。只要参数实例有一个变成`fulfilled`状态，包装实例就会变成`fulfilled`状态；如果所有参数实例都变成`rejected`状态，包装实例就会变成`rejected`状态。
+
+```javascript
+Promise.any([
+  fetch('https://v8.dev/').then(() => 'home'),
+  fetch('https://v8.dev/blog').then(() => 'blog'),
+  fetch('https://v8.dev/docs').then(() => 'docs')
+]).then((first) => {  // 只要有一个 fetch() 请求成功
+  console.log(first);
+}).catch((error) => { // 所有三个 fetch() 全部请求失败
+  console.log(error);
+});
+```
+
+
+
+### （8）Promise.resolve()
+
+将现有对象转为 Promise 对象的方法，等价于下面的过程：
+
+```javascript
+Promise.resolve('foo');
+//等价于
+new Promise(resolve => resolve('foo'));
+```
+
+- 参数本身就是Promise对象
+
+  不做任何修改，原封不动返回实例；
+
+- 参数是个有then方法的对象
+
+  将这个对象转为 Promise 对象，然后就立即执行`thenable`对象的`then()`方法；
+
+- 参数不是具有then方法的对象，或根本不是对象
+
+  返回一个新的Promise对象，状态为resolved；
+
+- 不带任何参数
+
+  直接返回一个resolved状态的Promise对象；
+
+
+
+### （9）Promise.reject()
+
+返回一个新的 Promise 实例，该实例的状态为`rejected`。
+
+```javascript
+const p = Promise.reject('出错了');
+// 等同于
+const p = new Promise((resolve, reject) => reject('出错了'))
+
+p.then(null, function (s) {
+  console.log(s)
+});
+// 出错了
+```
+
+
+
+# 十三、Iterator 和 for...of 循环
+
+## 1、Iterator遍历器
+
+​	遍历器是一种接口，为不同的数据结构提统一的访问机制。**任何数据结构只要部署有Iterator接口，<font color=blue>就可以完成遍历操作</font>**。
+
+- 作用：
+  - 一是为各种数据结构提供一个统一的、简便的访问接口；
+  - 二是使数据结构的成员能够按照某种次序排列；
+  - 三是提供`for...of`方法的使用；
+
+
+
+- 遍历的过程
+  - 创建一个指针对象，指向当前数据结构的起始位置，遍历器对象本质上就是一个指针对象；
+  - 第一次调用指针对象的`next`方法，将指针指向数据结构的第一个成员；
+  - 第二次调用指针对象的`next`方法，指针就指向数据结构的第二个成员；
+  - 不断调用指针对象的`next`方法，直到指向数据结构的结束位置。
+
+```javascript
+//遍历器生成函数
+var it = makeIterator(['a','b']);
+
+it.next() //{ value:'a', done:false }
+it.next() //{ value:'b', done:false }
+it.next() //{ value:undefined, done:true }
+
+function makeIterator(array){
+  var nextIndex = 0;
+  return {
+    next:function(){
+      return nextIndex < array.length ? {value: array[nextIndex++], done: false} : {value: undefined, done: true};
+    }
+  }
+}
+```
+
+
+
+## 2、默认 Iterator 接口
+
+​	当使用`for...of`循环遍历某种数据结构时，该循环会自动去寻找 Iterator 接口。
+
+​	<font color=deepred>一种数据结构只要部署了 Iterator 接口，即只要具有`Symbol.iterator`属性，我们就称这种数据结构是“可遍历的”。</font>
+
+​	**原生具备Iterator接口的数据结构：Array、Map、Set、String、TypedArray、函数的 arguments 对象、NodeList 对象**。
+
+​	对象之所以没有默认部署 Iterator 接口，是因为对象的哪个属性先遍历，哪个属性后遍历是不确定的，需要开发者手动指定。
+
+​	<font color=blue>**调用`Symbol.iterator`方法会返回遍历器对象`iterator`，调用该对象的`next`方法，在返回一个值的同时，自动将内部指针移到下一个实例。**</font>
+
+
+
+## 3、调用 Iterator 接口的场合
+
+#### （1）解构赋值
+
+对数组和 Set 结构进行解构赋值时，会默认调用`Symbol.iterator`方法
+
+#### （2）扩展运算符
+
+扩展运算符（...）也会调用默认的 Iterator 接口。也就是说，任何部署了 Iterator 接口的数据结构，都可以转为数组。
+
+#### （3）任何接受数组作为参数的场合
+
+for...of、Array.from()、Map(), Set(), WeakMap(), WeakSet()、Promise.all()、Promise.race()
+
+
+
+## 4、for...of循环
+
+#### （1）数组
+
+`for...of`循环可以代替数组实例的`forEach`方法，`for...in`循环读取键名，`for...of`循环读取键值
+
+```javascript
+var arr = ['a', 'b', 'c', 'd'];
+
+for (let a in arr) {
+  console.log(a); // 0 1 2 3
+}
+
+for (let a of arr) {
+  console.log(a); // a b c d
+}
+```
+
+#### （2）Set和Map结构
+
+​	Set 结构遍历时，返回的是一个值，而 Map 结构遍历时，返回的是一个数组，该数组的两个成员分别为当前 Map 成员的键名和键值。
+
+#### （3）类数组
+
+使用`Array.from`方法将其转为数组
+
+#### （4）对象
+
+**普通的对象，`for...of`结构不能直接使用，会报错，必须部署了 Iterator 接口后才能使用**。
+
+```javascript
+let es6 = {
+  edition: 6,
+  committee: "TC39",
+  standard: "ECMA-262"
+};
+
+for (let e in es6) {
+  console.log(e);
+}// edition	committee	standard
+
+for (let e of es6) {
+  console.log(e);
+}
+// TypeError: es6[Symbol.iterator] is not a function
+```
+
+解决方法一：
+
+使用`Object.keys`方法将对象的键名生成数组，然后遍历数组；
+
+```javascript
+for (let key of Object.keys(obj)){
+  console.log(obj[key])
+}
+```
+
+解决方法二：
+
+使用Generator函数将对象包装；
+
+```javascript
+const obj = { a: 1, b: 2, c: 3 }
+function* entries(obj) {
+  for (let key of Object.keys(obj)) {
+    yield [key, obj[key]];
+  }
+}
+for (let [key, value] of entries(obj)) {
+  console.log(key, '->', value);
+}
+// a -> 1
+// b -> 2
+// c -> 3
+```
+
+#### （5）遍历方法比较
+
+- for循环
+  - 写法麻烦；
+- forEach方法
+  - 无法中途终止循环，return和break命令都不生效；
+- for...in方法
+  - 数组的键名是数字，但是`for...in`循环是以字符串作为键名“0”、“1”、“2”；
+  - `for...in`循环不仅遍历数字键名，还会遍历手动添加的其他键，甚至包括原型链上的键；
+  - `for...in`循环会以任意顺序遍历键名；
+  - `for...in`循环主要是为遍历对象而设计的，不适用于遍历数组；
+
+
+
+# 十四、Generator函数
+
+## 1、基本概念
+
+​	Generator函数是一个状态机，也是一个遍历器对象生成函数，封装了多个内部状态，返回一个**遍历器对象**，可以依次遍历 Generator 函数内部的每一个状态。
+
+### （1）形式特征
+
+1. <font color=blue>**function关键字与函数名之间有***</font>；
+2. <font color=blue>**函数内部有yield表达式，用来定义不同的内部状态**</font>；
+
+```javascript
+function* helloWorldGenerator() {
+  yield 'hello';
+  yield 'world';
+  return 'ending';
+}
+var hw = helloWorldGenerator();
+hw.next();// { value: 'hello', done: false }
+hw.next();// { value: 'world', done: false }
+hw.next();// { value: 'ending', done: true }
+hw.next();// { value: undefined, done: true }
+```
+
+调用 Generator 函数后，该函数并不执行，返回的也不是函数运行结果，而是一个指向内部状态的指针对象遍历器对象(Iterator Object)。必须调用遍历器对象的`next`方法，使得指针移向下一个状态,直到遇到下一个`yield`表达式（或`return`语句）为止。
+
+Generator 函数是分段执行的，`yield`表达式是暂停执行的标记，而`next`方法可以恢复执行。`yield`表达式只能用在 Generator 函数里面，用在其他地方都会报错
+
+### （2）与Iterator接口关系
+
+​	任意一个对象的`Symbol.iterator`方法，等于该对象的遍历器生成函数，调用该函数会返回该对象的一个遍历器对象。可以把 Generator 赋值给对象的`Symbol.iterator`属性，从而使得该对象具有 Iterator 接口。
+
+```javascript
+var myIterable = {};
+myIterable[Symbol.iterator] = function* () {
+  yield 1;
+  yield 2;
+  yield 3;
+};
+[...myIterable] // [1, 2, 3]
+```
+
+
+
+# 十五、Generator函数的异步用用
+
+
+
+
+
+# 十六、async函数
+
+async函数是Generator 函数的语法糖。
+
+```javascript
+//举个例子
+const fs = require('fs');
+
+const readFile = function (fileName) {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(fileName, function(error, data) {
+      if (error) return reject(error);
+      resolve(data);
+    });
+  });
+};
+
+const gen = function* () {
+  const f1 = yield readFile('/etc/fstab');
+  const f2 = yield readFile('/etc/shells');
+  console.log(f1.toString());
+  console.log(f2.toString());
+};
+```
+
+转换成async函数写法
+
+```javascript
+const asyncReadFile = async function () {
+  const f1 = await readFile('/etc/fstab');
+  const f2 = await readFile('/etc/shells');
+  console.log(f1.toString());
+  console.log(f2.toString());
+};
+```
+
