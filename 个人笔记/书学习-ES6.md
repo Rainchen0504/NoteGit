@@ -2027,3 +2027,143 @@ let bar = await barPromise;
 
 # 十七、Class类
 
+### 1、基础
+
+- **类的数据类型就是函数，类本身指向构造函数**，使用时通过new关键字，和构造函数一致。
+
+- 类的所有方法都是定义在类的`prototype`属性上，下面constructor、toString、toValue方法就是定义在Point.prototype上的。
+
+  ```javascript
+  class Point {
+    constructor() {
+    }
+    toString() {
+    }
+    toValue() {
+    }
+  }
+  // 等同于
+  Point.prototype = {
+    constructor() {},
+    toString() {},
+    toValue() {},
+  };
+  ```
+
+- 类内部所有定义的方法都是不可枚举的。
+
+
+
+### 2、constructor方法
+
+- 默认方法，通过new命令生成对象实例时会自动调用。如果没有显示定义会默认添加一个空的。
+
+- 该方法默认返回实例对象（即this），也可以返回其他对象。
+
+
+
+### 3、类的实例
+
+- 类的属性和方法<font color=deepred>除非显式的定义在this对象上，否则都是定义在原型上的</font>。
+
+```javascript
+class Point {
+    constructor( x, y ){
+        this.x = x;
+        this.y = y;
+    }
+    toString(){
+        console.log( x, y )
+    }
+}
+var point = new Point(2, 3);
+//x和y定义在实例对象point上，toString方法定义在Point类上
+point.hasOwnProperty('x') // true
+point.hasOwnProperty('y') // true
+point.hasOwnProperty('toString') // false
+point.__proto__.hasOwnProperty('toString') // true
+```
+
+- 类的所有实例共享一个原型对象
+
+```javascript
+var p1 = new Point(2,3);
+var p2 = new Point(3,2);
+p1.__proto__ === p2.__proto__; //true
+```
+
+
+
+### 补充`_proto_`
+
+​	`_proto_`<font color=red>**不是语言本身的特性，是各大厂商具体实现时添加的私有属性**</font>。虽然目前很多现代浏览器的 JS 引擎中都提供了这个私有属性，但依旧不建议在生产中使用该属性，避免对环境产生依赖。生产环境中，<font color=blue>**可以使用 `Object.getPrototypeOf()` 方法来获取实例对象的原型，然后再来为原型添加方法/属性**</font>。
+
+
+
+### 4、getter和setter函数
+
+类的内部可以使用get和set关键字，拦截该属性的存取值行为。
+
+```javascript
+class MyClass {
+  constructor() {
+  }
+  get prop() {
+    return 'getter';
+  }
+  set prop(value) {
+    console.log('setter: '+value);
+  }
+}
+let inst = new MyClass();
+inst.prop = 123;// setter: 123
+inst.prop// 'getter'
+```
+
+
+
+### 5、属性表达式
+
+类的属性名可以采用表达式。
+
+```javascript
+let variable = "element";
+class Point {
+    constructor(){}
+    [variable](){}
+}
+```
+
+
+
+### 6、静态方法
+
+​	在方法前加上`static`关键字表示该方法**<font color=deepred>不会被实例继承，可以通过类调用</font>**，称为静态方法。**静态方法中的this指的是类，不是实例对象**。
+
+父类的静态方法可以被子类继承，静态方法也可以从super对象上调用。
+
+```javascript
+class Foo {
+  static bar() {
+    this.baz();
+  }
+  static baz() {
+    console.log('hello');
+  }
+  baz() {
+    console.log('world');
+  }
+}
+Foo.bar() // hello
+```
+
+
+
+### 7、静态属性
+
+​	Class本身的属性，即`Class.propName`，而不是定义在实例对象（`this`）上的属性。在实例属性前面加上`static`关键字就定义了静态属性。
+
+
+
+### 8、私有方法和私有属性
+
