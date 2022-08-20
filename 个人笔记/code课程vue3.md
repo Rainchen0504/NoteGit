@@ -1524,7 +1524,7 @@ const changeAge = () = {
 
 ![image-20211227231805906](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112272318945.png)
 
-执行结果会先后打印两次，分别为null和<h2></h2>
+执行结果会先后打印两次，分别为null和<h2>元素Dom对象。
 
 这是因为setup函数在执行时就会立即执行传入的副作用函数，这个时候DOM并没有挂载，所以打印为null；而当DOM挂载时，会给title的ref对象赋值新的值，副作用函数会再次执行，打印出来对应的元素。
 

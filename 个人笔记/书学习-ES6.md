@@ -936,6 +936,48 @@ objToStrMap({yes: true, no: false})
 
 
 
+## WeakMap
+
+结构和Map类似，用于生成键值对的集合
+
+```javascript
+//WeakMap使用set方法添加元素
+const vm1 = new WeakMap();
+const key = {foo:1};
+vm1.set(key,2);
+vm1.get(key);	//2
+```
+
+**<font color=deepred>WeakMap和Map的区别有两点：</font>**
+
+#### （1）只接受对象作为键名
+
+WeakMap只接受对象作为键名（null）除外，不接受其他类型值作为键名；
+
+```javascript
+const map = new WeakMap();
+map.set(1, 1);//Invalid value used as weak map key
+map.set(null,2)//Invalid value used as weak map key
+map.set(Symbol(1), 2);//Invalid value used as weak map key
+```
+
+#### （2）键名所指的对象不计入垃圾回收机制
+
+WeakMap**键名**（键值不是弱引用）所引用的对象都是**弱引用**，即垃圾回收机制不将该引用考虑在内。因此，只要所引用的对象的其他引用都被清除，垃圾回收机制就会释放该对象所占用的内存。也就是说，一旦不再需要，WeakMap 里面的键名对象和所对应的键值对会自动消失，不用手动删除引用。
+
+想要往对象上添加数据，又不想干扰垃圾回收机制，就可以使用 WeakMap。一个典型应用场景是，在网页的 DOM 元素上添加数据，就可以使用`WeakMap`结构。当该 DOM 元素被清除，其所对应的`WeakMap`记录就会自动被移除。
+
+```javascript
+const wm = new WeakMap();
+const element = document.getElementById('example');
+wm.set(element, 'some information');
+wm.get(element) // "some information"
+```
+
+`WeakMap`的专用场合就是，**它的键所对应的对象，可能会在将来消失。`WeakMap`结构有助于防止内存泄漏**。
+
+
+
 # 十、Proxy
 
 ## 1、基本用法
@@ -1926,37 +1968,62 @@ myIterable[Symbol.iterator] = function* () {
 
 # 十六、async函数
 
-async函数是Generator 函数的语法糖。
+async函数是Generator 函数的语法糖
+
+### 1、基本用法
+
+async函数返回一个promise对象，使用then方法添加回调函数。一旦遇到await就会先返回，等到异步操作完成再执行函数体后面的内容。
+
+
+
+### 2、语法
+
+​	`async`函数返回的 Promise 对象，必须等到内部所有`await`命令后面的 Promise 对象执行完，才会发生状态改变，除非遇到`return`语句或者抛出错误。
+
+
+
+#### 注意点：
+
+1、`await`命令后面的`Promise`对象，运行结果可能是`rejected`，所以最好把`await`命令放在`try...catch`代码块中。
 
 ```javascript
-//举个例子
-const fs = require('fs');
+async function myFunction() {
+  try {
+    await somethingThatReturnsAPromise();
+  } catch (err) {
+    console.log(err);
+  }
+}
 
-const readFile = function (fileName) {
-  return new Promise(function (resolve, reject) {
-    fs.readFile(fileName, function(error, data) {
-      if (error) return reject(error);
-      resolve(data);
-    });
+// 另一种写法
+async function myFunction() {
+  await somethingThatReturnsAPromise()
+  .catch(function (err) {
+    console.log(err);
   });
-};
-
-const gen = function* () {
-  const f1 = yield readFile('/etc/fstab');
-  const f2 = yield readFile('/etc/shells');
-  console.log(f1.toString());
-  console.log(f2.toString());
-};
+}
 ```
 
-转换成async函数写法
+
+
+2、多个`await`命令后面的异步操作，如果不存在继发关系，最好让它们同时触发，节约运行时间。
 
 ```javascript
-const asyncReadFile = async function () {
-  const f1 = await readFile('/etc/fstab');
-  const f2 = await readFile('/etc/shells');
-  console.log(f1.toString());
-  console.log(f2.toString());
-};
+// 写法一
+let [foo, bar] = await Promise.all([getFoo(), getBar()]);
+
+// 写法二
+let fooPromise = getFoo();
+let barPromise = getBar();
+let foo = await fooPromise;
+let bar = await barPromise;
 ```
+
+
+
+3、await命令只能用在async函数中，用在普通函数会报错。
+
+
+
+# 十七、Class类
 
