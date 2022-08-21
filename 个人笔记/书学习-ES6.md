@@ -2167,3 +2167,108 @@ Foo.bar() // hello
 
 ### 8、私有方法和私有属性
 
+#### （1）早期方案
+
+- 做法一：命名区分
+
+  在私有方法和属性前加上下划线`_`
+
+  ```javascript
+  class Widget {
+    foo (baz) {// 公有方法
+      this._bar(baz);
+    }
+    _bar(baz) {// 私有方法
+      return this.snaf = baz;
+    }
+  }
+  ```
+
+- 做法二：将私有方法移出
+
+  ```javascript
+  class Widget {
+    foo (baz) {
+      bar.call(this, baz);
+    }
+  }
+  function bar(baz) {//私有方法
+    return this.snaf = baz;
+  }
+  ```
+
+  
+
+  #### （2）正式写法
+
+  在属性名之前使用`#`表示是私有的。私有属性只能在类内部使用，在外部使用就会报错。此外，读取一个不存在的私有属性就会报错。
+
+  ```javascript
+  class myClass {
+      #count = 0;
+      increment(){
+          this.count++;
+      }
+  }
+  const counter = new myClass();
+  counter.#count;//报错
+  counter.#count = 1;//报错
+  counter.#myCount // 报错
+  ```
+
+
+
+### 9、类的注意点
+
+#### （1）严格模式
+
+类和模块的内部，默认是严格模式，不需要使用use strict指定运行模式。
+
+
+
+#### （2）不存在提升
+
+类不存在变量提升
+
+```javascript
+new Foo(); // ReferenceError
+class Foo {}
+```
+
+
+
+#### （3）name属性
+
+`name`属性总是返回紧跟在`class`关键字后面的类名
+
+```javascript
+class Point {}
+Point.name // "Point"
+```
+
+
+
+#### （4）this指向
+
+类方法内部的this默认指向类的实例。
+
+
+
+### 10、类的继承
+
+#### （1）基础
+
+Class 可以<font color=deepred>通过`extends`关键字实现继承，**让子类继承父类的属性和方法**</font>。
+
+```javascript
+class Point{}
+class sonPoint extend Point {
+    constructor(x,y){
+        super(x,y);//调用父类的constructor(x,y)
+    }
+    toString(){
+        return ""+super.toString();//调用父类的toString()方法
+    }
+}
+```
+
