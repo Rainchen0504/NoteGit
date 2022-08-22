@@ -263,20 +263,11 @@ module.rules的配置如下：
 （2）数组中存放的一个个的rule，rule是一个对象，对象可以设置多个属性：
 
 - test属性：用于对资源进行匹配的，使用正则表达式。
-
-- use属性：对应的值是一个数组[UseEntry]
-
-  其中，UseEntry是一个对象，可以通过对象的属性设置一些其他属性：
-
-  ​	loader：必须有个一个loader属性，对应的值是一个字符串；
-
-  ​	options：可选的属性，值是一个对象或字符串，值会传入loader中；
-
-  ​	query：目前使用options代替；
-
-  ​	如`use:['style-loader']`是loader属性的简写方式`use:[{loader:"style-loader"}]`。
-
-
+- use属性：对应的值是一个数组[UseEntry]，使用多个loader；
+  - loader属性：使用单个loader，对应的值是一个字符串
+  - options：可选的属性，值是一个对象或字符串，值会传入loader中；
+  - 如`use:['style-loader']`是loader属性的简写方式`use:[{loader:"style-loader"}]`。
+  
 
 
 
@@ -342,6 +333,16 @@ module:{
 
 ​	用来处理jpg、png等格式的图片，还可以处理字体图标，作用就是帮我们处理import/require()方式引入的一个文件资源，并且会将该文件放到输出文件夹中。
 
+```javascript
+{
+    exclude: /\.(css|js|html|less)$/,
+    loader:"file-loader",
+    options:{
+      name:"[hash:6].[ext]",
+    }
+}
+```
+
 
 
 ### （5）url-loader
@@ -354,11 +355,17 @@ module:{
     use: {
         loader:"url-loader",
         options:{
-            // 出口文件夹
-            // outputPath:"img",
+            //给图片文件重命名
             name:"img/[name]_[hash:6].[ext]",
-            // 小于100kb的图片才会做base64编码
-            limit:100*1024
+              
+            // 图片大小小于100kb就会被base64处理
+            // 优点：减少请求数量（降低服务器压力）
+            // 缺点：图片体积更大（文件请求速度变慢）
+            limit:100*1024，
+            
+            //url-loader默认使用es6模块划解析，如果使用commonJS中require的引入方式会解析不了
+            //esModule是否关闭url-loader的es6模块化，使用commonJS解析
+            esModule:false
         }
     }
 }
