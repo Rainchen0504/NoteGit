@@ -2272,3 +2272,4 @@ class sonPoint extend Point {
 }
 ```
 
+super关键字表示父类的构造函数，用来新建一个父类的实例对象，子类必须在constructor()方法中调用super()，否则会报错。
