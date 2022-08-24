@@ -924,6 +924,14 @@ new VueLoaderPlugin()
 
 webpack-dev-server在编译后<font color="red">不会写入到任何输入文件</font>，而是将bundle文件<font color="red">保留在内存中</font>。
 
+- 配置项补充
+
+webpack-dev-server配置项中的**contentBase**表示提供静态资源的目录：
+
+​	<font color=deepred>在没有使用html-webpack-plugin插件时，contentBase是有效的</font>，会直接读取目录下的内容，并且如果这个目录下有index.html，就直接打开这个index.html。
+
+​	<font color=deepred>当使用了html-webpack-plugin时，contentBase无效</font>，会直接打开打包代码输出的文件夹（output），并且打开这个文件夹下的index.html。
+
 事实上webpack-dev-server使用了一个库叫memfs（memory-fs webapck自己写的）
 
 
