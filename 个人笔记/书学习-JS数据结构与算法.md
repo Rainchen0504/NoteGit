@@ -714,6 +714,43 @@ result.eliminated.forEach((name) => {
 
 ​	**<font color=deepred>回文是正反都能读通</font>的单词、词组、数或一系列字符的序列**。例如 madam 或 racecar。
 
+最简单做法：字符串反向排列，然后和原值对比，相同就是一个回文。
+
+数据结构最简单方法：双端队列，从头部取一个再从尾部取一个对比，如果相同就删去重新再执行，如果不同就不是回文。
+
+```javascript
+//使用双端队列
+function palindromeChecker(aString) {
+  //检查字符是否合法
+  if (
+    aString === undefined ||
+    aString === null ||
+    (aString !== null && aString.length === 0)
+  ) {
+    return false;
+  }
+  //创建双端队列
+  const deque = new Dequeue();
+  //移除空格，字母小写
+  const lowerString = aString.toLocaleLowerCase().split(" ").join("");
+  let firstChar, lastChar;
+  //向队列添加元素
+  for (let i = 0; i < lowerString.length; i++) {
+    deque.addBack(lowerString.charAt(i));
+  }
+  //从前和后各取一个元素比较，不同就false，相同循环继续
+  while (deque.size() > 1 && isEqual) {
+    firstChar = deque.removeFront();
+    lastChar = deque.removeBack();
+    if (firstChar !== lastChar) {
+      isEqual = false;
+    }
+  }
+  return isEqual;
+}
+
+```
+
 
 
 #### （3）JS任务队列

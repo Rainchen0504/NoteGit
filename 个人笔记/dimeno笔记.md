@@ -2725,3 +2725,21 @@ export default{
 </script>
 ```
 
+
+
+
+
+## 2022年8月26日
+
+vue暴露的静态资源要放到public文件中才能通过axios请求获得，请求时写法：
+
+```javascript
+axios({
+  method: "get",
+  //这里/表示进入public文件中
+  url: "/assets/..."
+}).then((res) => {
+  //成功的回调
+})
+```
+

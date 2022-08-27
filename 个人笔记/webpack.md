@@ -347,6 +347,8 @@ module:{
 
 ### （5）url-loader
 
+<font color=red>**Webpack5中已弃用，如果还要使用，需在options同级增加type属性`type: "javascript/auto"`**</font>
+
 ​	和file-loader方式是相似的，但是可以将较小的文件转成base64的URI。
 
 ```javascript
@@ -366,7 +368,8 @@ module:{
             //url-loader默认使用es6模块划解析，如果使用commonJS中require的引入方式会解析不了
             //esModule是否关闭url-loader的es6模块化，使用commonJS解析
             esModule:false
-        }
+        },
+        type: "javascript/auto"
     }
 }
 ```
@@ -411,11 +414,23 @@ module:{
 
 
 
+### （6）html-loader
+
+<font color=red>**Webpack5中使用html-whinimg-loader替代**</font>
+
+```javascript
+{
+  test: /\.html$/,
+    // 处理html文件的img图片（负责引入img，从而能被url-loader进行处理）
+    loader: "html-withimg-loader",
+},
+```
+
 
 
 ## 15、资源模块类型(asset module type)
 
-在webpack5之后，可以直接使用资源模块类型来替代file-loader、url-loader等。<u>资源模块类型(asset module type)</u>，通过添加4种类型的模块，来替代这些loader。
+**<font color=deepred>在webpack5之后，可以直接使用资源模块类型来替代file-loader、url-loader等</font>**。<u>资源模块类型(asset module type)</u>，通过添加4种类型的模块，来替代这些loader。
 
 - `asset/resource`发送一个单独文件并导出URL。之前通过file-loader实现；
 - `asset/inline`导出一个资源的data URI。之前使用url-loader实现；
@@ -581,7 +596,7 @@ new CopyWebpackPlugin({
 
 
 
-### （5）Mode配置
+## 18、Mode配置
 
 ​	可以告知webpack使用响应模式的内置优化：默认值时production；可选的值有none、development、production。
 
