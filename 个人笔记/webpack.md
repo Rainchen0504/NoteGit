@@ -271,29 +271,11 @@ module.rules的配置如下：
 
 
 
-## 13、PostCSS
-
-​	PostCSS是一个通过JavaScript来转换样式的工具(插件)，这个工具可以进行一些CSS的转换和适配，比如自动添加浏览器前缀，CSS样式重置等。
-
-​	插件autoprefixer是用来解析css并为其添加浏览器厂商前缀的PostCSS插件。但是在配置postcss-loader时，配置插件并不需要使用autoprefixer，可以使用另一个插件<u>post-preset-env</u>。post-preset-env可以帮助我们将一些现代的CSS特性，转成大多数浏览器认识的CSS，并且会根据目标浏览器或者运行时环境 添加所需的polyfill。（相当于内置autoprefixer）
-
-​	仅需在postcss.config.js文件中配置即可：
-
-```javascript
-module.exports = {
-    plugins: [
-        require("postcss-preset-env")
-    ]
-}
-```
-
-
-
 ## 14、常用loader
 
 ### （1）css-loader
 
-​	只是负责将css文件进行解析，并不会把解析后的css插入到页面中。
+​	只是负责将css文件进行解析，把css写到js文件中，并不会把解析后的css插入到页面中。
 
 
 
@@ -704,53 +686,7 @@ plugin:[
 
 Babel是一个<u>工具链</u>，主要用于旧浏览器或者环境中将ECMA2015+转成向后兼容版本的JS。（JSX转成JS用的babel）。
 
-
-
-
-
-## 21、babel的使用
-
-### （1）首先要安装库
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202109052240322.png" alt="image-20210905224038418" style="zoom:50%;" />
-
-```javascript
-npm isntall @babel/cli @babel/core -D
-```
-
-
-### （2）使用方法：
-
-- src：源文件的目录
-- --out-dir：指定要输入的文件夹dist
-
-```javascript
-npx babel src --out-dir dist
-```
-
-需要使用什么功能，就安装什么功能的插件并执行转换语句。
-
-
-
-### （3）但是如果要转换的内容过多，配置比较麻烦，可以使用<u>预设(preset)</u>
-
-安装`@babel/preset-env`预设
-
-```javascript
-npm install @babel/preset-env -D
-```
-
-执行命令
-
-```javascript
-npx babel src --out-dir dist --presets=@babel/preset-env
-```
-
-
-
-
-
-## 22、babel原理
+### 1、babel原理
 
 ​	babel可以看做是一个编译器，就是将源代码转换成浏览器可以识别的另一段源代码。babel也拥有编译器的工作流程：解析阶段(parsing)，转换阶段(transformation)，生成阶段(code generation)。
 
@@ -764,63 +700,63 @@ npx babel src --out-dir dist --presets=@babel/preset-env
 
 
 
+### 2、设置babel
 
+#### （1）安装
 
-## 23、babel-loader
+`npm install babel-loader @babel/core @babel/preset-env @babel/polyfill core-js`
 
-```javascript
-npm isntall babel-loader @babel/core
-```
+#### （2）配置
 
-设置规则在加载js文件时，使用babel
+- Babel/core负责转换用的一些插件
 
-```javascript
-module:{	
-  rules:[{			
-  	test:/\.m?js$/,			
-    use:{				
-    	loader:"babel-laoder"			
-    }		
-  }]
-}
-```
+![image-20220827232143859](https://raw.githubusercontent.com/Rainchen0504/picture/master/202208272321183.png)
 
-配置完成后还需要使用指定的插件才会生效
-
-```javascript
-{	
-  test:/\.m?js$/,	
-  use:{		
-    loader:"babel-laoder"，		
-    options:{			
-      plugins:[				
-        "@babel/plugin-transform-block-scoping",				
-        "@babel/plugin-transform-arrow-functions"			
-      ]		
-    }	
-  }
-}
-```
-
-
-
-
-
-## 24、babel-preset
-
-直接给webpack提供一个preset，根据预设来加载对应的插件列表，并传递给babel。
+- babel/preset-env最新转换规则，只能转译基本语法(promise就不能转换)
+- babel/polyfill负责转译所有JS新语法，但是只是为解决部分兼容性问题将所有兼容性代码引入，体积太大
+  - npm i @babel/polyfill
+  - import "@babel/polyfill"在入口文件中引入
+- core-js负责按需转译JS新语法
+  - npm i core-js
+  - 按需加载useBuiltIns:"usage"
+  - 指定core-js的版本，当前最新为3版本
+  - 还可以设置兼容浏览器的版本targets
 
 ```javascript
-npm install @babel/preset-env
+module: {
+  rules: [
+    {
+      test: /\.js$/,
+      exclude: /node_modules/,//排除node_module文件
+      loader: 'babel-loader',
+      options: {
+        // 预设：指示babel做怎么样的兼容性处理
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              // 按需加载
+              useBuiltIns: 'usage',
+              // 指定core-js版本
+              corejs: {
+                version: 3
+              },
+              // 指定兼容性做到哪个版本浏览器
+              targets: {
+                chrome: '60',
+                firefox: '60',
+                ie: '9',
+                safari: '10',
+                edge: '17'
+              }
+            }
+          ]
+        ]
+      }
+    }
+  ]
+},
 ```
-
-此外，babel配置信息可以独立放到一个文件中，babel.config.js
-
-```javascript
-module.exports = {	presets:[		["@babel/preset-env"]	]}
-```
-
-
 
 
 
@@ -1112,9 +1048,128 @@ module.exports = {
 
 
 
+# 二、生产环境常见配置
+
+## 1、提取css成单独文件
+
+步骤一、安装`mini-css-extract-plugin`
+
+步骤二、使用`MiniCssExtractPlugin.loader`替代style-loader，提取js中的css成单独文件
+
+步骤三、调用插件，对输出的css文件进行重命名
+
+```javascript
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+module: {
+  rules: [
+    {
+      test: /\.css$/,
+      use: [
+        MiniCssExtractPlugin.loader,
+        'css-loader'
+      ] 
+    }
+  ] 
+},
+plugins: [
+  new HtmlWebpackPlugin({
+    template: './src/index.html'
+  }),
+  new MiniCssExtractPlugin({
+    filename: 'css/built.css'
+  }) 
+]
+```
+
+js是按需加载，不提取css出来的话，就要多加载一些js文件。
 
 
-# 二、Vite
+
+## 2、css兼容性处理（设置前缀）
+
+​	PostCSS是一个**通过JavaScript来转换样式的工具(插件)**，这个工具可以进行一些CSS的转换和适配，比如<font color=deepred>自动添加浏览器前缀，CSS样式重置等</font>。
+
+​	post-preset-env可以帮助我们将一些现代的CSS特性，转成大多数浏览器认识的CSS，并且会根据目标浏览器或者运行时环境 添加所需的polyfill。（相当于内置autoprefixer）
+
+步骤一：安装`npm install postcss-loader postcss-preset-env`；
+
+步骤二：在module中注册loader，postcss-loader一般写在css-loader后面(运行之前)；
+
+步骤三：创建postcss.config.js文件，配置插件
+
+步骤四：注册插件
+
+```javascript
+module.exports = {
+  plugins: [
+    //找到package.json中browserslist里面的配置，通过配置加载指定的css兼容性样式
+    require("postcss-preset-env")(),
+    //添加浏览器前缀
+    //require("autoprefixer")
+  ],
+};
+```
+
+步骤五：在package.json文件中配置不同环境下的浏览器兼容要求
+
+```json
+"browserslist": {
+  // 开发环境 --> 设置node环境变量：process.env.NODE_ENV = development
+  "development": [
+    "last 1 chrome version",
+    "last 1 firefox version",
+    "last 1 safari version"
+  ],
+  // 生产环境：默认是遵循生产环境
+  "production": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ]
+}
+```
+
+
+
+## 3、压缩css
+
+使用插件压缩css代码，减小体积，提升加载速度
+
+步骤一：安装`npm install optimize-css-assets-webpack-plugin`
+
+步骤二：引入插件`const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin' )`
+
+步骤三：使用插件`new OptimizeCssAssetsWebpackPlugin()`
+
+
+
+## 4、压缩js
+
+将mode设置成production，生产环境下js会自动被压缩
+
+
+
+## 5、压缩html
+
+在HtmlWebpackPlugin配置项中添加minify配置项，一般设置两个属性
+
+```javascript
+new HtmlWebpackPlugin({
+  template: './src/index.html', // 压缩html代码
+  minify: {
+  	// 移除空格 
+  	collapseWhitespace: true, 
+    // 移除注释 
+    removeComments: true
+  } 
+})
+```
+
+
+
+
+
+# 三、Vite
 
 ## 认识vite
 
