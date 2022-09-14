@@ -789,7 +789,21 @@ function delRepeat(arr){
 
 
 
-## 2、Map
+## 2、WeakSet
+
+### 和set的区别
+
+相同点：内部元素不能重复的数据结构
+
+不同点：
+
+1. WeakSet中**只能存放对象类型，不能存放基本数据类型**；
+2.  WeakSet对元素的引用是弱引用，如果没有其他引用对某个对象进行引用，那么垃圾回收器可以对该对象进行回收；
+3. WeakSet**不能遍历**；
+
+
+
+## 3、Map
 
 ### （1）基本用法
 
@@ -936,7 +950,7 @@ objToStrMap({yes: true, no: false})
 
 
 
-## WeakMap
+## 4、WeakMap
 
 结构和Map类似，用于生成键值对的集合
 
