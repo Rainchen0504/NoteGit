@@ -788,7 +788,262 @@ var newFoo = foo.ycbind("abc", "kobe", 30);
 - Proxy、Reflect
 - Promise
 - ES Module
-- class新增#表示私有属性，static表示静态方法
-- BigInt超出最大安全整数的数字
+
+
+
+### 27、ES7
+
+- includes方法
+
+数组的includes方法，找到一项就返回true，没找到返回false；
+
+indexOf查找某项元素，找到返回第一次出现索引，没找到返回-1；
+
+- 指数运算符
+
+**运算符，可以对数字计算乘方；功能替代Math.pow
+
+
+
+### 28、ES8
+
+- Object.values方法
+
+获取所有的value值
+
+- Object entries
+
+将对象转数组
+
+- padStart和padEnd方法
+
+对字符串进行首尾填充
+
+- async、await
+
+
+
+### 29、ES9
+
+- Async iterator
+- Promise finally
+
+
+
+### 30、ES10
+
 - flat数组扁平化
+- flatMap
+- trimStart和trimEnd方法
+
+消除首尾空格
+
+
+
+### 31、ES11
+
+- BigInt超出最大安全整数的数字
+
+BigInt的表示方法是在数值的后面加上n
+
 - ??逻辑赋值和?.可选链
+- for...in...
+
+
+
+### 32、ES12
+
+- 对象垃圾回收回调
+
+**FinalizationRegistry**对象提供对象被回收时的回调，通过register方法调用，注册要标记的对象。
+
+```js
+let obj = {name:"zhang"};
+const registry = new FinalizationRegistry(value => {
+  console.log("对象被销毁了",value)
+})
+registry.register(obj,"obj")
+obj = null;//触发销毁
+```
+
+- replaceAll
+
+字符串全替换
+
+
+
+### 33、ES13
+
+- Object.hasOwn方法
+
+判断对象中是否存在某个属性
+
+- class新增#表示私有属性，只能内部访问；
+
+  static表示类的静态方法，可以用类直接调用；
+
+
+
+### 34、Proxy
+
+<font color=deepred>对比Object.defineProperty</font>：
+
+1. Object.defineProperty设计之初不是为了监听整个对象中所有属性的，需要使用遍历对每个属性实现；
+2. 新增、删除属性Object.defineProperty是无能为力的；
+
+#### （1）基本使用
+
+​	先针对目标对象创建代理对象，然后<font color=red>对对象的所有操作**都通过代理对象完成**</font>，代理对象可以监听对代理对象的操作。
+
+```js
+const p = new Proxy(target, handler)
+```
+
+参数target表示要侦听的目标对象；
+
+参数handler表示处理对象，其中包括get、set等捕获器；
+
+
+
+#### （2）捕获器
+
+常见的捕获器包括get、set、has、deleteProperty等
+
+##### set捕获器
+
+包含四个参数：**<font color=blue>target目标对象；propertyKey被侦听的属性；value新设置的属性值；receiver调用的代理对象</font>**；
+
+```js
+const objProxy = new Proxy(obj, {
+  set: function(target, key, newValue) {
+    console.log(`监听: 监听${key}的设置值: `, newValue)
+    target[key] = newValue
+  }
+})
+```
+
+##### get捕获器
+
+包含三个参数：**<font color=blue>target目标对象；propertyKey被侦听的属性；receiver调用的代理对象</font>**；
+
+```js
+const objProxy = new Proxy(obj, {
+  get: function(target, key) {
+    console.log(`监听: 监听${key}的获取`)
+    return target[key]
+  }
+})
+```
+
+
+
+### 35、Reflect
+
+#### （1）作用
+
+- 提供了很多操作JavaScript对象的方法，像Object中操作对象的方法；
+- 获取原型的方法Reflect.getPrototypeOf(target)类似于 Object.getPrototypeOf()；
+- 属性描述符比如Reflect.defineProperty(target, propertyKey, attributes)类似于Object.defineProperty() ;
+
+
+
+#### （2）和Object的区别
+
+​	早期的ECMA规范中没有考虑到对 **对象本身** 的操作如何设计会更加规范，所以将这些API放到了Object上面; 
+
+​	所以在ES6中新增了Reflect，让这些操作都集中到了Reflect对象上; 同时可以不操作原对象;
+
+| Method Name                   | `Object`                                                     | `Reflect`                                                    |
+| :---------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| `defineProperty()`            | [`Object.defineProperty()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty) 返回传递给函数的对象。如果未在对象上成功定义属性，则返回`TypeError`。 | 如果在对象上定义了属性，则[`Reflect.defineProperty()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/defineProperty)返回布尔值。 |
+| `defineProperties()`          | [`Object.defineProperties()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperties) 返回传递给函数的对象。如果未在对象上成功定义属性，则返回`TypeError`。 | N/A                                                          |
+| `set()`                       | N/A                                                          | 如果在对象上成功设置了属性，则[`Reflect.set()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/set)返回`true`，否则返回`false`。如果目标不是`Object`，则抛出`TypeError` |
+| `get()`                       | N/A                                                          | [`Reflect.get()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/get)返回属性的值。如果目标不是`Object`，则抛出`TypeError`。 |
+| `deleteProperty()`            | N/A                                                          | 如果属性从对象中删除，则[`Reflect.deleteProperty()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/deleteProperty)返回`true`，否则返回`false`。 |
+| `getOwnPropertyDescriptor()`  | 如果传入的对象参数上存在[`Object.getOwnPropertyDescriptor()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor) ，则会返回给定属性的属性描述符，如果不存在，则返回`undefined`。 | 如果给定属性存在于对象上，则[`Reflect.getOwnPropertyDescriptor()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/getOwnPropertyDescriptor) 返回给定属性的属性描述符。如果不存在则返回`undefined`，如果传入除对象（原始值）以外的任何东西作为第一个参数，则返回`TypeError` |
+| `getOwnPropertyDescriptors()` | [`Object.getOwnPropertyDescriptors()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptors) 返回一个对象，其中包含每个传入对象的属性描述符。如果传入的对象没有拥有的属性描述符，则返回一个空对象。 | N/A                                                          |
+| `getPrototypeOf()`            | [`Object.getPrototypeOf()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/GetPrototypeOf)返回给定对象的原型。如果没有继承的原型，则返回`null。`在 ES5 中为非对象抛出`TypeError`，但在 ES2015 中强制为非对象。 | [`Reflect.getPrototypeOf()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/getPrototypeOf)返回给定对象的原型。如果没有继承的原型，则返回 null，并为非对象抛出`TypeError`。 |
+| `setPrototypeOf()`            | 如果对象的原型设置成功，则[`Object.setPrototypeOf()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf)返回对象本身。如果设置的原型不是`Object`或`null`，或者被修改的对象的原型不可扩展，则抛出`TypeError`。 | 如果在对象上成功设置了原型，则[`Reflect.setPrototypeOf()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/setPrototypeOf) 返回 true，否则返回 false（包括原型是否不可扩展）。如果传入的目标不是`Object`，或者设置的原型不是`Object`或`null`，则抛出`TypeError`。 |
+| `isExtensible()`              | 如果对象是可扩展的，则 Object.isExtensible（）返回 true，否则返回 false。如果第一个参数不是对象（原始值），则在 ES5 中抛出`TypeError`。在 ES2015 中，它将被强制为不可扩展的普通对象并返回`false`。 | 如果对象是可扩展的，则[`Reflect.isExtensible()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/isExtensible) 返回`true`，否则返回`false`。如果第一个参数不是对象（原始值），则抛出`TypeError`。 |
+| `preventExtensions()`         | [`Object.preventExtensions()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/preventExtensions) 返回被设为不可扩展的对象。如果参数不是对象（原始值），则在 ES5 中抛出`TypeError`。在 ES2015 中，参数如为不可扩展的普通对象，然后返回对象本身。 | returns `true` if the object has been made non-extensible, and `false` if it has not. Throws a `TypeError` if the argument is not an object (a primitive).如果对象已变得不可扩展，则[`Reflect.preventExtensions()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/preventExtensions) 返回`true`，否则返回`false`。如果参数不是对象（原始值），则抛出`TypeError`。 |
+| `keys()`                      | [`Object.keys()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/keys)返回一个字符串`数组`，该字符串映射到目标对象自己的（可枚举）属性键。如果目标不是对象，则在 ES5 中抛出`TypeError`，但将非对象目标强制为 ES2015 中的对象 | N/A                                                          |
+| `ownKeys()`                   | N/A                                                          | [`Reflect.ownKeys()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/ownKeys)返回一个属性名称数组，该属性名称映射到目标对象自己的属性键。如果目标不是`Object`，则抛出`TypeError`。 |
+
+
+
+#### （3）使用方法
+
+```js
+const objProxy = new Proxy(obj, {
+  has:function(target, key){
+    return Reflect.has(target, key)
+  },
+  get:function(target, key，receiver){
+    return Reflect.get(target, key, receiver)
+  },
+  set:function(target, key, valu,receiver){
+    return Reflect.set(target, key, value, receiver)
+  },
+  deleteProperty:function(target, key){
+    return Reflect.deleteProperty(target, key)
+  }
+})
+```
+
+
+
+#### （4）优势
+
+- 提供对象的代理，不直接操作原对象；
+- Reflcet的set方法返回布尔值，可以用来判断操作是否成功；
+- 参数receiver表示外层的Proxy对象，在set中可以决定对象访问器setter/getter的this指向；
+
+
+
+### 36、Promise
+
+三种状态：pending待定、fulfilled完成和rejected失败；
+
+一旦状态被确定下来，Promise的状态会被锁死，Promise的状态是不可更改的；
+
+#### （1）then方法
+
+Promise对象上的方法，可以链式调用，接收resolve的参数回调；
+
+#### （2）catch方法
+
+Promise对象上的方法，接收reject的参数回调；
+
+#### （3）finally方法
+
+Promise对象上的方法，表示无论Promise对象无论变成fulfilled还是ejected最终都会被执行；
+
+#### （4）all方法
+
+将多个Promise包裹在一起形成一个新的Promise，所有的promise状态变为fulfilled时状态更改为fulfilled，一旦有一个promise状态为reject状态就变为reject；
+
+#### （5）race方法
+
+将多个Promise包裹在一起形成一个新的Promise，一旦有一个promise更改了状态就跟着改变状态；
+
+#### （6）allSettled方法
+
+当所有的Promise都有结果，无论是fulfilled，还是rejected时，才会更改最终的状态；
+
+#### （7）any方法
+
+等待第一个fulfilled状态更改状态为fulfilled，如果都是reject会报错`AggregateError: All promises were rejected`;
+
+
+
+### 37、迭代器
+
+​	<font color=deepred>**是个对象，定义一个序列**，使能在容器对象(链表或数组等)上遍历访问的对象，使用该接口无需关心对象的内部实现细节</font>。
+
+JS中迭代器是<font color=blue>通过使用next()方法实现迭代器协议的对象</font>，next方法返回拥有两个属性的对象：
+
+- **done**：
+  - 如果迭代到序列中最后一个值，则为true。
+  - 如果没迭代到最后，则为false；
+
+- **value**：序列中的next值；
