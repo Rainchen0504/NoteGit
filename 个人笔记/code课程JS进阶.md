@@ -1038,12 +1038,290 @@ Promise对象上的方法，表示无论Promise对象无论变成fulfilled还是
 
 ### 37、迭代器
 
-​	<font color=deepred>**是个对象，定义一个序列**，使能在容器对象(链表或数组等)上遍历访问的对象，使用该接口无需关心对象的内部实现细节</font>。
+<font color=deepred>	能使容器对象(链表或数组等)进行遍历访问的**对象**</font>。
 
-JS中迭代器是<font color=blue>通过使用next()方法实现迭代器协议的对象</font>，next方法返回拥有两个属性的对象：
+​	迭代器协议是定义了产生一系列值的标准方式。Javascript中迭代器是**符合迭代器协议的对象**，体现在next()方法上，<font color=red>next方法</font>返回拥有两个属性的对象。
 
-- **done**：
-  - 如果迭代到序列中最后一个值，则为true。
-  - 如果没迭代到最后，则为false；
+#### next方法
 
-- **value**：序列中的next值；
+`{ done: Boolean, value: XX }`
+
+- done属性：迭代到容器最后一个值时为true；没迭代到最后时为false；
+- value属性：容器序列中的next值；
+
+![image-20220927235607577](https://raw.githubusercontent.com/Rainchen0504/picture/master/202209272356583.png)
+
+```js
+//数组通用迭代器
+const names = ["abc", "cba", "nba"]
+const nums = [100, 24, 55, 66, 86]
+//迭代器构造函数
+function createArrayIterator(arr){
+  let index = 0;
+  return {
+    next:function(){
+      if(index < arr.length){
+        return {done:false, value:arr[index++]}
+      }else{
+        return {done:true, value:undefined}
+      }
+    }
+  }
+}
+//names数组的迭代器
+const namesIterator = createArrayIterator(names);
+console.log(namesIterator.next());//{done:false,value:"abc"}
+console.log(namesIterator.next());//{done:false,value:"cba"}
+//nums数组的迭代器
+const numsIterator = createArrayIterator(nums);
+console.log(numsIterator.next());//{done:false,value:100}
+console.log(numsIterator.next());//{done:false,value:24}
+```
+
+
+
+### 38、可迭代对象
+
+<font color=deepred>	当一个对象实现了迭代器协议时，该对象就是一个**可迭代对象**</font>。
+
+#### 可迭代对象实现
+
+将对象变成一个可迭代对象的方法：
+
+1. 必须实现一个特定的函数`Symbol.iterator`；
+2. 函数必须要返回一个迭代器（作用于当前对象）
+
+```js
+//info就是个可迭代对象
+const info = {
+  friends: ["zhang", "yu", "chen"],
+  //特定可迭代函数
+  [Symbol.iterator]: function () {
+    let index = 0;
+    return {
+      next: () => {
+        if (index < this.friends.length) {
+          return { done: false, value: this.friends[index++] };
+        } else {
+          return { done: true };
+        }
+      }
+    };
+  }
+};
+```
+
+当使用 for...of 操作可迭代对象时，就会调用内部的迭代器方法；
+
+
+
+#### 原生可迭代对象
+
+​	<font color=deepred>许多原生对象已经实现了可迭代协议，会**自动生成一个可迭代对象**；</font>
+
+包括：String、Array、Map、Set、arguemnts对象、NodeList集合；
+
+
+
+### 39、自定义类的迭代及中断
+
+​	通过class创建的实例对象，如果希望默认是可迭代的，那么在设计时就需要符合迭代器协议。
+
+​	同时<font color=blue>**迭代器支持在不完全迭代的情况下中断**，需要在next方法的同层级添加return方法</font>。
+
+```js
+class Person {
+  constructor(name, age, height, friend) {
+    this.name = name;
+    this.age = age;
+    this.height = height;
+    this.friend = friend;
+  }
+  running() {}
+  //可迭代对象实现
+  [Symbol.iterator]() {
+    let index = 0;
+    const iterator = {
+      next: () => {
+        if (index < this.friend.length) {
+          return { done: false, value: this.friend[index++] };
+        } else {
+          return { done: true };
+        }
+      },
+      return: () => {
+        return { done: true };
+      },
+    };
+    return iterator;
+  }
+}
+//使用时可使目标对象变成可迭代对象
+const p1 = new Person("zhang", 25, 1.8, ["zhangge", "yuge", "chenge"]);
+for (const item of p1) {
+  console.log(item);//zhangge,yuge
+  if(item === "yuge"){
+    break
+  }
+}
+```
+
+
+
+### 40、生成器
+
+​	生成器是ES6中新增的一种**函数控制、使用方案**，可以更加灵活的控制函数什么时候继续和暂停执行。
+
+#### （1）生成器函数特征
+
+1. 生成器函数需要<font color=red>在function后面**加符号***</font>；
+2. 生成器函数可以<font color=red>通过**yield关键字**控制函数的执行流程</font>；
+3. 生成器函数返回值是一个Generator(生成器)，<font color=red>生成器是一种**特殊的迭代器**</font>；
+
+
+
+#### （2）生成器函数执行
+
+先声明生成器函数，然后调用next方法，可以通过yield返回结果。
+
+```js
+// 定义一个生成器函数
+function* foo() {
+  const value1 = 100;
+  yield value1;
+  
+  const value2 = 200;
+  yield value2;
+
+  const value3 = 300;
+  yield value3;
+}
+//调用生成器函数, 返回一个生成器对象
+const generator = foo();
+//调用next方法执行，执行到第一个yield暂停执行；
+console.log(generator.next()); //{value: 100, done: false}
+//执行到第二个yield暂停执行；
+console.log(generator.next()); //{value: 200, done: false}
+//执行到第三个yield暂停执行；
+console.log(generator.next()); //{value: 300, done: false}
+```
+
+
+
+#### （3）next函数
+
+​	生成器函数支持传递参数，可以在调用next函数时传递参数，这个参数会作为上一个yield语句的返回值；
+
+
+
+#### （4）return函数
+
+​	return函数也支持给生成器函数传递参数，但是return传值后这个生成器函数就会结束，之后调用next不会继续生成值了;
+
+```js
+function* foo(name) {
+  const name2 = yield "aaaa";
+  const name3 = yield "bbbb";
+  yield "cccc";
+  return undefined;
+}
+const generator = foo("next1");
+
+//generator.return提前结束函数
+console.log(generator.next()); //{value:'aaaa',done:false}
+console.log(generator.return("next2")); //{value:'next2',done:true}
+console.log(generator.next("next3")); //{value:'undefined',done:true}
+console.log(generator.next("next4")); //{value:'undefined',done:true}
+```
+
+
+
+#### （5）throw函数
+
+​	生成器函数内部支持抛出异常并在外部捕获，在catch语句中不能继续yield新值，只能在catch语句外部使用yield继续执行生成器函数；
+
+```js
+function* foo(name1) {
+  const name2 = yield "aaaa";
+  const name3 = yield "bbbb";
+  // return "bbbb"
+  yield "cccc";
+  return undefined;
+}
+const generator = foo("next1");
+
+//generator.throw向函数抛出一个异常
+console.log(generator.next()); //{value:'aaaa',done:false}
+console.log(generator.throw(new Error("throw error"))); //报错，thorw error
+//不执行
+console.log(generator.next("next3"));
+console.log(generator.next("next4"));
+```
+
+
+
+#### （6）生成替代迭代器
+
+生成器是特殊的迭代器，可以使用生成器来替代迭代器
+
+```js
+const names = ["zhang", "yu", "chen"];
+//生成器函数
+function* createGenerator(arr) {
+  for (let i = 0; i < arr.length; i++) {
+    yield arr[i];
+  }
+}
+const range = createGenerator(names);
+console.log(range.next());
+console.log(range.next());
+console.log(range.next());
+console.log(range.next());
+
+//使用语法糖版本
+function* foo(arr) {
+  yield* arr;
+}
+const func = foo(names);
+console.log(func.next());
+console.log(func.next());
+console.log(func.next());
+console.log(func.next());
+```
+
+**`yield*`提供语法糖写法，生成一个可迭代对象，它内部会依次迭代其中的每一个值；**
+
+
+
+### 42、自定义类的生成器实现
+
+```js
+//使用yield语法糖
+class PersonNew {
+  constructor(name, age, height, friend) {
+    this.name = name;
+    this.age = age;
+    this.height = height;
+    this.friend = friend;
+  }
+  *[Symbol.iterator]() {
+    yield* this.friend;
+  }
+}
+
+const p = new PersonNew("zhang", 25, 18, ["zhangge", "yuge", "chenge"]);
+for (let item of p) {
+  console.log(item);
+}
+const personIterator = p[Symbol.iterator]();
+console.log(personIterator.next());
+console.log(personIterator.next());
+console.log(personIterator.next());
+console.log(personIterator.next());
+```
+
+
+
+### 43、async和await
+
+​	async内部代码执行过程和普通函数是一致的，默认情况下会被同步执行，有返回值时和普通函数会有区别。
