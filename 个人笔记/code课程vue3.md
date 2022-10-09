@@ -1149,116 +1149,111 @@ setup(){
 
 官网关于this的描述：
 
-1. 表达的含义是<font color=red>this并没有指向当前组件实例</font>；
-2. 并且<font color=red>在setup被调用之前，data、computed、methods等都没有被解析</font>；
-3. 所以<font color=red>无法在setup中获取this</font>；
+1. 表达的含义是<font color=blue>this并没有指向当前组件实例</font>；
+2. 并且<font color=red>**在setup被调用之前，data、computed、methods等都没有被解析**</font>；
 
 
 
+## 4、Reactive
 
+​	定义一个变量，默认情况下，<font color=red>Vue不会跟踪它的变化</font>，来**引起界面的响应式操作**。
 
-## 7、Reactive API
-
-
-
-这是因为对于一个<font color=red>定义的变量</font>来说，默认情况下，<font color=red>Vue并不会跟踪它的变化，来引起界面的响应式操作。</font>
-
-
-
-
-
-
-
-- reactive函数可以给在setup中定义的数据<font color=red>提供响应式特性</font>；
-
-- 使用reactive函数处理我们的数据之后，数据再次被使用时就会进行依赖收集;
-
-- 当数据发生改变时，所有收集到的依赖都是进行对应的响应式操作(比如更新界面);
-
-- 平时编写的<font color=red>**data选项**，也是在内部交给了reactive函数将其编程响应式对象的</font>；
-
-- reactive函数对**传入的参数是有限制的**，要求必须传入的是<font color=red>**一个对象或者数组类型**</font>，如果传入一个基本类型（string、number、boolean）会报一个警告⚠️。
+- reactive函数可以给在setup中定义的数据<font color=red>提供响应式特性</font>，数据再次被使用时就会进行依赖收集；
+- <font color=red>**data选项**，也是在内部交给了reactive函数将其编程响应式对象的</font>；
+- reactive函数对**传入的参数是有限制的**，要求必须传入的是<font color=red>**一个对象或者数组类型**</font>，如果传入一个基本类型（string、number、boolean）会报一个警告⚠️；
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112270946859.png" alt="image-20211227094644986" style="zoom:50%;" />
 
 
 
+## 5、Ref
 
-
-## 8、ref API
-
-​	ref会返回一个<font color=red>可变的响应式对象</font>，该对象作为一个<font color=red>**响应式的引用**</font>维护者它内部的值，它内部的值是<font color=red>在ref的value属性中被维护的</font>，也就是ref名称的来源；
+​	ref会返回一个<font color=red>**可变的响应式对象**</font>，该对象作为一个<font color=red>**响应式的引用**</font>维护者它内部的值；
 
 ⚠️注意：
 
-​	**在<font color=red>模板中</font>引入ref的值时，Vue会自动帮助我们进行解包操作，所以我们并<font color=red>不需要</font>在模板中通过 ref.value 的方式来使用;**
-
-​	**但是在<font color=red> setup 函数内部</font>，它依然是一个 ref引用， 所以对其进行操作时，我们<font color=red>依然需要</font>使用 ref.value的方式;**
-
-​	将ref放到一个reactive的属性当中，在模板中使用时，会自动解包。
+1. 在<font color=blue>template模板中</font>引入ref的值**<font color=red>不需要</font>通过 ref.value 的方式来使用**，Vue会自动帮助我们进行解包操作;
+2. 在<font color=blue> setup 函数内部</font>依然是一个 ref引用，对其进行操作时**<font color=red>依然需要</font>使用 ref.value的方式**;
+3. 将ref放到一个reactive的属性当中，在模板中使用时**会自动解包**。
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271018330.png" alt="image-20211227101743353"  />
+
+自动解包：
 
 ![image-20211227101846792](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271018388.png)
 
 
 
+## 6、readonly
+
+​	如果希望被传递的响应式对象**不能被修改**，Vue提供了readonly的方法。readonly会返回<font color=blue>原生对象的只读代理</font>（<font color=red>使用proxy劫持set方法使对象不能被修改</font>）；
+
+### （1）参数类型
+
+使用readonly常见有三种类型参数：
+
+- 普通对象
+- reactive返回的对象
+- ref的对象
 
 
-## 9、readonly
 
-​	通过**reactive或者ref可以获取到一个响应式的对象**，但是某些情况下，**传入给其他地方(组件)**的这个响应式对象希望**在另外一个地方(组件)被使用**，但是**不能被修改**，Vue提供了readonly的方法。 	
+### （2）使用规则
 
-​	<font color=red>readonly会返回原生对象的只读代理</font>（也就是一个proxy，这是一个<font color=red>proxy的set方法被劫持</font>，并且不能对其进行修改）；
-
-- 开发中常见的readonly方法会传入三个类型的参数：
-  - 类型一：普通对象；
-  - 类型二：reactive返回的对象；
-  - 类型三：ref的对象；
-
-- readonly使用规则：
-
-  - readonly**返回的对象都是不可修改的**；
-  - readonly处理**原来的对象**时允许被修改的；
-  - tip提示：比如 const info = readonly(obj)，info对象是不允许被修改的；
-
-  ​				当obj被修改时，readonly返回的info对象也会被修改；
-
-  ​				但是不能去修改readonly返回的对象info；
-
-  - 本质上就是<font color=red>**readonly返回的对象的setter方法**</font>被劫持了而已；
-
-- readonly的实际应用
-
-  在传递数据给其他组件时，其他组件使用所传递的数据，但不允许修改时，就可以使用readonly。
-
-  ![image-20211227134757228](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271347536.png)
+- readonly返回的对象都是**不允许修改的**；
+- readonly处理原来的对象时**允许被修改**；
+- 本质上就是<font color=red>**readonly返回的对象的setter方法**</font>被劫持了；
+- 常用于组件传值时保证传递的值不被修改；
 
 ![image-20211227134817231](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271348945.png)
 
 
 
+## 7、reactive判断
 
+### （1）isProxy
 
-## 10、reactive判断的API
-
-- isProxy：检查对象是否是由 reactive 或 readonly创建的 proxy。
-- isReactive：检查对象是否是由 reactive创建的响应式代理， 如果该代理是 readonly 建的，但包裹了由 reactive 创建的另一个代理，它也会返回 true。
-
-- isReadonly：检查对象是否是由 readonly 创建的只读代理。
-- isRow：返回 reactive 或 readonly 代理的原始对象(不建议保留对原始对象的持久引用。请谨慎使用)
-- shallowReactive：创建一个响应式代理，它跟踪其自身 property 的响应性，但不执行嵌套对象的深层响应式转换 (深层还是原生对象)。
-- shallowReadonly：创建一个 proxy，使其自身的 property 为只读，但不执行嵌套对象的深度只读转换(深层还是可读、可写的)。
+检查对象是否是由 reactive 或 readonly创建的 proxy。
 
 
 
+### （2）isReactive
+
+检查对象是否由reactive创建的响应式代理；
+
+如果该代理是 readonly 建的，但包裹了由 reactive 创建的另一个代理，它也会返回 true。
 
 
-## 11、toRefs和toRef
+
+### （3）isReadonly
+
+检查对象是否是由 readonly 创建的只读代理。
+
+
+
+### （4）toRaw
+
+返回reactive或readonly代理的原始对象。
+
+
+
+### （5）shallowReactive
+
+创建一个响应式代理，它跟踪其自身 property 的响应性，但不执行嵌套对象的深层响应式转换 (深层还是原生对象）。
+
+
+
+### （6）shallowReadonly
+
+创建一个 proxy，使其自身的 property 为只读，但不执行嵌套对象的深度只读转换（深层还是可读、可写的）
+
+
+
+## 8、toRefs和toRef
 
 ### （1）toRefs
 
-如果使用ES6的解构语法，对reactive返回的对象进行解构获取值，那么<font color=red>数据不再是响应式的</font>
+对reactive返回的<font color=blue>响应式对象进行解构</font>获取值，那么<font color=red>数据**不再是响应式的**</font>
 
 ```js
 const state = reactive({
@@ -1282,7 +1277,7 @@ const {name,age} = toRefs(state)
 
 ​	如果原始对象是非响应式的，使用toRef包裹后不会更新视图，但数据是会变的；如果原始对象是响应式的是会更新视图并且改变数据的；
 
-转换一个reactive对象中的属性为ref，可以使用toRef的方法：
+<font color=blue>转换一个reactive对象中的属性为ref</font>，可以使用toRef的方法：
 
 ```js
 const before = {
@@ -1295,30 +1290,34 @@ const changeName = () => state.name = "chenge";
 
 
 
+## 9、ref其他的API
 
+### （1）unref
 
-## 12、ref其他的API
+**<font color=red>获取一个ref引用中的value</font>**。
 
-- 如果想要**获取一个ref引用中的value**，那么也可以**通过unref方法**，如果该方法的参数是一个ref，则返回内部的值，否则返回参数本身。这是`val = isRef(val) ? val.value : val`的语法糖函数。
+该方法的参数**是ref返回内部的值**，**否则返回参数本身**。是`val = isRef(val) ? val.value : val`的语法糖函数。
 
 ```js
-let testObj1 = { name: "alex", age: "5" };
-let testRefObj2 = ref({ name: "alex", age: "5" });
-const testVal3 = unref(testObj1)  //如果是ref则返回ref.value的值，不是则返回传入的对象
-const testVal4 = unref(testRefObj2)//如果是ref则返回ref.value的值，不是则返回传入的对象
-console.log(testVal3)  //Object {age: "5",name: "alex"}
-console.log(testVal4)  //Proxy {name: 'alex', age: '5'}
+let testRefObj = ref({ name: "alex", age: "5" });
+const testVal = unref(testRefObj)//如果是ref则返回ref.value的值，不是则返回传入的对象
 ```
 
-- isRef
+
+
+### （2）isRef
 
 判断值是否是一个ref对象
 
-- shallowRef
+
+
+### （3）shallowRef
 
 创建一个浅层的ref对象
 
-- triggerRef
+
+
+### （4）triggerRef
 
 手动触发和 shallowRef 相关联的副作用
 
@@ -1330,99 +1329,202 @@ const changeInfo = () => {
 }
 ```
 
-- **customRef**
-
-  创建一个**自定义的ref**，并**对其依赖项跟踪和更新触发**进行**显示控制**；
-
-  - 需要<font color=red>一个工厂函数</font>，该<font color=red>函数接受track和trigger函数</font>作为参数；
-  - 并且应该<font color=red>返回一个带有get和set的对象</font>；
-
-  下面是一个对双向绑定的属性进行debounce(节流)的操作
-
-  ![image-20211227173338377](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271733595.png)
 
 
+### （5）customRef
+
+创建一个**<font color=blue>自定义的ref</font>**，并**对其依赖项跟踪和更新触发**进行**显示控制**；
+
+- 需要<font color=red>一个工厂函数</font>，该<font color=red>函数接受**track**和**trigger**函数</font>作为参数；
+- 并且应该<font color=red>返回一个带有get和set的对象</font>；
+
+下面是一个对双向绑定的属性进行debounce(节流)的操作
+
+![image-20211227173338377](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271733595.png)
 
 
 
-## 13、computed
+## 10、ref获取DOM
 
-在Vue3 Composition API中，可以在setup函数中使用computed方法编写计算属性。
+​	只需要<font color=blue>定义一个ref对象</font>，**<font color=red>绑定到元素或者组件的ref属性上</font>**即可。ref的属性值必须和定义的ref对象属性名相同。
 
-#### 使用方法
+```vue
+<template>
+	<div ref="title"></div>
+</template>
+<script>
+	import {ref} from "vue";
+    export default {
+        setup(){
+            //这里title.value就是上面title的dom对象
+            const title = ref(null);
+            return { title }
+        }
+    }
+</script>
+```
 
-- 方式一：接收一个getter函数，并为getter函数返回值，返回一个不变的ref对象；
-- 方式二：接收一个具有get和set的对象，返回一个可变的（可读写）ref对象；
+
+
+## 11、计算属性computed
+
+### （1）使用方式一
+
+接收一个<font color=red>getter函数</font>，并为 getter 函数返回的值，返回一个不变的 ref 对象
 
 ```js
 setup{
-  const firstName = ref("zhang");
-  const lastName = ref("yuchen");
-  //方法一
-  const fullName = computed(() => {
-  	return firstName.value + " " + lastName.value
-  });
-  //方法二
-  const fullName = computed({
-    //get这里fullName值为zhangyuchen
-    get: () => firstName.value + " " + lastName.value,
-    //set这里newValue是下面的chen ge
-    set: newValue => {
-      const names = newValue.split(" ");
-      firstName.value = name[0];
-      lastName.value = name[1];
-    }
-  });
-  const changeName = () => {
-    fullName.value = "chen ge";
-  }
+	const origin = ref("zhang");
+	const change = computed(() => {
+		retrun origin.value + "数据处理操作"
+	})
 }
 ```
 
 
 
+### （2）使用方式二
+
+接收一个<font color=red>具有get和set的对象</font>，返回一个可变的（可读写）ref对象
+
+```js
+setup{
+	const origin = ref("zhang");
+    const change = computed({
+        get: () => {
+            return origin.value + "数据处理操作"
+        },
+        set: (newValue) => {
+            origin.value = newValue
+        }
+    });
+}
+```
 
 
-## 14、数据侦听
 
-在Composition API中，可以<font color=red>**使用watchEffect和watch来完成响应式数据的侦听**</font>。
+## 12、数据侦听watch
 
-- watchEffect用于自动收集响应式数据的依赖；
-- watch需要手动指定侦听的数据源；
+在Composition API中，可以**<font color=red>使用watchEffect和watch</font>来完成响应式数据的侦听**。
+
+### （1）watch
+
+watch需要**<font color=blue>手动指定侦听的数据源</font>**，并执行回调函数。<font color=red>只有当被侦听的目标发生变化时才会执行回调</font>。默认是开启深度监听的。
+
+#### 1.1、侦听单个数据
+
+- 单个属性：<font color=red>**一个getter函数**</font>，但是该getter函数必须引用可响应式的对象（reactive或ref）
+
+```js
+setup{
+	const my = reactive({name:"chenge", age:25})
+    watch(my.name, (newValue,oldValue) => {
+        console.log("值变化了")
+    })
+}
+```
 
 
 
-### （1）watchEffect
+- 整个对象：<font color=red>**直接写入一个可响应式的对象**</font>，reactive或者ref（常用的是ref）
 
-​	watchEffect传入的函数会被立即执行一次，并且在执行的过程中会收集依赖；
+```js
+setup{
+	const name = ref("chenge")
+    watch(name, (newValue,oldValue) => {
+        console.log("值变化了")
+    })
+}
+```
 
-​	只有收集的依赖发生变化时，watchEffect传入的函数才会再次执行；
+
+
+#### 1.2、侦听多个数据
+
+```vue
+<script>
+    import { ref, watch } from "vue";
+    export default {
+        setup(){
+            const name = ref("chenge");
+            const age = ref(25);
+            watch([name,age], (newValue, oldValue) => {
+                console.log("数据变化了,变化数组")
+            })
+        }
+    }
+</script>
+```
+
+
+
+#### 1.3、watch选项
+
+若要进行**<font color=blue>深层侦听</font>**，要设置<font color=red>deep为true</font>；
+
+若要进行**<font color=blue>立即执行</font>**，要设置<font color=red>immediate为true</font>；
+
+```js
+setup{
+	const info = reactive({
+        name:"chenge",
+        hobby:{ type:"F1" }
+    })
+    watch(info, (newValue,oldValue) => {
+        console.log("值变化了")
+    },{
+        immediate:true,
+        deep:true
+    })
+}
+```
+
+
+
+#### 1.4、对比watchEffect
+
+watch的特点：
+
+- 懒执行副作用(第一次不会直接执行)；
+- 更具体的说明当哪些状态发生变化时，触发侦听器的执行；
+- 可以访问侦听状态变化前后的值；
+
+
+
+### （2）watchEffect
+
+watchEffect用于<font color=blue>**自动收集响应式数据的依赖**</font>；
+
+#### 2.1、基本使用
+
+​	watchEffect传入的函数<font color=blue>会被立即执行一次</font>，并且在**执行的过程中会收集依赖**；
+
+​	<font color=red>只有收集的依赖发生变化时，watchEffect传入的函数才会再次执行</font>；
 
 ```js
 const name = ref("zhang");
 const age = ref(24);
 watchEffect(() => {
-  console.log("watchEffect执行",name.value,age.value);
+  console.log("watchEffect执行",name.value, age.value);
 })
 ```
 
 
 
-### （2）watchEffect的停止侦听
+#### 2.2、停止侦听
 
-如果某些情况下希望停止侦听，这时可以获取watchEffect的返回值函数，调用该函数即可：
+调用watchEffect的**<font color=red>返回值函数</font>**即可停止侦听
 
 ```js
 const stopWatch = watchEffect(() => {
-  console.log("watchEffect执行",name.value,age.value);
-});
-const changeAge = () = {
-  age.value++;
-  if(age.value > 20){
-    stopWatch();
-  }
+  console.log("watchEffect执行",name.value, age.value);
+})
+const change = () => {
+    if(XX){ stopWatch() }
 }
 ```
+
+
 
 
 
@@ -1435,29 +1537,6 @@ const changeAge = () = {
   - 可以在传入的回调函数中，执行一些清除工作;
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112272256488.png" alt="image-20211227225625399" style="zoom:80%;" />
-
-
-
-## setup中获取组件DOM的ref方法
-
-只需要定义一个ref对象，绑定到元素或者组件的ref属性上即可
-
-```vue
-<template>
-	<div>
-    <h2 ref="titleRef">我是标题</h2>
-  </div>
-</template>
-<script>
-	import {ref} from "vue";
-  export default {
-    setup(){
-      const titleRef = ref(null);
-      return {titleRef}
-    }
-  }
-</script>
-```
 
 
 
@@ -1481,64 +1560,7 @@ flush 选项还接受 sync，这将强制效果始终同步触发。然而，这
 
 
 
-### （6）watch的使用
-
-- watch的API完全等同于组件watch选项的Property：
-  - watch需要侦听特定的数据源，并在回调函数中执行副作用；
-  - 默认情况下它是<font color=red>惰性的，只有当被侦听的源发生变化时才会执行回调</font>；
-
-- 同watchEffect对比，watch允许：
-  - 懒执行副作用(第一次不会直接执行)；
-  - 更具体的说明当哪些状态发生变化时，触发侦听器的执行；
-  - 访问侦听状态变化前后的值；
-
-
-
-### （7）watch侦听单个数据源
-
-方式一：<font color=red>**一个getter函数**</font>，但是该getter函数必须引用可响应式的对象（reactive或ref）
-
-![image-20211227235154069](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112272351698.png)
-
-方式二：<font color=red>**直接写入一个可响应式的对象**</font>，reactive或者ref（常用的是ref）
-
-![image-20211227235330407](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112272353806.png)
-
-
-
-### （8）watch侦听多个数据源
-
-![image-20211227235549971](/Users/rain_chen/Library/Application Support/typora-user-images/image-20211227235549971.png)
-
-
-
-### （9）侦听响应式对象
-
-如果希望侦听一个数组，那么可以使用一个getter函数，并对响应式对象进行解构：
-
-![image-20211227235753543](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112272357987.png)
-
-
-
-### （10）watch的选项
-
-若要进行**深层侦听，依然要设置deep为true**；同时也可以**设置immediate立即执行**
-
-![image-20211227235959751](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112280000214.png)
-
-
-
-### （11）watch补充
-
-1. 监听单个属性用基本写法；
-2. 监听多个属性数组；
-3. 直接监听对象时会取不到旧属性的值，因为对象是引用数据类型，新值会覆盖掉旧值，因此要监听具体属性要使用`[() => person.name,() => person.age]`此方式来监听对象中某个属性的变化；
-4. 默认是开启深度监听的；
-5. 如果监听的是对象中某个对象属性的值，那么需要手动开启深度监听；
-
-
-
-## 15、生命周期钩子
+## 13、生命周期钩子
 
 可以使用<font color=red>**直接导入的 onX 函数**</font>注册生命周期钩子:
 
@@ -1553,21 +1575,17 @@ onUpdated(() => {
 
 ![image-20211228111859058](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281119381.png)
 
-注意⚠️：因为<font color=red>**`setup`是围绕`beforeCreate`和`created`生命周期钩子函数运行的**</font>，所以不需要显示地定义他们，换句话说，这些钩子中编写的任何代码都应该直接在`setup`函数中编写。
+注意⚠️：因为<font color=red>**`setup`是围绕`beforeCreate`和`created`生命周期钩子函数运行的**</font>，所以beforeCreate和created钩子中编写的任何代码都应该直接在`setup`函数中编写。
 
 
 
+## 14、Provide/Inject函数
 
-
-## 16、Provide/Inject函数
-
-在composition API<font color=red>使用`Provide`和`Inject`函数进行非父子组件传值</font>，通过`provide`来提供数据，在后代组件中通过`inject`来注入需要的属性和对应的值。
-
-
+​	在composition API<font color=red>使用`Provide`和`Inject`函数进行非父子组件传值</font>，通过`provide`来提供数据，在后代组件中通过`inject`来注入需要的属性和对应的值。
 
 ### （1）provide
 
-provide可以传入两个参数：name（提供的属性名称）；value（提供的属性值）；
+可以传入两个参数：<font color=deepred>name（提供的属性名称）、value（提供的属性值）</font>；
 
 ```js
 let counter = 100;
@@ -1578,20 +1596,20 @@ provide("info",info);
 
 
 
-### （2）inject函数
+### （2）inject
 
-inject可以传入两个参数：要inject的property的name；默认值；
+inject可以传入两个参数：<font color=deepred>要接收的property的name、默认值</font>；
 
 ```js
-const counter = inject("counter");
-const info = inject("info");
+const counter = inject("counter"); //100
+const info = inject("info"); //{name:"zhang",age:24}
 ```
 
 
 
 ### （3）数据响应式
 
-为了实现provide和inject的值之间的响应性，可以在provide提供值时使用ref和reactive。
+provide提供值时<font color=deepred>**支持使用ref和reactive**</font>。
 
 ```js
 let counter = ref(100);
@@ -1602,9 +1620,9 @@ provide("info",info);
 
 
 
-### （4）修改响应式对象
+### （4）修改响应式数据
 
-如果需要修改可响应式的数据，那么最好在数据提供的位置修改，例如将修改方法进行共享，在后代组件中进行调用：
+如果需要在接收处修改传递的响应式数据，那么<font color=deepred>在数据提供的位置**将修改方法进行共享**</font>，在后代组件中进行调用：
 
 ```js
 const changeInfo = () => {
@@ -1612,8 +1630,6 @@ const changeInfo = () => {
 }
 provide("changeInfo",changeInfo)
 ```
-
-
 
 
 
