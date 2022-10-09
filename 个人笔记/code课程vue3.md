@@ -1086,11 +1086,14 @@ input元素不同的只是**属性名称和事件触发的名称而已**；
 
 ## 1、Options API
 
-​	Vue2中编写组间的方式就是Options API，data定义数据、methods中定义方法、computed中定义计算属性、watch中监听属性改变，也包括生命 周期钩子;
+​	Vue2中编写组间的方式就是Options API:
+
+- data定义数据、methods中定义方法、computed中定义计算属性、watch中监听属性改变，也包括生命 周期钩子;
+- 缺陷是代码碎片化
 
 
 
-## 3、Composition API
+## 2、Composition API
 
 ​	<font color=red>**将同一个逻辑关注点的代码收集在一起的写法，实际使用在Vue组件中通过setup函数实现。**</font>
 
@@ -1098,29 +1101,36 @@ input元素不同的只是**属性名称和事件触发的名称而已**；
 
 
 
+## 3、setup函数
 
-
-## 4、setup函数的参数
+### （1）setup函数参数
 
 该函数有两个参数，<font color=red>**第一个参数是props，第二个参数是context。**</font>
 
-- props就是父组件传递过来的参数，会被放到props对象中，可以直接在setup中使用；
+#### 1.1、参数props
 
-- context也称之为是一个setupcontext，包含**三个属性**
+​	该参数表示<font color=blue>父组件传递过来的参数</font>
 
-  ​	attrs：所有非prop的attribute；
-
-  ​	slots：父组件传递过来的插槽；
-
-  ​	emit：当组件内部需要发出事件时会用到；
+- 会被放到props对象中，可以直接在setup中使用；
+- 因为setup中不能使用this.XX获取props的值，所以将props作为参数直接调用；
 
 
 
+#### 1.2、参数context
+
+​	该参数<font color=blue>是个对象，包含**三个属性**</font>
+
+- attrs：所有非prop的attribute；
+- slots：父组件传递过来的插槽；
+- emit：当组件内部需要发出事件时会用到
+  - 因为setup中不能使用this.$emit发出事件，所以将emit作为参数直接调用；
 
 
-## 5、setup函数的返回值
 
-返回值可以在template模板中使用，可以通过setup的返回值代替data选项和methods中定义的方法
+### （2）setup函数返回值
+
+- 返回定义的<font color=red>变量</font>，替代data选项；
+- 返回<font color=red>执行函数</font>，替代methods对象；
 
 ```js
 setup(){
@@ -1129,27 +1139,13 @@ setup(){
 	const increment = () => {
 		counter++;
 	}
-	const decrement = () => {
-		counter--;
-	}
-	return{
-		name,
-		counter,
-		increment,
-		decrement,
-	}
+	return{ name, counter, increment }
 }
 ```
 
-直接将上面的counter在increment或decrement进行操作时，不可以实现界面的响应式。
-
-这是因为对于一个<font color=red>定义的变量</font>来说，默认情况下，<font color=red>Vue并不会跟踪它的变化，来引起界面的响应式操作。</font>
 
 
-
-
-
-## 6、setup不可以使用this
+### （3）setup不可以使用this
 
 官网关于this的描述：
 
@@ -1162,6 +1158,16 @@ setup(){
 
 
 ## 7、Reactive API
+
+
+
+这是因为对于一个<font color=red>定义的变量</font>来说，默认情况下，<font color=red>Vue并不会跟踪它的变化，来引起界面的响应式操作。</font>
+
+
+
+
+
+
 
 - reactive函数可以给在setup中定义的数据<font color=red>提供响应式特性</font>；
 
