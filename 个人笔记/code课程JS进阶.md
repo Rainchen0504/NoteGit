@@ -171,6 +171,16 @@ new一个对象的过程：
 
 4、返回新对象；
 
+```js
+//new一个对象的四步
+function newObj(fn,...args){
+  const obj = {}
+  obj._proto_ = fn.prototype
+  fn.apply(obj,args)
+  return obj;
+}
+```
+
 
 
 ### 8、this绑定规则优先级
@@ -658,6 +668,45 @@ obj.__proto__.__proto__;//[Object:null prototype]{}
 - 在子类的构造函数中使用this或者返回默认对象之前，必须先通过super调用父类的构造函数；
 - 子类方法中扩充父类方法也需要通过super调用父类方法；
 - JS只支持单继承（不支持多继承）
+
+
+
+### 26、原型判断方法
+
+#### （1）isPropertyOf
+
+​	检测一个对象是否是另一个对象的原型，即一个对象是否被包含在另一个对象的原型链中。
+
+```js
+let p = {x:1};
+let o = Object.create(p);
+p.isPropertyOf(o);//true,表示o继承自p
+Object.prototype.isPropertyOf(p);//true，表示p继承自Object.prototype
+```
+
+
+
+#### （2）instanceOf
+
+判断一个对象是否是另一个类的实例
+
+```js
+let d = new Date();
+d instanceOf Date;//true,d是Date的实例
+d instanceOf Object;//true,所有对象都是Object的实例
+```
+
+
+
+#### （3）hasOwnProperty
+
+判断某个属性是否存在于某个对象，不能判断原型链，不会在原型中查找
+
+```js
+let obj = {name:"zhang"};
+Object.prototype.hasOwnProperty.call(obj,'name')//true
+obj.hasOwnProperty('age')//false
+```
 
 
 
@@ -1322,6 +1371,543 @@ console.log(personIterator.next());
 
 
 
+### 43、异步请求：生成器和async/await方法
+
+```js
+//创建一个模拟异步的请求
+function requestData(url){
+  return new Promise((resolve,reject) => {
+   	setTimeout(() => {
+      resolve(url);
+    }, 2000)
+  })
+}
+```
+
+
+
+#### （1）普通函数异步请求
+
+```js
+function getData() {
+  requestData("zhang")
+    .then((res1) => {
+    console.log("结果一", res1);
+    return requestData(res1 + "yu");
+  })
+    .then((res2) => {
+    console.log("结果二", res2);
+    return requestData(res2 + "chen");
+  })
+    .then((res3) => {
+    console.log("结果三", res3);
+  });
+}
+getData()
+```
+
+
+
+#### （2）生成器函数异步请求
+
+```js
+function* getData() {
+  const res1 = yield requestData("zhang");
+  console.log("结果一", res1);
+  const res2 = yield requestData(res1 + "yu");
+  console.log("结果二", res2);
+  const res3 = yield requestData(res2 + "chen");
+  console.log("结果三", res3);
+}
+//执行方法1:有几层写几层
+const generator = getData();
+generator.next().value.then((res1) => {
+  generator.next(res1).value.then((res2) => {
+    generator.next(res2).value.then((res3) => {
+      generator.next(res3);
+    });
+  });
+});
+//执行方法2:递归执行
+function execGenFn(genFn){
+  const generator = genFn();
+  function exex(params){
+    const result = generator.next(params);
+    if(result.done) return
+    result.value.then((res) => {
+      exec(res)
+    })
+  }
+  exec();
+}
+execGenFn(getData);
+```
+
+
+
+#### （3）async/await异步请求
+
+```js
+async function getData() {
+  const res1 = await requestData("zhang");
+  console.log("结果一", res1);
+  const res2 = await requestData(res1 + "yu");
+  console.log("结果二", res2);
+  const res3 = await requestData(res2 + "chen");
+  console.log("结果三", res3);
+}
+getData();
+```
+
+
+
 ### 43、async和await
 
-​	async内部代码执行过程和普通函数是一致的，默认情况下会被同步执行，有返回值时和普通函数会有区别。
+#### （1）async
+
+​	async**声明一个异步函数**，其内部代码默认情况下会被同步执行。
+
+#### （2）await
+
+​	await关键字后通常**跟一个Promise表达式**，await会等到Promise的状态变成fulfilled状态后继续执行异步函数。
+
+- 如果await后面是<font color=deepred>普通值</font>，就<font color=deepred>直接返回</font>；
+- 如果await后面是一个<font color=deepred>thenable的对象</font>，那么会根据对象的<font color=deepred>then方法调用</font>来决定后续的值；
+- 如果await后面的表达式，返回的Promise表达式是<font color=deepred>reject的状态</font>，那么会将这个reject结果直接作为<font color=deepred>函数的Promise的reject值</font>；
+
+#### （3）补充
+
+​	**<font color=red>await关键字后面的表达式之后的代码是异步微任务</font>**
+
+
+
+### 44、异常处理
+
+#### （1）处理方法
+
+使用throw关键字抛出异常，后面的语句就不会执行。
+
+```js
+//常用的方式就是封装一个异常
+class CustomError {
+  constructor(message,code){
+    this.message = message;
+    this.code = code;
+  }
+}
+//使用自定义封装的异常
+function foo(){
+  throw new CustomError("错误信息",500)
+}
+//使用默认的异常处理
+throw new Error("我是错误信息")//这里Error是JS提供的类，可直接创建使用
+throw {errMessage:'我是错误信息',errCode:500}
+```
+
+
+
+#### （2）捕获方式
+
+​	使用try catch进行捕获，如果有必须要执行的代码，使用finally执行（try和finally都有返回值，使用finally的）。
+
+
+
+### 45、浏览器存储
+
+#### （1）localStorage
+
+​	本地存储，提供的是一种永久性的存储方法，在关闭掉网页重新打开时，存储的内容依然保留；
+
+
+
+#### （2）sessionStorage
+
+​	会话存储，提供的是本次会话的存储，在关闭掉会话时，存储的内容会被清除；
+
+
+
+#### （3）cookie
+
+​	浏览器存储，存储时间久，大小约4kb，手动设置有效期和失效时间，和请求一起发送，如果过大会带来性能问题；
+
+
+
+#### （4）区别
+
+| 特性           | cookie                                                       | localStorage             | seesionStorage                               |
+| -------------- | ------------------------------------------------------------ | ------------------------ | -------------------------------------------- |
+| 有效期         | 一般由服务器生成，可设置失效时间。如果在浏览器端生成Cookie，默认是关闭浏览器后失效 | 除非被清除，否则永久保存 | 仅在当前会话下有效，关闭页面或浏览器后被清除 |
+| 存储大小       | 4kb                                                          | 5mb                      | 5mb                                          |
+| 与请求一起发送 | 每次都会携带在HTTP头中，如果使用cookie保存过多数据会带来性能问题 | 不参与和服务器的通信     | 不参与和服务器的通信                         |
+| 作用域         | 同源窗口中是共享的                                           | 同源窗口中是共享的       | 同源窗口中是不共享的                         |
+| 存储位置       | 浏览器和服务器                                               | 浏览器                   | 浏览器                                       |
+
+
+
+#### （5）常用封装
+
+```js
+class Cache {
+  constructor(isLocal = true) {
+    this.storage = isLocal?localStorage:sessionStorage;
+  }
+
+  setCache(key, value) {
+    if (!value) {
+      throw new Error("value必须设置值");
+    }
+    if (value) {
+      this.storage.setItem(key, JSON.stringify(value));
+    }
+  }
+
+  getCache(key) {
+    const result = this.storage.getItem(key);
+    if (result) {
+      return JSON.parse(result);
+    }
+  }
+
+  removeCache(key) {
+    this.storage.removeItem(key);
+  }
+
+  clear() {
+    this.storage.clear();
+  }
+}
+
+const localCache = new Cache();
+const sessionCache = new Cache(false);
+```
+
+
+
+### 46、防抖和节流
+
+#### （1）防抖
+
+高频触发事件，单位时间内只响应最后一次，且每次触发时间都会重新计算。
+
+```js
+//手写基础版
+function debounce(fn, delay) {
+  let timer = null;
+  const _debounce = function (...args) {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      fn.apply(this, args);
+      timer = null;
+    }, delay);
+  };
+  return _debounce;
+}
+```
+
+
+
+#### （2）节流
+
+高频触发事件，单位时间内只响应一次。
+
+```js
+//手写基础版
+function throttle(fn, delay) {
+  let mark = true;
+  const _throttle = function (...args) {
+    if (!mark) { return }
+    mark = false;
+    setTimeout(() => {
+      fn.apply(this, args);
+      mark = true
+    }, delay);
+  };
+  return _throttle;
+}
+
+//手写基础版时间戳形式
+function throttle(fn,delay){
+  let startTime = 0;
+  const _throttle = function(...args){
+    const nowTime = new Date().getTime();
+    const waitTime = delay - (nowTime - startTime);
+    if(waitTime <= 0){
+      fn.apply(this,args)
+      startTime = nowTime;
+    }
+  }
+  return _throttle
+}
+```
+
+
+
+### 47、深浅拷贝
+
+#### （1）浅拷贝
+
+```js
+//结构赋值
+const obj1 = {...obj}
+//assugn
+const obj2 = Object.assign({},obj)
+```
+
+#### （2）深拷贝
+
+1. 简单版
+
+   ```js
+   //1.判断对象函数
+   function isObjcet(obj) {
+     const type = typeof obj;
+     return type !== null && (type === "object" || type === "function");
+   }
+   //2.深拷贝核心函数
+   function deepCopy(obj) {
+     if (!isObjcet(obj)) {
+       return obj;
+     }
+   
+     const newObj = Array.isArray(obj) ? [] : {};
+     for (const key in obj) {
+       newObj[key] = deepCopy(obj[key]);
+     }
+   
+     return newObj;
+   }
+   ```
+
+   
+
+2. 完整版
+
+   ```js
+   //1.判断对象函数
+   function isObjcet(obj) {
+     const type = typeof obj;
+     return type !== null && (type === "object" || type === "function");
+   }
+   
+   //2.深拷贝函数完整版（拷贝对象、数组、set、symbol、循环引用）
+   function deepCopy(originValue, map = new WeakMap()) {
+     // 0.如果值是Symbol的类型
+     if (typeof originValue === "symbol") {
+       return Symbol(originValue.description)
+     }
+   
+     // 1.如果是原始类型, 直接返回
+     if (!isObject(originValue)) {
+       return originValue
+     }
+   
+     // 2.如果是set类型
+     if (originValue instanceof Set) {
+       const newSet = new Set()
+       for (const setItem of originValue) {
+         newSet.add(deepCopy(setItem))
+       }
+       return newSet
+     }
+   
+     // 3.如果是函数function类型, 不需要进行深拷贝
+     if (typeof originValue === "function") {
+       return originValue
+     }
+   
+     // 4.如果是对象类型, 才需要创建对象
+     if (map.get(originValue)) {
+       return map.get(originValue)
+     }
+     const newObj = Array.isArray(originValue) ? []: {}
+     map.set(originValue, newObj)
+     // 遍历普通的key
+     for (const key in originValue) {
+       newObj[key] = deepCopy(originValue[key], map);
+     }
+     // 单独遍历symbol
+     const symbolKeys = Object.getOwnPropertySymbols(originValue)
+     for (const symbolKey of symbolKeys) {
+       newObj[Symbol(symbolKey.description)] = deepCopy(originValue[symbolKey], map)
+     }
+   
+     return newObj
+   }
+   ```
+
+   
+
+### 48、事件总线
+
+自定义事件总线属于一种观察者模式，包括三个角色
+
+1. 发布者：发出事件event
+2. 订阅者：订阅事件，并会进行响应
+3. 事件总线：事件中台
+
+```js
+//事件总线对象
+class YCEventBus {
+  constructor() {
+    this.eventMap = {};
+  }
+	//监听事件
+  on(eventName, eventFn) {
+    let eventFns = this.eventMap[eventName];
+    if (!eventFns) {
+      eventFns = [];
+      this.eventMap[eventName] = eventFns;
+    }
+    eventFns.push(eventFn);
+  }
+	//取消监听
+  off(eventName, eventFn) {
+    let eventFns = this.eventMap[eventName];
+    if (!eventFns) return;
+    for (let i = 0; i < eventFns.length; i++) {
+      const fn = eventFns[i];
+      if (fn === eventFn) {
+        eventFns.splice(i, 1);
+        break;
+      }
+    }
+    if (eventFns.length === 0) {
+      delete this.eventMap[eventName];
+    }
+  }
+	//发射事件
+  emit(eventName, ...args) {
+    let eventFns = this.eventMap[eventName];
+    if (!eventFns) return;
+    eventFns.forEach((fn) => {
+      fn(...args);
+    });
+  }
+}
+const eventBus = new YCEventBus()
+//使用时通过on绑定事件名和事件执行函数
+//一旦触发具体事件名那么绑定的所有执行函数都会执行
+```
+
+
+
+### 48、HTTP
+
+​	超文本传输协议(缩写:HTTP)是一种用于分布式、协作式和超媒体信息系统的<font color=red>**应用层**协议</font>;
+
+#### （1）HTTP版本
+
+- HTTP/0.9
+  - 发布于1991年; 
+  - 只支持GET请求方法获取文本数据，当时主要是为了获取HTML页面内容;
+- HTTP/1.0
+  - 发布于1996年
+  - 支持POST、HEAD等请求方法，支持请求头、响应头等，支持更多种数据类型(不再局限于文本数据)
+  - 但是浏览器的每次请求都需要与服务器建立一个TCP连接，请求处理完成后立即断开TCP连接，每次建立连接增加了性能损耗
+- HTTP/1.1（目前使用最广泛的版本）
+  - 发布于1997年
+  - 增加了PUT、DELETE等请求方法
+  - 采用持久连接(Connection: keep-alive)，多个请求可以共用同一个TCP连接
+- HTTP/2.0
+  - 发布于2015年
+- HTTP/3.0
+  - 发布于2018年
+
+
+
+#### （2）HTTP请求方式
+
+常见请求方式：
+
+- <font color=red>**GET**</font>：GET 方法请求一个指定资源的表示形式，使用 GET 的请求应该只被用于获取数据。
+- HEAD：HEAD 方法请求一个与 GET 请求的响应相同的响应，但没有响应体。
+- <font color=red>**POST**</font>：POST 方法用于将实体提交到指定的资源。
+- PUT：PUT 方法用请求有效载荷(payload)替换目标资源的所有当前表示; 全网课程 超低价格
+- <font color=red>**DELETE**</font>：DELETE 方法删除指定的资源;
+- <font color=red>**PATCH**</font>：PATCH 方法用于对资源应部分修改;
+- CONNECT：CONNECT 方法建立一个到目标资源标识的服务器的隧道，通常用在代理服务器，网页开发很少用到。 TRACE:TRACE 方法沿着到目标资源的路径执行一个消息环回测试。
+
+
+
+#### （3）手写ajax请求
+
+```js
+//1、创建ajax核心
+let xmlhttp = new XMLHttpRequest();
+//2、创建请求（get/post 请求地址 请求异步）
+xmlhttp.open("get","my.php?user=982395099&psd=123456",true);
+//3、发送请求参数，key=value形式的字符串，多个参数用&连接。
+//其中get请求请求参数不能写在send里面，要写在请求地址后面，以？连接，send里传null
+xmlhttp.send(null);
+//如果请求方式为post，需要设置请求头
+//xmlhttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
+//4、接收响应
+xmlhttp.onreadystatechange=function(){
+  //readyState (请求的状态) 1(尚未初始化) 2(正在请求) 3(正在响应) 4(响应完毕)
+  // status(服务端返回的状态码) 404 500 200(ok) 301 304
+  if(xmlhttp.readyState==4&&xmlhttp.status==200){
+    //responseText,可以获取服务器端返回的文本格式的数据
+    var data=xmlhttp.responseText
+    }
+}
+
+//实现原生ajax
+const ajax = {
+  get(url, fn) {
+    const xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", url, true);
+    xmlhttp.onreadystatechange = function () {
+      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        fn(xmlhttp.responseText);
+      }
+    };
+    xmlhttp.send();
+  },
+
+  post(url, fn, data) {
+    const xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", url, true);
+    xmlhttp.setRequestHeader(
+      "Content-type",
+      "application/x-www-form-urlencoded"
+    );
+    xmlhttp.onreadystatechange = function () {
+      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        fn(xmlhttp.responseText);
+      }
+    };
+    xmlhttp.send(data);
+  },
+};
+```
+
+
+
+#### （4）Fetch
+
+​	Fetch可以看做是早期的XMLHttpRequest的替代方案，它提供了一种更加现代的处理方案，<font color=deepred>**返回值是一个Promise**，使用`.then`和`.catch`就可以拿结果</font>。
+
+```js
+//使用方式一:
+fetch("请求地址").then(res => {
+  // 1.获取到response
+  const response = res
+  // 2.获取具体的结果
+  return response.json()
+}).then(res => {
+  console.log("res:", res)
+}).catch(err => {
+  console.log("err:", err)
+})
+
+//使用方式二:
+async function getData() {
+  const response = await fetch("请求地址")
+  const res = await response.json()
+  console.log("res:", res)
+}
+getData()
+```
+

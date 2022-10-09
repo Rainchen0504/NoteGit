@@ -1,6 +1,6 @@
 # 一、基础知识
 
-## 1、安装使用vue这个javascript库的方法：
+## 1、安装使用vue这个javascript库
 
 - 在页面中通过CDN的方式引入
 - 下载vue的javascript文件，并且手动引入
@@ -9,7 +9,7 @@
 
 
 
-方式一：CDN引入
+### （1）方式一：CDN引入
 
 ​	CDN称之为内容分发网络，指通过相互连接的网络系统，利用最靠近每个用户的服务器，更快更可靠的将音乐、图片、视频、应用程序等文件发送给用户，来提高性能、可扩展性及低成本的网络内容传递给用户。
 
@@ -17,11 +17,60 @@
 
 
 
-方式二：下载和引入
+### （2）方式二：下载和引入
 
 ​	打开链接制所有代码，创建一个新文件，代码复制其中，然后引入使用。
 
 
+
+### （3）实际案例
+
+vue这种代码编写过程称为**<font color=deepred>声明式编程</font>**
+
+```vue
+<div id="app">
+	<button @click="change">{{title}}</button>
+</div>
+
+<script src="引入CDN路径或者本地资源"></script>
+
+<script>
+	const app = Vue.createApp({
+    data(){
+    	return {
+        title: "这是vue项目"
+      }
+  	},
+    methods:{
+      change(){
+        this.title = "这就是个vue项目"
+      }
+    }
+  })
+  app.mount("#app")
+</script>
+```
+
+
+
+### （4）data和methods
+
+#### 4.1data
+
+data属性<font color=deepred>要求传入一个函数，并且要**返回一个对象**</font>，该对象会被响应式系统劫持。
+
+- 在vue2.X版本中可以给data属性传入一个对象；
+- 在vue3.X版本中<font color=blue>必须传入一个函数</font>，否则会在浏览器中报错；
+
+
+
+#### 4.2methods
+
+methods属性<font color=deepred>是**一个对象**，在这个对象中可以定义很多方法</font>，可以使用this关键字访问到data中返回的对象，
+
+##### <font color=red>**methods对象中的函数不能是箭头函数**</font>
+
+​	因为在函数中要通过this获取data对象中的数据，this应该是当前vue实例，而使用箭头函数的话会在上层作用域中查找this，<font color=blue>查找到的是**script作用域中的this**（即window对象），window对象中无法获取到data对象中的数据</font>。
 
 
 
@@ -33,79 +82,188 @@
 
 
 
+## 3、v-指令
+
+### （1）v-once
+
+​	<font color=deepred>指定元素或指令**只执行一次**</font>，当数据再次发生变化时，相关元素和子元素将不更新，视为静态内容并跳过，此指令可用于性能优化。
+
+```vue
+<!--counter首次渲染后就不会被改变-->
+<h1 v-once>当前计数{{counter}}</h1>
+```
 
 
-## 3、根元素
+
+### （2）v-pre
+
+​	用于<font color=deepred>**跳过**元素和子元素的**编译过程**</font>，显示原始的`Mustache`标签（跳过不需要编译的节点，提高编译速度）
+
+```vue
+<tempalte id="app">
+  <!-- 不会编译message，显示的就是{{message}} -->
+	<div v-pre>{{message}}</div>
+</tempalte>
+```
+
+
+
+### （3）v-cloak
+
+​	保持在元素上<font color=deepred>**直到关联组件实例结束编译**</font>。配合CSS规则一起使用，则可以隐藏未编译的 Mustache 标签直到组件实例准备完毕。
+
+```vue
+<!-- 下面例子的效果就是刷新页面三秒后创建实例完成，message才显示出来 -->
+<style>
+  [v-cloak] { display: none; }
+</style>
+
+<div id="app">
+  <h2 v-cloak>{{message}}</h2>
+</div>
+
+<script src="引入CDN路径或者本地资源"></script>
+<script>
+	setTimeout(() => {
+    // 1.创建app
+    const app = Vue.createApp({
+      data: function() {
+        return {
+          message: "Hello Vue"
+        }
+      },
+    })
+    // 2.挂载app
+    app.mount("#app")}, 3000)
+</script>
+```
+
+
+
+### （4）v-bind
+
+用于**<font color=deepred>绑定一个或多个属性值</font>**，或者向另一个组件传递props值，语法糖是`:属性名=属性值`
+
+
+
+### （5）v-on
+
+**<font color=deepred>绑定事件监听</font>**
+
+#### v-on修饰符
+
+​	`.stop`--调用event.stopPropagation()；
+
+​	`.prevent`--调用event.preventDefault()；
+
+​	`.capture`--添加事件侦听器时使用capture模式；
+
+​	`.self`--只当事件时从侦听器绑定的元素本身触发时才触发回调；
+
+​	`.once`--只触发一次回调；
+
+​	`.left`--只当点击鼠标左键时触发；
+
+​	`.right`--只当点击鼠标右键时触发；
+
+​	`.middle`--只当点击鼠标中键时触发；
+
+​	`.passive`--{passive:true}模式添加侦听器
+
+
+
+### （6）条件渲染
+
+#### 6.1、v-if、v-else、v-else-if
+
+只有在条件为true时，才会被渲染出来
+
+- v-if是惰性的
+- 当条件为false时，其判断的内容完全不会被渲染或者会被销毁掉
+- 当条件为true时，才会真正渲染条件块中的内容
+
+
+
+#### 6.2、v-show
+
+根据一个条件决定是否显示元素或者组件
+
+
+
+#### 6.3、v-show和v-if区别
+
+- 用法上
+  - v-show不支持tempalte
+  - v-show不能和v-else一起使用
+- 本质上
+  - **<font color=red>v-show无论是否显示DOM都是实际存在的，只是通过CSS的display属性切换控制显隐</font>**；
+  - **<font color=red>v-if是通过创建和销毁DOM来实现显隐的</font>**；
+- 开发中
+  - 如果需要频繁切换显示隐藏则使用v-show
+  - 如果不频繁则使用v-if
+
+
+
+### （7）v-model
+
+#### 7.1、基本使用
+
+v-model本质上<font color=blue>是语法糖</font>，负责监听用户的输入事件来更新数据，原理上有**两个操作**。
+
+```html
+<input type="text" v-model=“message>
+```
+
+
+
+#### 7.2、v-model原理
+
+v-model的原理是背后有两个操作：
+
+1. <font color=red>v-bind绑定value属性</font>的值；
+2. <font color=red>v-on绑定input事件</font>监听到的函数，函数会取得最新的值赋到绑定的属性中；
+
+```vue
+<input v-model="message" />
+```
+
+等价于
+
+```vue
+<input :value="message" @input="message = $event.target.value" />
+```
+
+
+
+#### 7.3、v-model修饰符
+
+- `.lazy`触发方式由input改为change失去焦点；
+- `.number`自动将输入值转换为数字类型类型parseFloat，无法转换返回原内容；
+- `.trim`自动过滤首尾的空格。
+
+
+
+## 4、根元素
 
 ​	在vue2中，template模板中只能有一个根元素；vue3是允许template中有多个根元素。
 
 
 
-
-
-## 4、v-on的修饰符：
-
-`.stop`--调用event.stopPropagation()；
-
-`.prevent`--调用event.preventDefault()；
-
-`.capture`--添加事件侦听器时使用capture模式；
-
-`.self`--只当事件时从侦听器绑定的元素本身触发时才触发回调；
-
-`.once`--只触发一次回调；
-
-`.left`--只当点击鼠标左键时触发；
-
-`.right`--只当点击鼠标右键时触发；
-
-`.middle`--只当点击鼠标中键时触发；
-
-`.passive`--{passive:true}模式添加侦听器
-
-
-
-
-
 ## 5、template元素
 
-​	template元素可以当做不可见的包裹元素，并且在v-if上使用，但是最终template不会被渲染出来，有点类似与小程序中的block。
+​	template元素<font color=blue>**可以当做不可见的包裹元素**</font>，并且在v-if上使用，但是最终template不会被渲染出来，有点类似与小程序中的block。
 
 
 
+## 6、v-for中key的作用
 
-
-## 6、v-show
-
-​	v-show是不支持template的，v-show不可以和v-else一起使用。
-
-
-
-
-
-## 7、filter方法
-
-​	filter方法创建一个新的数组，新数组中的元素是通过检查指定数组中符合条件的全部元素。filter()不会对空数组进行检测，且不会改变原数组。
-
-```javascript
-array.filter(function(currentValue,index,arr), thisValue)
-```
-
-
-
-
-
-## 8、v-for中key的作用
-
-- key属性主要用在<font color=red>Vue的虚拟DOM算法</font>，在新旧nodes对比时辨识<font color=red>VNodes</font>；
+- key属性主要用在<font color=red>Vue的虚拟DOM算法</font>，在新旧Node节点对比时辨识<font color=red>VNodes</font>；
 - 如果不使用key，Vue会使用一种最大限度减少动态元素并且尽可能尝试<font color=red>修改/复用相同类型的元素</font>的算法；
 - 使用key时，会基于key的变化<font color=red>重新排列元素顺序</font>，并且会<font color=red>移除/销毁key不存在的元素</font>。
 
 
 
-
-
-## 9、VNode
+### （1）VNode
 
 ​	VNode全称是Virtual Node也就是虚拟节点，无论是组件还是元素，最终在Vue表现出来的都是一个个VNode，<font color=red>VNode的本质是一个JavaScript的对象</font>。
 
@@ -137,7 +295,7 @@ const vnode = {
 
 
 
-## 10、虚拟DOM
+### （2）虚拟DOM
 
 如果不只是一个简单的div，而是一大堆的元素，那么会形成一个VNode Tree：
 
@@ -147,7 +305,7 @@ const vnode = {
 
 
 
-## 11、Vue源码对于key的判断
+### （3）Vue源码对于key的判断
 
 看一个案例，点击按钮在中间插入一个f
 
@@ -159,7 +317,7 @@ const vnode = {
 
 - **Vue对于列表的更新操作具体执行过程**：
 
-Vue对于key和没有key会调用两个不同的方法；a
+Vue对于key和没有key会调用两个不同的方法；
 
 ​		**有key，就使用<font color=red>pathKeyedChildren方法</font>；**
 
@@ -171,7 +329,7 @@ Vue对于key和没有key会调用两个不同的方法；a
 
 
 
-## 12、没有key的diff算法过程（源码）
+### （4）没有key的diff算法过程（源码）
 
 ![image-20211202160110895](/Users/rain_chen/Library/Application Support/typora-user-images/image-20211202160110895.png)
 
@@ -183,7 +341,7 @@ Vue对于key和没有key会调用两个不同的方法；a
 
 
 
-## 13、有key 的diff算法过程
+### （5）有key 的diff算法过程
 
 源码：
 
@@ -191,7 +349,7 @@ Vue对于key和没有key会调用两个不同的方法；a
 
 图解顺序：
 
-### （1）从头遍历
+#### 5.1、从头遍历
 
 a和b是一致的会继续进行比较;
 
@@ -201,25 +359,25 @@ c和f因为key不一致，所以就会break跳出循环;
 
 
 
-### （2）从尾部遍历
+#### 5.2、从尾部遍历
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202109052046844.png" alt="image-20210905204414717" style="zoom:67%;" />
 
 
 
-### （3）旧节点遍历完成，有新节点就新增
+#### 5.3、旧节点遍历完成，有新节点就新增
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202109052047433.png" alt="image-20210905204656246" style="zoom:67%;" />
 
 
 
-### （4）旧节点遍历完成，有旧节点就移除
+#### 5.4、旧节点遍历完成，有旧节点就移除
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202109052047428.png" alt="image-20210905204725240" style="zoom:67%;" />
 
 
 
-### （5）特殊情况，未知或者乱序的节点
+#### 5.5、特殊情况，未知或者乱序的节点
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202109052048378.png" alt="image-20210905204755429" style="zoom:67%;" />
 
@@ -230,70 +388,162 @@ Vue在进行diff算法的时候，会尽量利用我们的key来进行优化操�
 
 
 
+## 7、计算属性computed
 
+对于任何包含响应式数据的复杂逻辑，应该使用**<font color=blue>计算属性</font>**。计算属性**是一个值**，<font color=red>**是有缓存的**</font>。
 
-## 14、watch监听
-​	watch只是在监听被监听对象的引用变化，对内部属性的变化是不会做出响应的；如果要监听对象内部属性的变化，则需要使用一个选项deep进行更深层次的侦听；如果希望一开始就立即执行一次，使用immediate选项。
+### （1）计算属性缓存
 
-
-
-
-
-## 15、特殊的事件侦听方式
-
-​	使用$watch的API，可以再created的生命周期中使用this.$watch来侦听，第一个参数是要侦听的源，第二个参数是侦听的回调函数callback，第三个参数是额外的其它选项，比如deep、immediate。
+计算属性会**根据依赖关系进行缓存**，在计算数据不发生改变时是不需要重新计算的，一旦依赖数据发生变化计算属性会重新进行计算。
 
 
 
+### （2）计算属性setter和getter
 
+计算属性可以写成getter和setter形式：
 
-## 16、原生实现v-model
-```html
-<input type="text" :value="message" @input="inputChange">
-```
+```js
+computed:{
+	message:{
+		get(){
+			return this.surname + this.fullname;
+		},
+    set(value){
+    	const names = value.split(" ")
+			this.surname = names[0]
+    },
+	}
+}
 
-```javascript
-data(){
-    return{
-        message:"";
-    }
-},
-methods:{
-    inputChange(e){
-        this.message = e.target.value;
-    }
+//一般使用时写法
+computed:{
+	message(){
+    return this.surname + this.fullname;
+  }
 }
 ```
 
-v-bind绑定value属性的值；v-on绑定input事件监听到的函数，函数会取得最新的值赋到绑定的属性中。
+
+
+## 8、watch侦听器
+
+​	watch只是在侦听被监听对象的引用变化，对内部属性的变化是不会做出响应的；
+
+- 使用<font color=deepred>deep进行更深层次的侦听</font>，监听对象内部属性的变化；
+- <font color=deepred>使用immediate选项</font>在一开始就立即执行一次；
+
+### （1）常用写法
+
+```js
+watch: {
+  // 默认watch监听不会进行深度监听，有两个参数: newValue/oldValue
+  info(newValue, oldValue) {
+     console.log("侦听到info改变:", newValue, oldValue)
+  }
+  
+  // 进行深度监听写法
+  info: {
+    handler(newValue, oldValue) {
+      console.log("侦听到info改变:", newValue, oldValue)
+      console.log(newValue === oldValue)
+    },
+    // info进行深度监听
+    deep: true,
+    // 第一次渲染直接执行一次监听器
+    immediate: true
+  },
+    
+  //侦听对象的属性写法
+  "info.name": function(newValue, oldValue) {
+    console.log("name发生改变:", newValue, oldValue)
+  }
+}
+
+```
+
+
+
+### （2）$watch
+
+支持<font color=blue>在生命周期使用this.$watch方法侦听数据</font>，该方法有三个参数：
+
+- 参数一是要侦听的源
+- 参数二是侦听的回调函数callback
+- 参数三是额外的选项对象，包括deep和immediate等
+
+```js
+created() {
+  this.$watch("message", (newValue, oldValue) => {
+    console.log("message数据变化:", newValue, oldValue)
+  }, { deep: true, immediate: true })
+}
+```
 
 
 
 
 
-## 17、v-model修饰符
+# 二、Vue组件化
 
-- `.lazy`触发方式由input改为change失去焦点；
-- `.number`自动将输入值转换为数字类型类型parseFloat，无法转换返回原内容；
-- `.trim`自动过滤首尾的空格。
+## 1、组件化开发
 
+*组件化思想：
 
-
-
-
-## 18、loadsh库
-
-​	引入loadsh个库（提供了很多好用的方法的Javascript库），其中的方法浅拷贝用_.clone(要拷贝的元素)，深拷贝用_.cloneDeep(要拷贝的元素)。
+-  将一个页面中所有的处理逻辑全部放在一起，处理起来就会变得非常复杂，不利于后续的管理以及扩展；
+- 但将一个页面拆分成一个个小的功能块，每个功能块完成属于自己这部分独立的功能，那么之后整个页面的管理和维护就变得非常容易了；
 
 
+​	基础部分通过createApp函数传入了一个对象App，这个<font color=blue>对象其实**本质上就是一个组件**</font>，也是我们应用程序的<font color=blue>**根组件**</font>。组件化提供了一种抽象，任何的应用都会被抽象成一颗组件树。
+
+*组件注册方法：<font color=deepred>**全局注册和局部注册**</font>
 
 
 
+### （1）全局注册
+
+在任何其他的组件中都可以使用的组件
+
+1. 全局组件需要使用全局创建的app来注册组件;
+2. 通过component方法传入组件名称、组件对象即可注册一个全局组件了;
+3. 之后可以在App组件的template中直接使用这个全局组件:
 
 
-# 四、Vue组件嵌套
 
-## 1、父子组件通信
+### （2）局部注册
+
+只有在注册的组件中才能使用的组件
+
+1. 局部注册是在需要使用到的组件中，通过components属性选项来进行注册；
+2. 比如之前的App组件对象中除了data、computed、methods等属性，还可以有一个components选项；
+3. 该components选项对应的是一个对象，对象中的键值对是`组件的名称: 组件对象`
+
+
+
+## 2、工具链
+
+创建Vue项目常用工具
+
+### （1）Vue-cli
+
+```shell
+vue create XXX
+#更新脚手架的指令
+npm update -g @vue/cli
+```
+
+
+
+### （2）Vite
+
+```shell
+npm init vue@latest
+#或者
+npm create vite@latest
+```
+
+
+
+## 3、组件通信
 
 父组件传递给子组件：<font color=red>通过props属性</font>
 
@@ -303,65 +553,73 @@ v-bind绑定value属性的值；v-on绑定input事件监听到的函数，函数
 
 
 
+### （1）父组件到子组件
 
+​	props是可以在组件上注册一些自定义的attribute；<font color=deepred>父组件给这些attribute赋值，子组件通过attribute的名称获取到对应的值</font>。
 
-## 2、父到子
+#### 1.1、props两种常见用法
 
-​	props是可以在组件上注册一些自定义的attribute；父组件给这些attribute赋值，子组件通过attribute的名称获取到对应的值。
-
-### props两种常见用法
-
-- 方式一：字符串数组，数组中的字符串就是attribute的名称
-- 方式二：对象类型，对象类型可以指定attribute名称的同时，指定它需要传递的类型、是否是必须的、设置默认值等；
+- 方式一：<font color=blue>**字符串数组**</font>，数组中的字符串就是attribute的名称
+- 方式二：<font color=blue>**对象类型**</font>，对象类型可以指定attribute名称的同时，指定它需要传递的类型、是否是必须的、设置默认值等；
 
 
 
-#### （1）props的数组用法
+##### ①props的数组用法
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111171853810.png" alt="image-20211117185256529" style="zoom:50%;" />
 
-数组用法只能说明传入的attribute的名称，并不能对其进行任何形式的限制。
+数组用法只能说明传入的attribute的名称，并**不能对其进行任何形式的限制**。
 
 
 
-#### （2）props的对象用法
+##### ②props的对象用法
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111171928678.png" alt="image-20211117192847008"  />
 
+可以指定传入attribute的<font color=deepred>**类型、是否必传、是否设置默认值**</font>
+
+- type类型的可设置项
+  - String
+  - Number
+  - Boolean
+  - Array
+  - Object
+  - Date
+  - Function
+  - Symbol
 
 
-#### （3）prop的大小写命名
 
-​	HTML 中的 attribute 名是大小写不敏感的，所以浏览器会把所有大写字符解释为小写字符;
+#### 1.2、prop的大小写命名
 
-​	这意味着当你使用 DOM 中的模板时，camelCase (驼峰命名法) 的 prop 名需要使用其等价的 kebab-case (短 横线分隔命名) 命名;
+​	HTML 中的 attribute 名是大小写不敏感的，所以<font color=deepred>浏览器会把所有大写字符解释为小写字符</font>；
+
+​	当使用 DOM 中的模板时，camelCase (驼峰命名法) 的 prop 名需<font color=deepred>要使用其等价的 kebab-case (**短横线分隔命名**) 命名</font>；
 
 ```js
 Vue.component('blog-post', {
-  // 在 JavaScript 中是 camelCase 的
+  // 在 JavaScript 中是驼峰写法
   props: ['postTitle'],
   template: '<h3>{{ postTitle }}</h3>'
 })
 ```
 
 ```html
-<!-- 在 HTML 中是 kebab-case 的 -->
+<!-- 在 HTML 中是短横线连接的 -->
 <blog-post post-title="hello!"></blog-post>
 ```
 
 
 
-#### （4）非props的attribute
+#### 1.3、非props的attribute
 
-- 当传递给一个组件某个属性，但是该属性并没有定义对应的props或者emits时，就称之为 **非Prop的 Attribute**；
-
-​		常见的包括class、style、id属性等；
+- 当传递给一个组件某个属性，但是该属性并没有定义对应的props或者emits时，就称之为 **非Prop的 Attribute**；常见的包括class、style、id属性等；
 
 - 当组件有单个根节点时，非Prop的Attribute将自动添加到根节点的Attribute中；
 
   <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111171940448.png" alt="image-20211117194037100" style="zoom:67%;" />
 
-- 如果我们**不希望组件的根元素继承attribute**，可以在组件中设置 **inheritAttrs: false**，还可以通过$attrs来访问所有的非props的attribute；
+- **可以<font color=deepred>在组件中设置 inheritAttrs取消根元素继承attribute: false</font>，还<font color=red>可以通过$attrs来访问所有的非props的attribute</font>**；
 
 ![image-20211117194007881](https://raw.githubusercontent.com/Rainchen0504/picture/master/202111171940604.png)
 
@@ -369,23 +627,25 @@ Vue.component('blog-post', {
 
 
 
+### （2）子组件到父组件
 
+#### 2.1、执行流程
 
-## 3、子到父
+子组件**定义emits属性**，使用**this.$emit发送事件和参数**给父组件，父组件**调用自定义事件接收**。
 
-#### （1）子组件定义emits，父组件调用自定义事件接收。
+- 子组件：
 
-子组件：
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111171946905.png" alt="image-20211117194618034" style="zoom:50%;" />
 
-父组件：
+- 父组件：
+
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111171947506.png" alt="image-20211117194656525" style="zoom:67%;" />
 
 
 
-#### （2）自定义事件参数
+#### 2.2、自定义事件参数
 
 自定义事件可以传递参数（载荷），父组件调用自定义事件时方法可以接收参数
 
@@ -399,12 +659,12 @@ Vue.component('blog-post', {
 
 
 
-## 4、非父子组件的通信
+### （3）非父子组件的通信
 
 - <font color=red>Provide/Inject</font>
 - <font color=red>Mitt全局事件总线</font>
 
-### （1）Provide/Inject
+#### 3.1、Provide/Inject
 
 ​	用于非父子组件之间共享数据，比如一些深度嵌套的组件，子组件想要获取父组件的部分内容，这种情况下使用props逐级传递会非常麻烦。因此可以使用Provide/Inject。
 
@@ -426,9 +686,9 @@ Vue.component('blog-post', {
 
 
 
-### （2）全局事件总线mitt库
+#### 3.2、全局事件总线mitt库
 
-- Vue3从实例中移除了 $on、$off 和 $once 方法，所以我们如果希望**继续使用全局事件总线，要通过第三方的库**:
+- Vue3从实例中移除了 $on、$off 和 $once 方法，所以如果希望**继续使用全局事件总线，要通过第三方的库**:
 
 ①首先安装这个库`npm install mitt`
 
@@ -453,8 +713,6 @@ function onFoo(){}
 emitter.on('foo',onFoo)	//监听
 emitter.off('foo',onFoo)	//取消监听
 ```
-
-
 
 
 
@@ -492,7 +750,7 @@ slot中可以插入普通的内容、html元素、组件元素，都是可以的
 
 ### （4）插槽的默认内容
 
-​	如果**没有插入对应的内容，那么需要显示一个**默认的内容，这个默认内容只会在没有提供插入的内容时才会显示。
+​	如果**没有插入对应的内容，那么需要显示一个**默认的内容，这个<font color=red>默认内容**只会在没有提供插入的内容时才会显示**</font>。
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111261453500.png" alt="image-20211126145302149" style="zoom:50%;" />
 
@@ -524,7 +782,7 @@ slot中可以插入普通的内容、html元素、组件元素，都是可以的
 
 
 
-### （8）具名插槽使用时的缩写
+### （8）具名插槽缩写
 
 ​	跟v-on和v-bind一样，<font color=red>v-slot:可以简写替换为#</font>
 
@@ -565,11 +823,39 @@ slot中可以插入普通的内容、html元素、组件元素，都是可以的
 
 
 
+## 5、组件的生命周期
+
+​	<font color=red>生命周期函数是一些钩子函数，在某个时间会被Vue源码内部进行回调</font>；通过对生命周期函数的回调，可以知道目前组件正经历什么阶段，然后就可以编写属于自己的逻辑代码。
+
+生命周期的流程：
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281644018.png" alt="image-20211128164005459" style="zoom: 50%;" />
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281644397.png" alt="image-20211128163702532" style="zoom: 50%;" />
+
+## 6、$refs的使用
+
+​	某些情况下在组件中想要直接获取到元素对象或者子组件实例，Vue中<font color=blue>不推荐进行DOM操作</font>的，这时候可以<font color=deepred>给元素或者组件绑定一个**ref的attribute属性**</font>。
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281356310.png" alt="image-20211128135631292" style="zoom: 67%;" />
+
+​	this.$refs获取的到的是一个对象，持有<font color=blue>注册过ref attribute的所有DOM元素和组件实例</font>
 
 
-## 5、动态组件
 
-动态组件是<font color=red>使用component组件，通过一个特殊的attribute is来实现</font>。
+## 7、$parent和$root
+
+可以通过$parent来**访问父元素**；
+
+可以通过$root来**访问根组件**；
+
+注意⚠️:在Vue3中已经**<font color=red>移除了$children的属性</font>**，因此不能使用该属性。
+
+
+
+## 8、动态组件
+
+动态组件是<font color=red>使用component组件，**通过is来实现**</font>，is属性的值时注册的组件名。
 
 动态组件也可以实现传值和监听事件，只需将<font color=red>属性和监听事件</font>放到component上来使用。
 
@@ -577,13 +863,9 @@ slot中可以插入普通的内容、html元素、组件元素，都是可以的
 
 
 
-
-
-## 6、keep-alive
+## 9、keep-alive
 
 ​	默认情况下切换组件后，组件会被销毁掉，再次回来时会重新创建组件。但是为了实现<font color=red>切换时继续保持状态</font>而不是销毁时，使用一个内置的组件**keep-alive**。
-
-
 
 ### （1）keep-alive的属性
 
@@ -603,75 +885,37 @@ slot中可以插入普通的内容、html元素、组件元素，都是可以的
 
 
 
-## 7、webpack的代码分包及vue中的异步组件
+## 10、代码分包和异步组件
 
-- 代码分包
+### （1）代码分包
 
-​	默认的打包过程：组件和组件之间是通过模块化直接依赖的，webpack在打包时就会将组件模块打包到一起(比如一个app.js文件中)。
+- 默认的打包过程：
+  - 组件和组件之间是<font color=deepred>通过模块化直接依赖</font>的，webpack在打包时就会<font color=deepred>将组件模块打包到一起</font>(比如一个app.js文件中)
+  - 当项目依赖关系过于复杂时，打包后的<font color=deepred>单个js文件过大，造成首屏渲染速度过慢问题</font>
 
-​	所以，对于一些不需要立即使用的组件，我们可以单独对它们进行拆分，拆分成一些小的代码块chunk.js；这些chunk.js会在需要时从服务器加载下来，并且运行代码，显示对应的内容。也就是懒加载。
+​	对于一些**不需要立即使用**的组件，可以单独拆分成一些小的代码块在需要时从服务器加载下来运行，也就是懒加载优化。
 
-- 异步组件
 
-Vue提供了一个函数**defineAsyncComponent**，该函数接受两种类型的参数：
 
-<font color=red>类型一：</font>工厂函数，该工厂函数需要返回一个Promis对象；
+### （2）异步组件
+
+​	为了实现组件<font color=red>**异步加载方式**</font>(目的是可以对其进行分包处理)，Vue提供了一个函数:**<font color=red>defineAsyncComponent</font>**。
+
+**该函数接受两种类型的参数**：
+
+#### 2.1、工厂函数
+
+类型一：工厂函数，该工厂函数<font color=red>需要返回一个Promis对象</font>；
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281237191.png" alt="image-20211128123741172" style="zoom: 67%;" />
 
-<font color=red>类型二：</font>接受一个对象类型，对异步函数进行配置；
+
+
+#### 2.2、对象类型
+
+类型二：<font color=red>接受一个对象类型</font>，对异步函数进行配置；
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281238222.png" alt="image-20211128123818252" style="zoom: 67%;" />
-
-- suspense特性
-
-**Suspense是一个内置的全局组件，该组件有两个插槽：**
-
-<font color=red>default：</font>如果default可以显示，那么显示default的内容；
-
-<font color=red>fallback：</font>如果default无法显示，那么会显示fallback的内容；
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281317873.png" alt="image-20211128131712253" style="zoom: 67%;" />
-
-
-
-
-
-## 8、$refs的使用
-
-​	某些情况下在组件中想要直接获取到元素对象或者子组件实例，在Vue中时<font color=red>不推荐进行DOM操作</font>的，这时候可以<font color=red>给元素或者组件绑定一个ref的attribute属性</font>。
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281356310.png" alt="image-20211128135631292" style="zoom: 67%;" />
-
-this.$refs获取的到的是一个对象，持有<font color=red>注册过ref attribute的所有DOM元素和组件实例</font>。
-
-
-
-
-
-## 9、$parent和$root
-
-可以通过$parent来访问父元素；
-
-可以通过$root来访问根组件；
-
-注意⚠️:在Vue3中已经**移除了$children的属性**，因此不能使用该属性。
-
-
-
-
-
-## 10、组件的生命周期
-
-​	<font color=red>生命周期函数是一些钩子函数，在某个时间会被Vue源码内部进行回调</font>；通过对生命周期函数的回调，可以知道目前组件正经历什么阶段，然后就可以编写属于自己的逻辑代码。
-
-生命周期的流程：
-
-## <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281644018.png" alt="image-20211128164005459" style="zoom: 50%;" />
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281644397.png" alt="image-20211128163702532" style="zoom: 50%;" />
-
-
 
 
 
@@ -683,18 +927,16 @@ this.$refs获取的到的是一个对象，持有<font color=red>注册过ref at
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111282148622.png" alt="image-20211128214848854" style="zoom:50%;" />
 
-input元素不同的只是属性名称和事件触发的名称而已；
-
-
+input元素不同的只是**属性名称和事件触发的名称而已**；
 
 
 
 ### （1）组件v-model的实现
 
-​	为了实现上面的myInput组件，在<font color=red>组件内部的`<input>`里</font>必须：
+​	为了实现上面的myInput组件，在组件内部的`<input>`里必须：
 
-- 将value属性绑定到一个名叫modelValue的prop上；
-- input事件触发时把新值通过自定义的update:modelValue事件抛出去；
+- 将value属性绑定到一个名叫<font color=red>**modelValue的prop上**</font>；
+- input事件触发时把新值<font color=red>**通过自定义的update:modelValue事件抛出去**</font>；
 
 ```vue
 <!--父组件-->
@@ -705,7 +947,7 @@ input元素不同的只是属性名称和事件触发的名称而已；
 <!--子组件-->
 <template>
 	<div>
-    <input :model-value="modelValue" @update:modelValue="inputChange"/>
+    <input :value="modelValue" @input="inputChange"/>
   </div>
 </template>
 <script setup>
@@ -713,7 +955,7 @@ input元素不同的只是属性名称和事件触发的名称而已；
     modelValue
   })
   const emits = defineEmits(["update:modelValue"])
-  const inputChange = () => {
+  const inputChange = (event) => {
     emits('update:modelValue',event.target.value)
   }
 </script>
@@ -754,7 +996,7 @@ input元素不同的只是属性名称和事件触发的名称而已；
 
 ```vue
 <!--父组件-->
-<my-input v-model="message" v-model:title="title"></my-input>
+<my-input v-model="message" v-model:title="title" />
 ```
 
 ```vue
@@ -788,312 +1030,9 @@ input元素不同的只是属性名称和事件触发的名称而已；
 
 
 
+## 12、Mixin
 
-
-
-
-# 五、Vue3动画
-
-Vue提供了一些内置组件和对应的API来完成动画。
-
-## 1、Vue的transition动画<font color=red>（渐变）</font>
-
-Vue 提供了 transition 的封装组件，可在条件渲染、动态组件、组件根节点中给任何元素添加进入/离开过渡。
-
-```vue
-<transition name = "fade">
-	<h2 v-if="show">hello world</h2>
-</transition>
-
-<style scoped>
-  .fade-enter-from,
-  .fade-leave-to{
-    opacity : 0;
-  }
-  
-  .fade-enter-to,
-  .fade-leave-from{
-    opacity: 1;
-  }
-  
-  .fade-enter-active,
-  .fade-leave-active{
-    transition: opacity 1s ease;
-  }
-</style>
-```
-
-
-
-
-
-## 2、transition组件的原理
-
-当插入或删除包含在transition组件中的元素时，Vue会做如下操作：
-
-- 自动嗅探<font color=red>目标元素是否应用了CSS过渡或者动画</font>，如果有<font color=red>在恰当的时机添加/删除CSS类名</font>；
-- 如果transition组件提供了<font color=red>Javascript钩子函数</font>，这些钩子函数将在恰当的时机被调用；
-- 如果<font color=red>没有找到Javascript钩子并且没有检测到CSS过渡/动画，DOM插入、删除操作会立即执行</font>；
-
-
-
-
-
-## 3、过渡动画class
-
-注意⚠️：**<font color=red>类名开头的v用transition上的name替代</font>**。
-
-- v-enter-from：定义进入过渡的开始状态。在元素被插入之前生效，在元素被插入之后的下一帧移除；
-- v-enter-active：定义进入过渡生效时的状态。在整个进入过渡的阶段中应用，在元素被插入之前生效，在过渡/动画完成之后移除。这个类可以被用来定义<font color=red>进入过渡的过程时间，延迟和曲线函数</font>。
-- v-enter-to：定义进入过渡的结束状态。在元素被插入之后下一帧生效 (与此同时 v-enter-from 被移除)，在过渡/ 动画完成之后移除。
-- v-leave-from：定义离开过渡的开始状态。在离开过渡被触发时立刻生效，下一帧被移除。
-- v-leave-active：定义离开过渡生效时的状态。在整个离开过渡的阶段中应用，在离开过渡被触发时立刻生效，在过渡/动画完成之后移除。这个类可以被用来定义<font color=red>离开过渡的过程时间，延迟和曲线函数</font>。
-- v-leave-to：离开过渡的结束状态。在离开过渡被触发之后下一帧生效 (与此同时 v-leave-from 被删除)，在过渡/ 动画完成之后移除。
-
-
-
-
-
-## 4、class添加的时机和命名规则
-
-![image-20211210193244205](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112101932306.png)
-
-如果使用的是一个没有name的transition，那么所有的class是以` v- `作为默认前缀的；
-
-如果添加了一个name属性，那么所有的class会以name-开头。
-
-
-
-
-
-## 5、Vue的animation动画<font color=red>（动画）</font>
-
-前面通过transition来实现动画效果的，另外也可以通过animation来实现。
-
-```vue
-<button @click="show = !show">切换</button>
-<transition name = "bounce">
-	<h2 v-if="show">hello world</h2>
-</transition>
-
-<style scoped>
-  .bounce-enter-active{
-    animation: animationName 0.5s;
-  }
-  .bounce-laeve-active{
-    animation: animationName 0.5 reverse;
-  }
-  @keyframes animationName {
-    0%{
-      transform: scale(0)
-    }
-    50%{
-      transform: scale(1.25)
-    }
-    100%{
-      transform: scale(1)
-    }
-  }
-</style>
-```
-
-
-
-
-
-## 6、同时设置过渡（渐变）和动画
-
-Vue内部内部是**在监听 transitionend 或 animationend**，到底使用哪一个取决于元素应用的CSS规则。
-
-- 如果只使用一个，那么<font color=red>Vue能自动识别类型并设置监听</font>；
-- 如果同时使用了过渡和动画，可以<font color=red>设置 type 属性为 animation 或者 transition </font>来明确的告知Vue监听的类型。
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121231565.png" alt="image-20211212123137057" style="zoom:50%;" />
-
-
-
-
-
-## 7、显示的指定动画时间
-
-可以**指定过渡的时间**，通过 **duration 属性**：
-
-- <font color=red>number类型</font>：同时设置进入和离开的过渡时间；
-- <font color=red>object类型</font>：分别设置进入和离开的过渡时间；
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121235219.png" alt="image-20211212123540956" style="zoom:50%;" />
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121235705.png" alt="image-20211212123555057" style="zoom:50%;" />
-
-
-
-
-
-## 8、过渡模式的mode
-
-​	默认情况下<font color=red>进入和离开动画</font>是同时发生的，如果**不希望同时执行进入和离开动画**，那么需要设置transition的过渡模式：
-
-- <font color=red>in-out</font>：新元素先进入过渡，完成之后当前元素过渡离开；
-- <font color=red>out-in</font>：当前元素先进入过渡，完成之后新元素过渡进入；
-
-
-
-
-
-## 9、appear初次渲染
-
- 默认情况下，**首次渲染的时候是没有动画的**，如果我们**希望给他添加上去动画，那么就可以增加另外一个属性 appear**。
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121244450.png" alt="image-20211212124435064" style="zoom:50%;" />
-
-
-
-
-
-## 10、认识animate.css（**第三方库的动画库**）
-
-### （1）**什么是animate.css**
-
-**Animate.css**是一个已经准备好的、跨平台的动画库为我们的web项目，对于强调、主页、滑动、注意力引导 非常有用;
-
-
-
-### （2）**如何使用Animate库**
-
-第一步:需要安装animate.css库;
-
-第二步:导入animate.css库的样式;
-
-第三步:使用animation动画或者animate提供的类;
-
-
-
-### （3）自定义过渡class
-
-**我们可以通过以下 attribute 来自定义过渡类名:** 
-
-​	enter-from-class
-
-​	enter-active-class
-
-​	enter-to-class
-
-​	leave-from-class
-
-​	leave-active-class
-
-​	leave-to-class
-
-他们的<font color=red>优先级高于普通的类名</font>，这对于 **Vue 的过渡系统和其他第三方 CSS 动画库**，如 Animate.css. 结合使用十分有用。
-
-
-
-
-
-## 11、animate.css库的使用
-
-- 安装animate.css
-
-```
-npm isntall animate.css
-```
-
-- 在main.js中导入animate.css
-
-```js
-import "animate.css"
-```
-
-- 用法有两种
-
-1. 直接使用<font color=red>animate库中定义的 keyframes 动画</font>；
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121304317.png" alt="image-20211212130437755" style="zoom:67%;" />
-
-1. 直接使用<font color=red>animate库提供给我们的类</font>；
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121305850.png" alt="image-20211212130457491" style="zoom:67%;" />
-
-
-
-
-
-## 12、认识gsap库
-
-​	某些情况下希望通过**JavaScript来实现一些动画的效果**，这个时候我们可以选择使用**gsap库**来完成。
-
-### （1）什么是gsap
-
-可以<font color=red>通过JavaScript为CSS属性、SVG、Canvas等设置动画</font>，并且是浏览器兼容的；
-
-
-
-### （2）如何使用
-
-1. 第一步:需要安装gsap库;
-2. 第二步:导入gsap库;
-3. 第三步:使用对应的api即可;
-
-
-
-### （3）安装库
-
-```
-npm install gsap
-```
-
-
-
-
-
-## 13、transition提供的JS钩子
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121322643.png" alt="image-20211212132239445" style="zoom:50%;" />
-
-这些钩子可以帮助我们监听动画执行到什么阶段了。
-
-⚠️注意：
-
-- 当我们使用JavaScript来执行过渡动画时，需要**进行 done 回调**，否则它们将会被同步调用，过渡会立即完成；
-- 添加 **:css="false"**，也会让 Vue 会**跳过 CSS 的检测**，除了性能略高之外，这可以避免过渡过程中 CSS 规则的影响。
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121324601.png" alt="image-20211212132358195" style="zoom:50%;" />
-
-
-
-
-
-## 14、gsap库的使用
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121328095.png" alt="image-20211212132812127" style="zoom:67%;" />
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121328630.png" alt="image-20211212132826605" style="zoom:67%;" />
-
-
-
-
-
-## 15、jsap实现数字变化
-
-项目中常见的**数字快速变化的动画效果**，使用gsap来实现：
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121332314.png" alt="image-20211212133255077" style="zoom:67%;" />
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121333648.png" alt="image-20211212133313966" style="zoom:67%;" />
-
-
-
-
-
-
-
-# 六、Composition API
-
-## 1、Mixin
-
-​	目前使用组件化的方式在开发整个Vue的应用程序，但是**组件和组件之间有时候会存在相同的代码逻辑**，我们希望对**相同的代码逻辑进行抽取**，因此使用Mixin来完成。
-
-
+​	组件化开发过程中，**组件和组件之间会存在相同的代码逻辑**，可以使用Mixin对**<font color=blue>相同的代码逻辑进行抽取</font>**。
 
 ### （1）特点：
 
@@ -1111,21 +1050,21 @@ npm install gsap
 
 ### （3）Mixin的合并规则
 
-如果Mixin对象中的选项和组件对象中的选项发生了冲突，按如下规则操作：
+如果Mixin对象中的选项和组件对象中的选项**发生了冲突**，按如下规则操作：
 
-- **如果是data函数的返回值对象**
+- **如果是<font color=blue>data函数</font>的返回值对象**
 
-  返回值对象默认情况下会进行合并;
+  返回值对象默认情况下会<font color=red>进行合并</font>;
 
-  如果data返回值对象的属性发生了冲突，那么会保留组件自身的数据;
+  如果data返回值对象的属性发生了冲突，那么会<font color=red>保留组件自身的数据</font>;
 
-- **如果是生命周期钩子函数**
+- **如果是<font color=blue>生命周期</font>钩子函数**
 
-  生命周期的钩子函数会被合并到数组中，都会被调用；
+  生命周期的钩子函数会被合并到数组中，<font color=red>都会被调用</font>；
 
-- **值为对象的选项，例如 methods、components 和 directives，将被合并为同一个对象**
+- **值为对象的选项，例如<font color=blue> methods、components 和 directives</font>，将被合并为同一个对象**
 
-  比如都有methods选项，并且都定义了方法，那么它们都会生效;
+  比如都有methods选项，并且都定义了方法，那么它们<font color=red>都会生效</font>;
 
   但是如果对象的key相同，那么会取组件对象的键值对;
 
@@ -1135,21 +1074,19 @@ npm install gsap
 
 **如果组件中的某些选项是所有组件都需要拥有的，那么可以使用全局的mixin**
 
-​	全局的Mixin可以使用，应用app的方法 mixin 来完成注册;
+​	全局的Mixin可以使用，<font color=blue>**应用app的方法** mixin 来完成注册</font>;
 
-​	一旦注册，那么全局混入的选项将会影响每一个组件；
+​	一旦注册，那么<font color=blue>全局混入的选项将会影响每一个组件</font>；
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112012052869.png" alt="image-20211201205150359" style="zoom:67%;" />
 
 
 
+# 三、Composition API
 
-
-## 2、Options API
+## 1、Options API
 
 ​	Vue2中编写组间的方式就是Options API，data定义数据、methods中定义方法、computed中定义计算属性、watch中监听属性改变，也包括生命 周期钩子;
-
-
 
 
 
@@ -2096,6 +2033,313 @@ app.use(pluginFunction);
 通过<font color=red>全局mixin</font>来添加一些组件选项；
 
 <font color=red>一个库，提供自己的API</font>，同时提供上面提到的一个或多个功能；
+
+
+
+
+
+## 23、suspense特性
+
+**Suspense是一个内置的全局组件，该组件有两个插槽：**
+
+<font color=red>default：</font>如果default可以显示，那么显示default的内容；
+
+<font color=red>fallback：</font>如果default无法显示，那么会显示fallback的内容；
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281317873.png" alt="image-20211128131712253" style="zoom: 67%;" />
+
+
+
+
+
+# 三、Vue3动画
+
+Vue提供了一些内置组件和对应的API来完成动画。
+
+## 1、Vue的transition动画<font color=red>（渐变）</font>
+
+Vue 提供了 transition 的封装组件，可在条件渲染、动态组件、组件根节点中给任何元素添加进入/离开过渡。
+
+```vue
+<transition name = "fade">
+	<h2 v-if="show">hello world</h2>
+</transition>
+
+<style scoped>
+  .fade-enter-from,
+  .fade-leave-to{
+    opacity : 0;
+  }
+  
+  .fade-enter-to,
+  .fade-leave-from{
+    opacity: 1;
+  }
+  
+  .fade-enter-active,
+  .fade-leave-active{
+    transition: opacity 1s ease;
+  }
+</style>
+```
+
+
+
+
+
+## 2、transition组件的原理
+
+当插入或删除包含在transition组件中的元素时，Vue会做如下操作：
+
+- 自动嗅探<font color=red>目标元素是否应用了CSS过渡或者动画</font>，如果有<font color=red>在恰当的时机添加/删除CSS类名</font>；
+- 如果transition组件提供了<font color=red>Javascript钩子函数</font>，这些钩子函数将在恰当的时机被调用；
+- 如果<font color=red>没有找到Javascript钩子并且没有检测到CSS过渡/动画，DOM插入、删除操作会立即执行</font>；
+
+
+
+
+
+## 3、过渡动画class
+
+注意⚠️：**<font color=red>类名开头的v用transition上的name替代</font>**。
+
+- v-enter-from：定义进入过渡的开始状态。在元素被插入之前生效，在元素被插入之后的下一帧移除；
+- v-enter-active：定义进入过渡生效时的状态。在整个进入过渡的阶段中应用，在元素被插入之前生效，在过渡/动画完成之后移除。这个类可以被用来定义<font color=red>进入过渡的过程时间，延迟和曲线函数</font>。
+- v-enter-to：定义进入过渡的结束状态。在元素被插入之后下一帧生效 (与此同时 v-enter-from 被移除)，在过渡/ 动画完成之后移除。
+- v-leave-from：定义离开过渡的开始状态。在离开过渡被触发时立刻生效，下一帧被移除。
+- v-leave-active：定义离开过渡生效时的状态。在整个离开过渡的阶段中应用，在离开过渡被触发时立刻生效，在过渡/动画完成之后移除。这个类可以被用来定义<font color=red>离开过渡的过程时间，延迟和曲线函数</font>。
+- v-leave-to：离开过渡的结束状态。在离开过渡被触发之后下一帧生效 (与此同时 v-leave-from 被删除)，在过渡/ 动画完成之后移除。
+
+
+
+
+
+## 4、class添加的时机和命名规则
+
+![image-20211210193244205](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112101932306.png)
+
+如果使用的是一个没有name的transition，那么所有的class是以` v- `作为默认前缀的；
+
+如果添加了一个name属性，那么所有的class会以name-开头。
+
+
+
+
+
+## 5、Vue的animation动画<font color=red>（动画）</font>
+
+前面通过transition来实现动画效果的，另外也可以通过animation来实现。
+
+```vue
+<button @click="show = !show">切换</button>
+<transition name = "bounce">
+	<h2 v-if="show">hello world</h2>
+</transition>
+
+<style scoped>
+  .bounce-enter-active{
+    animation: animationName 0.5s;
+  }
+  .bounce-laeve-active{
+    animation: animationName 0.5 reverse;
+  }
+  @keyframes animationName {
+    0%{
+      transform: scale(0)
+    }
+    50%{
+      transform: scale(1.25)
+    }
+    100%{
+      transform: scale(1)
+    }
+  }
+</style>
+```
+
+
+
+
+
+## 6、同时设置过渡（渐变）和动画
+
+Vue内部内部是**在监听 transitionend 或 animationend**，到底使用哪一个取决于元素应用的CSS规则。
+
+- 如果只使用一个，那么<font color=red>Vue能自动识别类型并设置监听</font>；
+- 如果同时使用了过渡和动画，可以<font color=red>设置 type 属性为 animation 或者 transition </font>来明确的告知Vue监听的类型。
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121231565.png" alt="image-20211212123137057" style="zoom:50%;" />
+
+
+
+
+
+## 7、显示的指定动画时间
+
+可以**指定过渡的时间**，通过 **duration 属性**：
+
+- <font color=red>number类型</font>：同时设置进入和离开的过渡时间；
+- <font color=red>object类型</font>：分别设置进入和离开的过渡时间；
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121235219.png" alt="image-20211212123540956" style="zoom:50%;" />
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121235705.png" alt="image-20211212123555057" style="zoom:50%;" />
+
+
+
+
+
+## 8、过渡模式的mode
+
+​	默认情况下<font color=red>进入和离开动画</font>是同时发生的，如果**不希望同时执行进入和离开动画**，那么需要设置transition的过渡模式：
+
+- <font color=red>in-out</font>：新元素先进入过渡，完成之后当前元素过渡离开；
+- <font color=red>out-in</font>：当前元素先进入过渡，完成之后新元素过渡进入；
+
+
+
+
+
+## 9、appear初次渲染
+
+ 默认情况下，**首次渲染的时候是没有动画的**，如果我们**希望给他添加上去动画，那么就可以增加另外一个属性 appear**。
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121244450.png" alt="image-20211212124435064" style="zoom:50%;" />
+
+
+
+
+
+## 10、认识animate.css（**第三方库的动画库**）
+
+### （1）**什么是animate.css**
+
+**Animate.css**是一个已经准备好的、跨平台的动画库为我们的web项目，对于强调、主页、滑动、注意力引导 非常有用;
+
+
+
+### （2）**如何使用Animate库**
+
+第一步:需要安装animate.css库;
+
+第二步:导入animate.css库的样式;
+
+第三步:使用animation动画或者animate提供的类;
+
+
+
+### （3）自定义过渡class
+
+**我们可以通过以下 attribute 来自定义过渡类名:** 
+
+​	enter-from-class
+
+​	enter-active-class
+
+​	enter-to-class
+
+​	leave-from-class
+
+​	leave-active-class
+
+​	leave-to-class
+
+他们的<font color=red>优先级高于普通的类名</font>，这对于 **Vue 的过渡系统和其他第三方 CSS 动画库**，如 Animate.css. 结合使用十分有用。
+
+
+
+
+
+## 11、animate.css库的使用
+
+- 安装animate.css
+
+```
+npm isntall animate.css
+```
+
+- 在main.js中导入animate.css
+
+```js
+import "animate.css"
+```
+
+- 用法有两种
+
+1. 直接使用<font color=red>animate库中定义的 keyframes 动画</font>；
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121304317.png" alt="image-20211212130437755" style="zoom:67%;" />
+
+1. 直接使用<font color=red>animate库提供给我们的类</font>；
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121305850.png" alt="image-20211212130457491" style="zoom:67%;" />
+
+
+
+
+
+## 12、认识gsap库
+
+​	某些情况下希望通过**JavaScript来实现一些动画的效果**，这个时候我们可以选择使用**gsap库**来完成。
+
+### （1）什么是gsap
+
+可以<font color=red>通过JavaScript为CSS属性、SVG、Canvas等设置动画</font>，并且是浏览器兼容的；
+
+
+
+### （2）如何使用
+
+1. 第一步:需要安装gsap库;
+2. 第二步:导入gsap库;
+3. 第三步:使用对应的api即可;
+
+
+
+### （3）安装库
+
+```
+npm install gsap
+```
+
+
+
+
+
+## 13、transition提供的JS钩子
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121322643.png" alt="image-20211212132239445" style="zoom:50%;" />
+
+这些钩子可以帮助我们监听动画执行到什么阶段了。
+
+⚠️注意：
+
+- 当我们使用JavaScript来执行过渡动画时，需要**进行 done 回调**，否则它们将会被同步调用，过渡会立即完成；
+- 添加 **:css="false"**，也会让 Vue 会**跳过 CSS 的检测**，除了性能略高之外，这可以避免过渡过程中 CSS 规则的影响。
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121324601.png" alt="image-20211212132358195" style="zoom:50%;" />
+
+
+
+
+
+## 14、gsap库的使用
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121328095.png" alt="image-20211212132812127" style="zoom:67%;" />
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121328630.png" alt="image-20211212132826605" style="zoom:67%;" />
+
+
+
+
+
+## 15、jsap实现数字变化
+
+项目中常见的**数字快速变化的动画效果**，使用gsap来实现：
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121332314.png" alt="image-20211212133255077" style="zoom:67%;" />
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112121333648.png" alt="image-20211212133313966" style="zoom:67%;" />
 
 
 

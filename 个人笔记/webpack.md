@@ -2,7 +2,7 @@
 
 ## 1、Webpack打包工具
 
-​	Webpack是一个静态的模块化打包工具，为现代的Javascript应用程序，
+​	Webpack是一个<font color=red>**静态的模块化打包工具**</font>，为现代的Javascript应用程序，
 
 ​	Webpack is a static module bundler for modern Javascript applications。
 
@@ -20,7 +20,7 @@
 
 ## 3、使用前提
 
-webpack安装依赖node环境。
+webpack安装依赖<font color=red>**Node环境**</font>。
 
 
 
@@ -30,15 +30,9 @@ webpack安装依赖node环境。
 
 
 
-## 4、webpack对项目打包的过程
-
-​	在处理应用程序时，会根据命令或者配置文件找到入口文件，从入口开始会生成一个依赖关系图，这个依赖关系图会包含应用程序中所需的所有模块（比如.js文件、css文件、图片、文字等），然后遍历图结构，打包一个个模块（根据文件的不同使用不同的loader来解析）。
-
-
-
-
-
 ## 5、webpack的安装
+
+webpack安装分为两部分：<font color=red>**webpack和webpack-cli**</font>
 
 ### （1）webpack
 
@@ -48,9 +42,15 @@ webpack安装依赖node环境。
 
 ### （2）webpack-cli
 
-webpack-cli中的代码执行时，才真正利用webpack进行编译和打包。webpack在执行时是依赖webpack-cli的，如果没安装就会报错。
+webpack在执行时是依赖webpack-cli的，如果没安装就会报错。webpack-cli中的代码执行时，才真正利用webpack进行编译和打包。
 
 ​	注意：在第三方的脚手架事实上时没有使用webpack-cli的，而是类似于vue-serve-cli的东西。也就是<u>不使用脚手架，在命令行手动进行webpack打包时，需要同时安装webpack和webpack-cli的。</u>
+
+
+
+### （3）webpack流程
+
+![image-20221005195627817](https://raw.githubusercontent.com/Rainchen0504/picture/master/202210051956265.png)
 
 
 
@@ -100,34 +100,7 @@ console.log(sum(20, 30));
 
 
 
-## 7、CommonJS和ESmodules的差异
-
-### （1）总结：
-
-- ommonJS模块输入的是一个值的拷贝，ES6模块输出的是值的引用（所以重新对其赋值）。
-- commonJS模块是运行时加载（同步），ES6模块是编译时输出接口（异步）。
-
-
-
-### （2）用法的区别：
-
-```javascript
-//commonJS导出一个对象
-module.exports = {name:"zhang",age:24};
-let x = require("./index")；
-
-//ESmodules导出一个对象
-//方式一
-export {name:"zhang",age:24};
-import {name,age} from "./index" //不能任意命名，只能解构赋值
-//方式二
-export default {name:"zhang",age:24};
-import xx from "index"; //导入的对象可以任意命名
-```
-
-
-
-## 8、webpack五个核心概念
+## 7、webpack五个核心概念
 
 ### （1）entry
 
@@ -185,7 +158,9 @@ webpack src/index.js -o build/built.js --mode=production
 
 ## 10、配置webpack
 
-配置webpack一般在根目录下的webpack.config.js文件中
+<font color=red>配置webpack**一般在根目录下的webpack.config.js文件中**</font>
+
+如果想修改配置文件的名字，打包时通过--config指定对应的配置文件
 
 ```javascript
 // resolve用来拼接绝对路径的方法
@@ -245,6 +220,8 @@ module.exports = {
 
 
 ## 11、webpack的依赖图
+
+​	在处理应用程序时，会根据命令或者配置文件找到入口文件，<font color=red>从入口开始会**生成一个依赖关系图**</font>，这个依赖关系图会包含应用程序中所需的所有模块（比如.js文件、css文件、图片、文字等），然后遍历图结构，打包一个个模块（根据文件的不同使用不同的loader来解析）。
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202109052059114.png" alt="image-20210905205944882" style="zoom:50%;" />
 
@@ -414,10 +391,17 @@ module:{
 
 **<font color=deepred>在webpack5之后，可以直接使用资源模块类型来替代file-loader、url-loader等</font>**。<u>资源模块类型(asset module type)</u>，通过添加4种类型的模块，来替代这些loader。
 
-- `asset/resource`发送一个单独文件并导出URL。之前通过file-loader实现；
-- `asset/inline`导出一个资源的data URI。之前使用url-loader实现；
+- `asset/resource`发送一个单独文件并导出URL。之前通过file-loader实现；<font color=blue>即打包几张图片, 就产生几张图片的地址, 自动将地址设置到img/bgi中</font>
+  - 缺点：每一张图片都要单独加载一次网络请求
+
+- `asset/inline`导出一个资源的data URI。之前使用url-loader实现；<font color=blue>将图片进行base64的编码, 并且直接编码后的源码放到打包的js文件中</font>
+  - 缺点: 造成js文件非常大, 下载js文件本身消耗时间非常长, 造成js代码的下载和解析/执行时间过长
+
 - `asset/source`导出资源的源代码。之前通过使用raw-loader实现；
 - `asset`在导出一个data URI和发送单独的文件之间自动选择。之前通过使用url-loader，并且配置资源体积限制实现。
+  - 对于小一点的图片, 进行base64编码，和页面一起被请求；
+  - 对于大一点的图片, 单独的图片打包, 形成url地址, 单独的请求这个url资源；
+
 
 比如加载图片的方式：
 
@@ -448,9 +432,11 @@ output:{
 {
     test:"/\.(jpe?g|png|gif|svg)$/",
     type:"asset",
+    //打包后资源名称
     generator:{
         filename:"img/[name]_[hash:6][ext]"
     },
+    //打包资源文件大小设置
     parser:{
         dataUrlCondition:{
             maxSize:100*1024
@@ -465,7 +451,9 @@ output:{
 
 ## 16、loader和plugin
 
-loader是用于<u>特定的模块类型进行转换</u>，plugin可以用于执行<u>更加广泛的任务</u>，比如打包优化、资源管理、环境变量注入等。
+loader是用于<u>特定的模块类型进行转换</u>；
+
+plugin可以用于执行<u>更加广泛的任务</u>，比如打包优化、资源管理、环境变量注入等。
 
 
 
@@ -865,15 +853,16 @@ new VueLoaderPlugin()
 
 - 安装webpack-dev-server
 
-```javascript
-//安装dev-servernpm install webpack-dev-server -D
+```shell
+//安装dev-server
+npm install webpack-dev-server -D
 ```
 
 - 修改配置文件
 
 ![image-20211111193935671](https://raw.githubusercontent.com/Rainchen0504/picture/master/202111111948046.png)
 
-webpack-dev-server在编译后<font color="red">不会写入到任何输入文件</font>，而是将bundle文件<font color="red">保留在内存中</font>。
+**webpack-dev-server在编译后<font color="red">不会写入到任何输入文件</font>，而是将bundle文件<font color="red">保留在内存中</font>**。
 
 - 配置项补充
 
@@ -892,12 +881,10 @@ webpack-dev-server配置项中的**contentBase**表示提供静态资源的目�
 - HMR的全称是Hot Module Replacement，翻译为模块热替换；模块热替换是指在<font color=red>应用程序运行过程中，替换、添加、删除模块，而无需重新刷新整个页面</font>;
 
 - HMR通过如下方式提高开发速度：
+  - 不重新加载整个页面，这样可以保留某些应用程序的状态不丢失；
+  - 只更新需要变化的内容，节省开发时间；
+  - 修改了css、js源码，会立即在浏览器更新，相当于直接在浏览器的devtools中直接修改样式；
 
-​	不重新加载整个页面，这样可以保留某些应用程序的状态不丢失；
-
-​	只更新需要变化的内容，节省开发时间；
-
-​	修改了css、js源码，会立即在浏览器更新，相当于直接在浏览器的devtools中直接修改样式；
 
 - 默认情况下，webpack-dev-server已经支持HMR，我们只需要开启即可；
 
@@ -931,9 +918,11 @@ express server负责直接提供静态资源的服务(打包后的资源直接�
 
 host设置主机地址，默认是localhost，如果希望同局域网下可以访问，可以改成0.0.0.0；
 
-⚠️：localhost本质上是一个域名，通常解析成127.0.0.1（回环地址），表达的意思其实是我们主机自己发出去的包，直接被自己接收。
+⚠️：localhost本质上是一个域名，通常解析成127.0.0.1（回环地址）
 
-​	正常的数据库包经过：应用层 - 传输层 - 网络层 - 数据链路层 - 物理层。
+⚠️：127.0.0.1（回环地址），表达的意思其实是我们主机自己发出去的包，直接被自己接收；
+
+​		**<font color=red>正常的数据库包经过：应用层 - 传输层 - 网络层 - 数据链路层 - 物理层<**。而回环地址，是在网络层直接就被获取到了，是不会经常数据链路层和物理层的。
 
 ⚠️：0.0.0.0监听IPV4上所有的地址，再根据端口找到不同的应用程序。
 

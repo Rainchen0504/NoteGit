@@ -2729,7 +2729,7 @@ export default{
 
 
 
-## 2022年8月26日
+# 2022年8月26日
 
 vue暴露的静态资源要放到public文件中才能通过axios请求获得，请求时写法：
 
@@ -2741,5 +2741,80 @@ axios({
 }).then((res) => {
   //成功的回调
 })
+```
+
+
+
+# 2022年10月8日
+
+## 1、移动端、H5开发手机网页调试工具
+
+```http
+https://github.com/liriliri/eruda
+```
+
+​	只有当 url 上带有 eruda=true 或本地存储 active-eruda 为 true 的时候，工具才会被加载并执行。其中设置面板有选项可以设置 active-eruda 使工具常驻，不用每次都在 url 上添加 eruda=true。
+
+
+
+### 2、浏览器定位方法getCurrentPosition
+
+`navigator.geolocation.getCurrentPosition`
+
+```js
+navigator.geolocation.getCurrentPosition((position) => {
+  let gpsPoints = [
+    {
+      lng: position.coords.longitude,
+      lat: position.coords.latitude,
+    },
+  ];
+  //gpsPoints获取到的就是经纬度
+});
+```
+
+该方法需要开启定位权限，因为需要获取用户隐私。
+
+在项目中需要在https域名下才能获取用户定位信息。
+
+
+
+# 2022年10月9日
+
+## 1、Web Animations API
+
+​	**<font color=deepred>Web Animations API</font>** 允许同步和定时更改网页的呈现，将`CSS3`实现的动画由`JS`代码实现，即 DOM 元素的动画。它通过组合两个模型来实现：时序模型和动画模型。
+
+```vue
+<div class="trangle"></div>
+
+<script>
+  let trangle = document.querySelector(".trangle");
+  trangle.animate(
+    [
+      {
+        transform: "rotate(0) translate3D(-10%, -10%, 0)",
+        color: "#000",
+      },
+      { color: "#431236", offset: 0.1 },
+      {
+        transform: "rotate(360deg) translate3D(-10%, -10%, 0)",
+        color: "#000",
+      },
+    ],
+    {
+      duration: 3000,
+      iterations: Infinity,
+    }
+  );
+</script>
+
+<style>
+  .trangle {
+    width: 200px;
+    height: 200px;
+    background-color: pink;
+  }
+</style>
 ```
 

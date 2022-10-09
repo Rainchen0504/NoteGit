@@ -70,7 +70,7 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
 
 编写的JavaScript代码会经过V8引擎，再通过Node.js的Bindings，将任务放到Libuv的事件循环中。
 
-**libuv**(Unicorn Velociraptor—独角伶盗龙)是使用C语言编写的库。libuv提供了事件循环、文件系统读写、网络IO、线程池等等内容;
+**libuv**(Unicorn Velociraptor)是使用C语言编写的库。libuv提供了事件循环、文件系统读写、网络IO、线程池等等内容;
 
 
 
@@ -84,10 +84,10 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
 
 ## 7、常见的全局对象
 
-![image-20220401083107481](https://raw.githubusercontent.com/Rainchen0504/picture/master/202204010831989.png)
+![image-20221004174042938](https://raw.githubusercontent.com/Rainchen0504/picture/master/202210041740437.png)
 
-- **__dirname:**获取当前文件所在的路径，不包括后面的文件名；
-- **__filename:**获取当前文件所在的路径和文件名称，包括后面的文件名；
+- **__dirname:**<font color=deepred>获取**当前文件所在的路径**，不包括后面的文件名</font>；
+- **__filename:**<font color=deepred>获取**当前文件所在的路径和文件名称**，包括后面的文件名</font>；
 - **process对象:**process提供了Node进程中相关的信息；
 - **console对象:**提供了简单的调试控制台；
 - **定时器函数:**在Node中使用定时器有好几种方式：
@@ -100,15 +100,20 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
 
 ## 8、global和window的区别
 
-在浏览器中执行的JavaScript代码，如果在顶级范围内通过var定义的一个属性，默认会被添加到window 对象上。但是在node中，通过var定义一个变量，它只是在当前模块中有一个变量，不会放到全局中。
+​	在浏览器中执行的JavaScript代码，如果在顶级范围内通过var定义的一个属性，默认会被添加到window 对象上。但是在node中，通过var定义一个变量，它只是在当前模块中有一个变量，不会放到全局中。
 
 
 
 # 二、JS模块化
 
-​	模块化开发最终的目的是将程序划分成一个个小的结构。这个结构中编写属于自己的逻辑代码，有自己的作用域，不会影响到其他的结构。这个结构可以将自己希望暴露的变量、函数、对象等导出给其结构使用。也可以通过某种方式，导入另外结构中的变量、函数、对象等。
+​	模块化开发最终的目的：
 
-按照这种**结构划分**开发程序的过程，就是<font color=orange>模块化开发</font>的过程
+1. 将程序划分成<font color=red>一个个小的结构</font>。
+2. 这个结构中编写属于自己的逻辑代码，<font color=red>有自己的作用域</font>，不会影响到其他的结构。
+3. 这个结构可以将自己希望暴露的变量、函数、对象等<font color=red>导出给其结构使用</font>。
+4. 也可以通过某种方式，<font color=red>导入另外结构中的变量、函数、对象等</font>。
+
+按照这种**结构划分**开发程序的过程，就是<font color=orange>**模块化开发**</font>的过程
 
 
 
@@ -123,9 +128,11 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
 
 
 
-## 2、exports导出
+## 2、CommonJS导入和导出
 
-exports是一个对象，**可以在这个对象中添加很多个属性，添加的属性会导出**
+### （1）exports导出
+
+<font color=red>exports**是一个对象**，可以在这个对象中添加很多个属性，添加的属性会导出</font>
 
 ```js
 //bar导出文件
@@ -143,7 +150,7 @@ console.log(bar.name)
 
 
 
-## 3、module.exports
+### （2）module.exports
 
 ​	CommonJS中是没有module.exports的概念的。但是为了实现模块的导出，Node中使用的是Module的类，每一个模块都是Module的一个实例，也就是 module;所以在Node中真正用于导出的其实根本不是exports，而是module.exports。
 
@@ -151,9 +158,9 @@ console.log(bar.name)
 
 
 
-## 4、require
+### （3）require
 
-require是一个函数，可以帮助我们引入一个文件(模块)中导入的对象。
+<font color=red>require**是一个函数**，可以帮助我们引入一个文件(模块)中导入的对象</font>
 
 常见的查找规则：require(X)
 
@@ -178,31 +185,35 @@ require是一个函数，可以帮助我们引入一个文件(模块)中导入�
 
 
 
-## 5、CommonJS规范的缺点
+## 3、CommonJS规范缺点
 
-### 1.CommonJS加载模块是同步的
+### （1）加载模块是同步的
 
 同步的意味着只有等到对应的模块加载完毕，当前模块中的内容才能被运行；
 
 这个在服务器不会有什么问题，因为服务器加载的js文件都是本地文件，加载速度非常快；
 
-### 2.浏览器应用情景
+
+
+### （2）浏览器加载存在阻塞
 
 浏览器加载js文件需要先从服务器将文件下载下来，之后在加载运行;
 
 采用同步的就意味着后续的js代码都无法正常运行，即使是一些简单的DOM操作;
 
-### 3.浏览器通常不采用CommonJS规范
+
+
+### （3）浏览器通常不采用
 
 webpack中使用CommonJS是另外一回事，它会将我们的代码转成浏览器可以直接执行的代码。
 
-### 4.早期为了可以在浏览器中使用模块化，通常会采用AMD或CMD
+
+
+### （4）早期浏览器采用AMD或CMD
 
 目前一方面现代的浏览器已经支持ES Modules，另一方面借助于webpack等工具可以实现对CommonJS或者ES Module代码的转换，所以AMD和CMD已经使用非常少了。
 
-
-
-## 6、AMD规范
+#### 	（4.1）AMD规范
 
 AMD主要是应用于浏览器的一种模块化规范：
 
@@ -214,9 +225,9 @@ AMD主要是应用于浏览器的一种模块化规范：
 
 ​	4、AMD实现的比较常用的库是require.js和curl.js。
 
+#### 	
 
-
-## 7、CMD规范
+#### 	（4.2）CMD规范
 
 CMD规范也是应用于浏览器的一种模块化规范：
 
@@ -230,31 +241,109 @@ CMD规范也是应用于浏览器的一种模块化规范：
 
 
 
-## 8、ES Module
-
-CommonJS、AMD、CMD等都是社区规范，ESModule是ES自己推出的模块化系统。
-
-- ES Module和CommonJS的模块化有一些不同之处
-  - 一方面它使用了import和export关键字；
-  - 另一方面它采用编译期的静态分析，并且也加入了动态引用的方式；
-- ES Module模块采用export和import关键字来实现模块化
-  - export负责将模块内的内容导出
-  - import负责从其他模块导入内容
-- 采用ES Module将自动采用严格模式:**use strict**
 
 
+## 4、ES Module导入和导出
 
-## 9、CommonJS和ESModule加载过程
+### （1）export导出
+
+- 导出方式一
+
+  在语句声明的前面直接加上export关键字
+
+  ```js
+  export const age = 18
+  ```
+
+- 导出方式二
+
+  将所有需要导出的标识符添加到export后面的{}中
+
+  ```js
+  export {name,age,height}
+  ```
+
+- 导出方式三
+
+  导出时通过as关键字给标识符起别名
+
+  ```js
+  export {name as realname}
+  ```
+
+  
+
+### （2）import导入
+
+- 导入方式一
+
+  import {标识符列表} from '模块'，模块必须要有文件类型后缀
+
+  ```js
+  import { name, age } from "./foo.js"
+  ```
+
+- 导入方式二
+
+  导入时通过as关键字给标识符起别名
+
+  ```js
+  import { name as fname } from "./foo.js"
+  ```
+
+- 导入方式三
+
+  通过 * 将模块功能放到一个模块功能对象上
+
+  ```js
+  import * as info from "./foo.js"
+  ```
+
+
+
+## 5、ES Module特点
+
+CommonJS、AMD、CMD等都是**<font color=blue>社区规范</font>**，ESModule是**<font color=blue>ES自己推出的模块化系统</font>**。
+
+1. 使用了<font color=deepred>**import和export**</font>关键字；
+   1. export负责将模块内的内容导出
+   2. import负责从其他模块导入内容
+2. 采用<font color=deepred>**编译期的静态分析**</font>，并且也<font color=deepred>**加入了动态引用的方式**</font>；
+3. 采用ES Module将<font color=deepred>**自动采用严格模式**</font>:**use strict**
+
+
+
+## 6、ES Module解析流程
+
+### （1）阶段一:构建
+
+​	根据地址查找js文件，并且下载，将其解析成模块记录；
+
+
+
+### （2）阶段二:实例化
+
+​	对模块记录进行实例化，并且分配内存空间，解析模块的导入和导出语句，把模块指向对应的内存地址。
+
+
+
+### （3）阶段三:运行
+
+​	运行代码，计算值，并且将值填充到内存地址中
+
+
+
+## 7、CommonJS和ESModule加载过程
 
 ### 1.CommonJS
 
-#### （1）commonJS模块加载js文件的过程是运行时加载的，并且是同步的。
+#### （1）加载js文件的过程是<font color=red>运行时加载，是同步的</font>
 
 运行时加载意味着是js引擎在执行js代码的过程中加载模块；
 
 同步的就意味着一个文件没有结束之前，后面的代码不会执行；
 
-#### （2）commonJS通过module.exports导出的是一个对象。
+#### （2）通过module.exports<font color=red>导出的是一个对象</font>
 
 导出的是一个对象意味着可以将这个对象的引用在其他模块中赋值给其他变量；
 
@@ -262,17 +351,17 @@ CommonJS、AMD、CMD等都是社区规范，ESModule是ES自己推出的模块�
 
 
 
-### 2.ES Module加载过程
+### 2.ES Module
 
-#### （1）ES Module加载js文件的过程是编译(解析)时加载的，并且是异步的
+#### （1）加载js文件的过程是<font color=red>编译(解析)时加载的，是异步的</font>
 
 import不能和运行时相关的内容放在一起使用，不能把import放到`if`语句中。所以称ES Module是静态解析的。
 
-#### （2）JS引擎在import时获取过程是异步的，不会阻塞主线程继续执行;
+#### （2）JS引擎在import时获取过程是异步的，<font color=red>不会阻塞主线程继续执行</font>
 
 设置了 type=module 的代码，相当于在script标签上也加上了 async 属性。后面代码不会阻塞执行；
 
-#### （3）Module通过export导出的是变量本身的引用
+#### （3）通过export<font color=red>导出的是变量本身的引用</font>
 
 export在导出一个变量时，js引擎会解析这个语法，并且创建**模块环境记录**，它会和变量进行绑定，在导入的地方，是可以实时的获取到绑定的最新值的；
 
@@ -285,17 +374,11 @@ export在导出一个变量时，js引擎会解析这个语法，并且创建**�
 
 
 
-### 4、ES6模块和CommonJS模块的差异
-
-1. CommonJS模块输出的是一个值的拷贝，ES6模块输出的是值的拷贝；
-2. CommonJS模块是运行时加载，ES6模块是编译时输出接口；
-3. CommonJS模块的require()是同步加载模块，ES6的import命令是异步加载，有一个独立的模块依赖的解析阶段。
-
-
-
 # 三、Node常用内置模块
 
 ## 1、内置模块path
+
+path模块用于对路径和文件的处理，比如在服务器上解决不同系统开发时的文件路径问题(符号不同)
 
 ### （1）path常见API
 
@@ -306,8 +389,10 @@ export在导出一个变量时，js引擎会解析这个语法，并且创建**�
 - 路径的拼接
   - path.join
 - 文件和文件夹的拼接
-  - path.resolve
-  - resolve函数会判断拼接的路径前面是否有 /或../或./。如果有，表示是一个绝对路径，会返回对应的拼接路径；如果没有，会和当前执行文件所在的文件夹进行路径拼接。
+  - 绝对路径拼接path.resolve
+  - resolve函数会判断拼接的路径前面是否有 /或../或./。
+    - 如果有，表示是一个绝对路径，会返回对应的拼接路径；
+    - 如果没有，会和当前执行文件所在的文件夹进行路径拼接；
 
 
 
@@ -531,7 +616,7 @@ npm包遵循semver版本规范X.Y.Z：
 
 
 
-## 2、npm原理
+## 2、npm执行流程
 
 ![image-20220327214802234](https://raw.githubusercontent.com/Rainchen0504/picture/master/202203272148320.png)
 
@@ -564,6 +649,36 @@ npm cache clean
 ## 4、Yarn
 
 另一node包管理工具，由Facebook、Google、Exponent 和 Tilde 联合推出。
+
+
+
+## 5、npx
+
+npx是npm5.2以后自带的命令，常见的用途是<font color=deepred>调用项目中某个模块的指令</font>。
+
+npx的原理非常简单，它会到当前目录的node_modules/.bin目录下查找对应的命令;
+
+
+
+## 6、pnpm
+
+### （1）特点
+
+- 当使用npm或Yarn时，如果有100个项目，并且所有项目都有一个相同的依赖包，那么在硬盘上就需要<font color=red>保存100份该相同依赖包的副本</font>；
+
+- 当使用pnpm时，依赖包被<font color=red>存放在一个统一位置</font>
+  - 如果对<font color=blue>同一依赖包使用相同的版本</font>，那么磁盘上<font color=red>只有这个依赖包的一份文件</font>；
+  - 如果你对<font color=blue>同一依赖包需要使用不同的版本</font>，则仅有<font color=red>版本之间不同的文件会被存储起来</font>；
+
+
+
+### （2）存储位置
+
+- 在 Linux 上，默认是 ~/.local/share/pnpm/store
+- 在 Windows 上: %LOCALAPPDATA%/pnpm/store
+- 在 macOS 上: ~/Library/pnpm/store
+
+可以通过pnpm store path命令获取当前活跃的store目录
 
 
 
@@ -924,6 +1039,8 @@ writer.close();
 
 # 九、Http模块
 
+​	HTTP：超文本传输协议，是一种用于分布式、协作式和超媒体信息系统的应用层协议
+
 ## 1、Web服务器
 
 ​	当应用程序需要某一个资源时，可以向一个台服务器，通过Http请求获取到这个资源;提供资源的服务器，就是一个Web服务器；
@@ -1099,7 +1216,7 @@ server.listen(8888, '0.0.0.0', ()=> {
 
 
 
-### （3）headers处理
+### （3）请求头headers处理
 
 request对象的header中也包含很多客户端会默认传递过来的信息：
 
@@ -1134,6 +1251,8 @@ multipart/form-data	//表示是上传文件;
 
 #### 	6.user-agent：客户端相关信息
 
+
+
 ## 3、response对象
 
 ### （1）返回响应结果
@@ -1151,7 +1270,19 @@ multipart/form-data	//表示是上传文件;
 
 Http状态码时用来表示Http响应状态的数字代码
 
-![image-20220402151326049](https://raw.githubusercontent.com/Rainchen0504/picture/master/202204021513831.png)
+| 状态码 | 状态描述              | 信息说明                                                     |
+| ------ | --------------------- | ------------------------------------------------------------ |
+| 200    | OK                    | 客户端请求成功                                               |
+| 201    | Created               | 请求成功，通常是POST请求创建了一个新的资源                   |
+| 301    | Moved Permanently     | 请求资源的URL已永久更改，响应中会给出了新的 URL              |
+| 302    | Found                 | 请求资源的URI临时更改。客户机应该在将来的请求中继续使用相同的 URI |
+| 304    | Not Modified          | 表示使用缓存，和上次响应比还没有被修改，可以继续使用相同的缓存版本的响应 |
+| 400    | Bad Request           | 客户端有语法错误，服务器无法或者不进行处理                   |
+| 401    | Unauthorized          | 未授权错误，客户端必须携带身份信息，提供身份验证才能获得请求的响应 |
+| 403    | Forbidden             | 服务器知道客户端身份，但是客户端没有权限访问，拒绝提供服务   |
+| 404    | Not Found             | 服务器找不到请求的资源，比如输入错误的URL                    |
+| 500    | Internal Server Error | 服务器遇到了不可预期的情况，比如传错参数                     |
+| 503    | Service Unavailable   | 服务器不可用，可能处理维护或者重载状态，暂时无法访问         |
 
 **<font color=red>设置状态码两种方式：</font>**
 
