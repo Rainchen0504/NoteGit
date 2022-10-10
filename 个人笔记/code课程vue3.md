@@ -1429,7 +1429,7 @@ setup{
 - 整个对象：<font color=red>**直接写入一个可响应式的对象**</font>，reactive或者ref（常用的是ref）
 
 ```js
-setup{
+setup(){
 	const name = ref("chenge")
     watch(name, (newValue,oldValue) => {
         console.log("值变化了")
@@ -1526,13 +1526,11 @@ const change = () => {
 
 
 
+#### 2.3、清除副作用
 
+副作用场景： 比如在开发时，侦听函数中执行网络请求，网络请求还没有达到时停止了侦听器，或者侦听器侦听函数被再次执行了，那么上次网络请求应该被取消，这时就清除了上一次的副作用。
 
-### （3）watchEffect清除副作用
-
-副作用场景： 比如在开发中我们需要在侦听函数中执行网络请求，但是在网络请求还没有达到的时候，我们停止了侦听器，或者侦听器侦听函数被再次执行了，那么上次网络请求应该被取消，这时就清楚了上一次的副作用。
-
-- 给watchEffect传入的函数被回调时，其实可以获取到一个参数:onInvalidate
+- 给watchEffect传入的函数被回调时，其实可以获取到一个参数:<font color=blue>onInvalidate</font>
   - 当**副作用即将重新执行** 或者 **侦听器被停止** 时会执行该函数传入的回调函数；
   - 可以在传入的回调函数中，执行一些清除工作;
 
@@ -1540,23 +1538,26 @@ const change = () => {
 
 
 
-### （4）watchEffect的执行时机
+#### 2.4、执行时机
 
-默认情况下，组件的更新会在副作用函数执行之前，尝试在副作用函数中获取元素：
+默认情况下，<font color=red>组件的更新会在副作用函数执行之前</font>，尝试在副作用函数中获取元素：
 
 ![image-20211227231805906](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112272318945.png)
 
-执行结果会先后打印两次，分别为null和<h2>元素Dom对象。
+执行结果会先后打印两次，分别为null和元素Dom对象。
 
-这是因为setup函数在执行时就会立即执行传入的副作用函数，这个时候DOM并没有挂载，所以打印为null；而当DOM挂载时，会给title的ref对象赋值新的值，副作用函数会再次执行，打印出来对应的元素。
+这是因为<font color=blue>**setup函数在执行时就会立即执行传入的副作用函数**，这个时候DOM并没有挂载</font>，所以打印为null；而当DOM挂载时，会给title的ref对象赋值新的值，副作用函数会再次执行，打印出来对应的元素。
 
 
 
-### （5）调整watchEffect的执行时机
+#### 2.5、修改执行时机
+
+默认情况watchEffect在组件渲染之前执行
+
+- 通过`flush:"post"`可以使侦听器延迟到组件渲染之后再执行；
+- 设置`flush:"sync"`可以使响应式依赖发生改变时立即触发侦听器（强制同步触发），此操作会带来性能问题；
 
 ![image-20211227233746736](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112272337582.png)
-
-flush 选项还接受 sync，这将强制效果始终同步触发。然而，这是低效的，应该很少需要。
 
 
 
@@ -1633,9 +1634,9 @@ provide("changeInfo",changeInfo)
 
 
 
-## 17、componsition API使用案例（抽取hooks）
+## 15、componsition使用案例（抽取hooks函数）
 
-​		在js文件中export default function中编写，return出数据和方法，在组件内import引入，在setup函数中声明js文件ruturn的内容，然后在setup中return出去即可在模板中使用。
+​		在js文件中<font color=blue>export default function中编写</font>，return出数据和方法，在组件内import引入，在setup函数中声明js文件ruturn的内容，然后在setup中return出去即可在模板中使用。
 
 注意⚠️：**一般hooks文件命名时使用use开头**。
 
@@ -1645,9 +1646,83 @@ provide("changeInfo",changeInfo)
 
 
 
+## 16、script setup语法
+
+在<font color=red>单文件组件（SFC）中使用组合式API的编译时语法糖</font>
+
+### （1）特点
+
+- 更少的样板内容，代码更简洁
+- 能使用纯 Typescript 声明 prop 和抛出事件
+- 更好的运行时性能
+- 更好的 IDE 类型推断性能
 
 
-## 18、h函数
+
+### （2）执行时机
+
+普通`<script>`只在组件被<font color=deepred>首次引入时执行一次</font>；
+
+`<script setup>`中的代码会在<font color=deepred>每次实例被创建时执行</font>；
+
+
+
+### （3）使用规则
+
+​	在该标签内声明的顶层绑定（变量、函数声明、import引入）都可以直接在模板中使用。包括导入的组件也可以直接使用。
+
+
+
+### （4）defineProps()
+
+​	`script setup`中的props声明获取方法
+
+```js
+const props = defineProps({
+  name:{
+    type: String,
+    default:""
+  }
+})
+```
+
+
+
+### （5）defineEmits()
+
+​	`script setup`中的emits声明获取方法
+
+```js
+const emit = defineEmits(["change"])
+//使用时直接调用
+emit("change","传递的参数")
+```
+
+
+
+### （6）defineExpose()
+
+​	<font color=deepred>`script setup`组件默认是关闭的</font>，通过ref获取组件实例的方法和变量不会直接暴露在`<script setup>`中，需要<font color=blue>在被获取实例的组件中使用defineExpose方法声明抛出</font>。
+
+```js
+//实例组件
+const foo = () => {"执行的操作"}
+defineExpose({foo})
+
+//使用实例的组件
+const comRef = ref(null)
+comRef.value.foo()即可使用实例组件暴露出来的方法
+```
+
+
+
+
+
+
+
+
+
+## 17、h函数
 
 ​	Vue推荐在**使用模板**来创建HTML，然后一些特殊的场景需要**JavaScript的完全编程的能力**，这个时候可以使用**渲染函数** ，它**比模板更接近编译器**；
 
