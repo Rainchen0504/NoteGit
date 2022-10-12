@@ -1779,7 +1779,7 @@ comRef.value.foo()即可使用实例组件暴露出来的方法
 
 
 
-### （4）指令的参数和修饰符
+### （4）指令参数和修饰符
 
 **参数即el、binding、vnode和prevNode**
 
@@ -1806,7 +1806,7 @@ comRef.value.foo()即可使用实例组件暴露出来的方法
 
 
 
-### （5）指令案例（转换时间戳）
+### （5）指令案例
 
 时间格式化指令v-format-time
 
@@ -1843,6 +1843,113 @@ const app = createApp(App);
 registerDirectives(app);
 app.mount("#app");
 ```
+
+
+
+## 18、Teleport
+
+封装组件A在另一个组件B中使用时，A会被挂载在B的某个位置，形成一颗DOM树结构。
+
+但是在某些情况下<font color=blue>希望B组件不挂载在A上</font>，可能是移动到Vue app之外的位置，比如body上等，这时可以使用teleport来完成。
+
+### （1）语法属性
+
+teleport是<font color=red>Vue提供的内置组件</font>，有两个属性：
+
+1、<font color=red>**to**</font>指定将其中的内容<font color=deepred>移动到的目标元素</font>，可以使用选择器；
+
+2、<font color=red>**disabled**</font>是否<font color=deepred>禁用teleport 的功能</font>；
+
+![image-20211229115247947](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112291152009.png)
+
+
+
+### （2）使用事项
+
+#### 2.1、嵌套组件
+
+可以在 teleport 中添加组件，并且也可以给他传入一些数据，会**整体都绑定到目标元素上**；
+
+
+
+#### 2.2、多个teleport
+
+多个teleport应用到**同一个目标上**(to的值相同)，那么这些目标<font color=deepred>**会进行合并**</font>；
+
+
+
+## 19、suspense特性
+
+**Suspense是一个内置的全局组件，该组件有两个插槽：**
+
+<font color=red>default：</font>如果default可以显示，那么显示default的内容；
+
+<font color=red>fallback：</font>如果default无法显示，那么会显示fallback的内容；
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281317873.png" alt="image-20211128131712253" style="zoom: 67%;" />
+
+
+
+## 20、Vue插件
+
+通常**向Vue全局添加一些功能**时，会采用**插件的模式，它有两种编写方式**：
+
+### （1）编写方式
+
+#### 1.1、对象类型
+
+一个对象，但是必须包含一个<font color=red> install 的函数</font>，该<font color=red>函数**会在安装插件时执行**</font>；
+
+```js
+//对象类型的写法
+export default {
+  install(app){
+    app.config.globalProperties.$name = "zhangyuchen"
+  }
+}
+```
+
+注册插件
+
+```js
+//main.js文件
+import pluginObject from './plugins/plugins_object';
+app.use(pluginObject);
+```
+
+
+
+#### 1.2、函数类型
+
+一个function，这个函数会在<font color=red>**安装插件时自动执行**</font>；
+
+```js
+//函数类型的写法  
+export default function(app) {
+  console.log(app);
+}
+```
+
+注册插件
+
+```js
+//main.js文件
+import pluginFunction from './plugins/plugins_function';
+app.use(pluginFunction);
+```
+
+
+
+### （2）插件功能
+
+插件可以**完成的功能没有限制**，比如：
+
+- <font color=deepred>添加全局方法或者 property</font>，通过把它们添加到config.globalProperties上实现；
+- <font color=deepred>添加全局资源:指令/过滤器/过渡</font>等；
+- 通过<font color=deepred>全局mixin</font>来添加一些组件选项；
+- <font color=deepred>一个库，提供自己的API</font>，同时提供上面提到的一个或多个功能；
+
+
 
 
 
@@ -2069,81 +2176,7 @@ export default {
 
 
 
-## 21、teleport
 
-这是一个Vue提供的内置组件，类似于react的Portals。
-
-使用场景：封装的组件A在另一个组件B中使用时，A会被挂载在B的某个位置，形成一颗DOM树结构。但是在某些情况下希望B组件不挂载在A上，可能是移动到Vue app之外的位置，比如body上等，这时可以使用teleport来完成。
-
-应用语法：teleport有两个属性1、to指定将其中的内容移动到的目标元素，可以使用选择器；2、disabled是否禁用 teleport 的功能。
-
-![image-20211229115247947](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112291152009.png)
-
-可以在 teleport 中使用组件，并且也可以给他传入一些数据；
-
-**多个teleport应用**到**同一个目标上(to的值相同)**，那么这些**目标会进行合并**；
-
-
-
-
-
-## 22、Vue插件
-
-- 通常**向Vue全局添加一些功能**时，会采用**插件的模式，它有两种编写方式**：
-
-<font color=red>对象类型</font>：一个对象，但是必须包含一个<font color=red> install 的函数</font>，该<font color=red>函数会在安装插件时执行</font>；
-
-```js
-//对象类型的写法
-export default {
-  install(app){
-    app.config.globalProperties.$name = "zhangyuchen"
-  }
-}
-```
-
-<font color=red>函数类型</font>：一个function，这个函数会在<font color=red>安装插件时自动执行</font>；
-
-```js
-//函数类型的写法
-export default function(app) {
-  console.log(app);
-}
-```
-
-注册插件
-
-```js
-//main.js文件
-import pluginObject from './plugins/plugins_object';
-import pluginFunction from './plugins/plugins_function';
-app.use(pluginObject);
-app.use(pluginFunction);
-```
-
-- 插件可以**完成的功能没有限制**
-
-<font color=red>添加全局方法或者 property</font>，通过把它们添加到<font color=red>config.globalProperties</font>上实现；
-
-<font color=red>添加全局资源:指令/过滤器/过渡</font>等；
-
-通过<font color=red>全局mixin</font>来添加一些组件选项；
-
-<font color=red>一个库，提供自己的API</font>，同时提供上面提到的一个或多个功能；
-
-
-
-
-
-## 23、suspense特性
-
-**Suspense是一个内置的全局组件，该组件有两个插槽：**
-
-<font color=red>default：</font>如果default可以显示，那么显示default的内容；
-
-<font color=red>fallback：</font>如果default无法显示，那么会显示fallback的内容；
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202111281317873.png" alt="image-20211128131712253" style="zoom: 67%;" />
 
 
 
