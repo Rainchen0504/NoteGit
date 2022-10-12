@@ -1716,6 +1716,134 @@ comRef.value.foo()即可使用实例组件暴露出来的方法
 
 
 
+## 17、自定义指令
+
+​	除过v-show、v-for等指令，Vue支持<font color=red>使用自定义指令</font>对，需要<font color=red>对DOM元素进行底层操作</font>。
+
+### （1）指令分类
+
+**自定义指令分为两种：**
+
+- <font color=blue>自定义局部指令</font>:**组件中通过 <font color=red>directives 选项</font>**，只能在当前组件中使用；
+- <font color=blue>自定义全局指令</font>:**app的 <font color=red>directive 方法</font>**，可以在任意组件中被使用；
+
+
+
+### （2）指令实例
+
+下面以三种方式实现一个元素挂载完成后自动获取焦点的功能：
+
+##### 实现方式1：聚焦的默认实现
+
+![image-20211228162854628](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281628790.png)
+
+
+
+##### 实现方式2:局部指令
+
+自定义一个v-focus的局部指令，只需用在**组件选项中使用directives即可**。
+
+它是一个对象，在对象中编写我们自定义指令的名称(注意:这里不需要加v-)。
+
+自定义指令有一个生命周期，是在组件挂载后调用的 mounted，可以在其中完成操作。
+
+![image-20211228163324043](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281633931.png)
+
+
+
+##### 实现方式3:全局指令
+
+自定义一个**全局的v-focus指令**可以让我们在任何地方直接使用
+
+![image-20211228163510708](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281635859.png)
+
+
+
+### （3）指令生命周期
+
+一个指令定义的对象，Vue提供了下面的钩子函数：
+
+<font color=red>**created**</font>：在绑定元素的 attribute 或事件监听器被应用之前调用；
+
+<font color=red>**beforeMount**</font>：当指令第一次绑定到元素并且在挂载父组件之前调用；
+
+<font color=red>**mounted**</font>：在绑定元素的父组件被挂载后调用；
+
+<font color=red>**nbeforeUpdate**</font>：在更新包含组件的 VNode 之前调用；
+
+<font color=red>**nupdated**</font>：在包含组件的 VNode及其子组件的 VNode更新后调用；
+
+<font color=red>**beforeUnmount**</font>：在卸载绑定元素的父组件之前调用；
+
+<font color=red>**unmounted**</font>：当指令与元素解除绑定且父组件已卸载时，只调用一次；
+
+
+
+### （4）指令的参数和修饰符
+
+**参数即el、binding、vnode和prevNode**
+
+指令是**可以动态的**，例如在`v-mydemo:[argument]="value"`中，`argument`参数可以根据组件实例数据进行更新，从而自定义指令可以在项目中被灵活应用。
+
+- el：指令绑定到的元素，可用于直接操作DOM；
+
+- binding：包含以下property的对象
+
+  - instance：使用指令的组件实例
+  - <font color=red>**value：传递给指令的值**</font>
+  - oldvalue：先前的值，尽在beforeUpdate和Updated中可用
+  - arg：参数传递给指令
+  - <font color=red>**modifiers：包含修饰符的对象**</font>，在`v-mydemo.foo.bar`中，修饰符对象为{foo:true, bae:true}
+  - dir：一个对象，在注册指令时作为参数传递
+
+  其余两个参数不常用。
+
+  
+
+![image-20211228165314754](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281653106.png)
+
+上面的例子info是参数的名称，aaa、bbb是修饰符的名称，后面是传入的具体的值，打印bindings获取到对应的内容。
+
+
+
+### （5）指令案例（转换时间戳）
+
+时间格式化指令v-format-time
+
+```js
+//format-time.js
+import dayjs from 'dayjs'//轻量处理时间日期的js库
+export default function(app){
+  let format = "YYYY-MM-DD HH:mm:ss";
+  app.directive("format-time",{
+    created(el,bindings){
+      if(bindings.value){
+        format = bindings.value;
+      }
+    },
+    mounted(el){
+      const textContent = el.textContent;
+      let timestamp = parseInt(el.textContent);
+      if(textContent.length === 10){
+        timestamp = timestamp*1000;
+      }
+      el.textContent = dayjs(timestamp).format(format)
+    }
+  })
+}
+
+//和format-time同级的index.js（如果有多个自定义指令都从这一个文件导出）
+import registerFormatTime from './format-time';
+export default function registerDirectives(app) {
+  registerFormatTime(app);
+}
+
+//项目main.js文件
+const app = createApp(App);
+registerDirectives(app);
+app.mount("#app");
+```
+
 
 
 
@@ -1936,134 +2064,6 @@ export default {
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281607724.png" alt="image-20211228160719595" style="zoom:50%;" />
 
 
-
-
-
-## 20、自定义指令
-
-​	在Vue中，<font color=red>代码的复用和抽象主要还是通过组件</font>，通常在某些情况下，需要<font color=red>对DOM元素进行底层操作</font>，这个时候就会用到<font color=red>自定义指令</font>。
-
-
-
-### （1）自定义指令分类
-
-**自定义指令分为两种：**
-
-- <font color=red>自定义局部指令</font>:组件中通过 <font color=red>directives 选项</font>，只能在当前组件中使用；
-- <font color=red>自定义全局指令</font>:app的 <font color=red>directive 方法</font>，可以在任意组件中被使用；
-
-
-
-### （2）自定义指令实例
-
-下面以三种方式实现一个元素挂载完成后自动获取焦点的功能：
-
-##### 实现方式1：聚焦的默认实现
-
-![image-20211228162854628](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281628790.png)
-
-##### 实现方式2:局部自定义指令
-
-自定义一个v-focus的局部指令，只需用在**组件选项中使用directives即可**。
-
-它是一个对象，在对象中编写我们自定义指令的名称(注意:这里不需要加v-)。
-
-自定义指令有一个生命周期，是在组件挂载后调用的 mounted，可以在其中完成操作。
-
-![image-20211228163324043](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281633931.png)
-
-##### 实现方式3:自定义全局指令
-
-自定义一个**全局的v-focus指令**可以让我们在任何地方直接使用
-
-![image-20211228163510708](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281635859.png)
-
-
-
-### （3）指令的生命周期
-
-一个指令定义的对象，Vue提供了下面的钩子函数：
-
-<font color=red>**created**</font>：在绑定元素的 attribute 或事件监听器被应用之前调用；
-
-<font color=red>**beforeMount**</font>：当指令第一次绑定到元素并且在挂载父组件之前调用；
-
-<font color=red>**mounted**</font>：在绑定元素的父组件被挂载后调用；
-
-<font color=red>**nbeforeUpdate**</font>：在更新包含组件的 VNode 之前调用；
-
-<font color=red>**nupdated**</font>：在包含组件的 VNode **及其子组件的 VNode** 更新后调用；
-
-<font color=red>**beforeUnmount**</font>：在卸载绑定元素的父组件之前调用；
-
-<font color=red>**unmounted**</font>：当指令与元素解除绑定且父组件已卸载时，只调用一次；
-
-
-
-### （4）指令的参数和修饰符
-
-**参数即el、binding、vnode和prevNode**
-
-指令是**可以动态的**，例如在`v-mydemo:[argument]="value"`中，`argument`参数可以根据组件实例数据进行更新，从而自定义指令可以在项目中被灵活应用。
-
-- el：指令绑定到的元素，可用于直接操作DOM；
-
-- binding：包含以下property的对象
-
-  - instance：使用指令的组件实例
-  - <font color=red>**value：传递给指令的值**</font>
-  - oldvalue：先前的值，尽在beforeUpdate和Updated中可用
-  - arg：参数传递给指令
-  - <font color=red>**modifiers：包含修饰符的对象**</font>，在`v-mydemo.foo.bar`中，修饰符对象为{foo:true, bae:true}
-  - dir：一个对象，在注册指令时作为参数传递
-
-  其余两个参数不常用。
-
-  
-
-![image-20211228165314754](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281653106.png)
-
-上面的例子info是参数的名称，aaa、bbb是修饰符的名称，后面是传入的具体的值，打印bindings获取到对应的内容。
-
-
-
-### （5）指令案例（转换时间戳）
-
-时间格式化指令v-format-time
-
-```js
-//format-time.js
-import dayjs from 'dayjs'//轻量处理时间日期的js库
-export default function(app){
-  let format = "YYYY-MM-DD HH:mm:ss";
-  app.directive("format-time",{
-    created(el,bindings){
-      if(bindings.value){
-        format = bindings.value;
-      }
-    },
-    mounted(el){
-      const textContent = el.textContent;
-      let timestamp = parseInt(el.textContent);
-      if(textContent.length === 10){
-        timestamp = timestamp*1000;
-      }
-      el.textContent = dayjs(timestamp).format(format)
-    }
-  })
-}
-
-//和format-time同级的index.js（如果有多个自定义指令都从这一个文件导出）
-import registerFormatTime from './format-time';
-export default function registerDirectives(app) {
-  registerFormatTime(app);
-}
-
-//项目main.js文件
-const app = createApp(App);
-registerDirectives(app);
-app.mount("#app");
-```
 
 
 
