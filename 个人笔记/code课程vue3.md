@@ -1951,32 +1951,29 @@ app.use(pluginFunction);
 
 
 
+## 21、h函数
+
+​	Vue推荐在**使用模板**来创建HTML，然后一些特殊的场景需要**JavaScript的完全编程的能力**，这个时候可以使用**<font color=pink>渲染函数</font>** ，它**比模板更接近编译器**；
+
+### （1）认识h函数
+
+- vue在生成真实的DOM之前，会<font color=skyblue>将节点转换成VNode</font>组成在<font color=blue>一颗树结构</font>，就是<font color=red>**虚拟DOM（VDOM）**</font>。
+- 事实上template中的HTML最终也是<font color=skyblue>使用**渲染函数**</font>生成的<font color=red>对应的VNode</font>。
+
+- 如果想充分的利用JavaScript的编程能力，可以自己<font color=skyblue>编写 createVNode 函数</font>，生成对应的VNode;
 
 
 
+### （2）使用h函数
+
+1. <font color=red>h()函数</font>是一个<font color=pink>用于**创建 vnode 的一个函数**</font>，
+2. 更准确的**命名应该是<font color=deepred>createVNode()函数</font>，但是为了简化便称之为h()函数**。
 
 
 
-## 17、h函数
+### （3）h函数语法
 
-​	Vue推荐在**使用模板**来创建HTML，然后一些特殊的场景需要**JavaScript的完全编程的能力**，这个时候可以使用**渲染函数** ，它**比模板更接近编译器**；
-
-
-
-### （1）认识h函数（createVNode()函数）
-
-- vue在生成真实的DOM之前，会<font color=red>将节点转换成VNode</font>组成在<font color=red>一颗树结构</font>，就是<font color=red>**虚拟DOM（VDOM）**</font>。
-- 事实上template中的HTML最终也是<font color=red>使用渲染函数</font>生成的<font color=red>对应的VNode</font>。
-
-- 如果想充分的利用JavaScript的编程能力，可以自己来<font color=red>编写 createVNode 函数</font>，生成对应的VNode;
-
-具体到代码层面，应该使用h函数，<font color=red>h()函数</font>是一个<font color=red>**用于创建 vnode 的一个函数**</font>，更准确的**命名应该是<font color=red>createVNode()函数</font>，但是为了简化便称之为<font color=red>h()函数</font>**。
-
-
-
-### （2）h函数语法
-
-h函数接受三个参数
+h函数接收三个参数
 
 ```js
 render(){
@@ -1984,9 +1981,31 @@ render(){
 }
 ```
 
-**参数一**：标签名类，**必须的**
+#### 3.1、参数一
 
-![image-20211228143837488](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281438388.png)
+类型：String ｜ Object ｜ Function
+
+一个HTML标签或者组件名，该参数是必须的；
+
+
+
+#### 3.2、参数二
+
+类型：Object 
+
+与attribute、prop和事件相对应的对象，会在模板中使用。
+
+
+
+
+
+
+
+#### 3.3、参数三
+
+类型
+
+
 
 **参数二**：类名、事件等，**可选的**
 
