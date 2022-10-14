@@ -1194,5 +1194,494 @@ export function mountComponent (
 
 
 
-#### （3）render
+### 7.3 render
+
+<mark style="background-color: #40E0D0">位置：src/core/instance/render.js</mark>
+
+Vue的render方法是实例的一个**私有方法**，作用是<font color=red>将实例**渲染成一个虚拟Node**</font>
+
+```js
+Vue.prototype._render = function (): VNode {
+  const vm: Component = this
+  const { render, _parentVnode } = vm.$options
+  if (_parentVnode) {...}
+  vm.$vnode = _parentVnode
+  let vnode
+  try {
+    currentRenderingInstance = vm
+    vnode = render.call(vm._renderProxy, vm.$createElement)
+  } catch (e) {...
+  } finally {...
+  }
+  if (Array.isArray(vnode) && vnode.length === 1) {...
+  }
+  if (!(vnode instanceof VNode)) {...
+  }
+  vnode.parent = _parentVnode
+  return vnode
+}
+```
+
+
+
+#### （1）调用位置
+
+该函数在挂载函数`$mount`中的`mountComponent`方法调用
+
+```js
+updateComponent = () => {
+	vm._update(vm._render(), hydrating)
+}
+```
+
+`updateComponent`函数的作用是：
+
+1. 首次渲染时，根据render函数产生的vnode渲染页面元素；
+2. 非首次渲染时，调用render函数产生新的vnode，通过diff算法对比新旧vnode，对页面元素进行更新和复用；
+
+
+
+#### （2）使用场景
+
+```js
+new Vue({
+  data(){
+    message:"这是消息"
+  },
+  //其中createElement函数可以简化为h函数
+  render: function(createElement){
+    return createElement("div",this.message)
+  }
+}).$mount("#app")
+```
+
+​	render方法中**`vm.$createElement` 方法定义是在执行 `initRender` 方法的时候**，可以看到除了 `vm.$createElement` 方法，还有一个 `vm._c` 方法，它是被模板编译成的 `render` 函数使用，而 `vm.$createElement` 是用户手写 `render` 方法使用的， 这俩个方法支持的参数相同，并且内部都调用了 `createElement` 方法。
+
+```js
+vm._c = function (a, b, c, d) { return createElement(vm, a, b, c, d, false); };
+vm.$createElement = function (a, b, c, d) { return createElement(vm, a, b, c, d, true); };
+```
+
+
+
+#### （3）总结
+
+​	`vm._render` 最终是<font color=blue>**通过执行 `createElement` 方法返回的是 `vnode`**</font>，它是一个**虚拟 Node**。
+
+
+
+### 7.4 虚拟DOM
+
+​	真实DOM元素是非常庞大的，拥有大量的属性，浏览器标准把DOM设计的非常复杂，频繁操作DOM会产生性能问题。
+
+​	虚拟DOM就是<font color=deepred>**用一个原生的JS对象去描述一个DOM节点**</font>，比创建一个DOM的代价小很多，<font color=blue>Vue中虚拟DOM使用**虚拟节点`VNode`这么一个Class类**去描述</font>的
+
+<mark style="background-color: #40E0D0">位置：src/core/vdom/vnode.js</mark>
+
+```js
+/* @flow */
+export default class VNode {
+  tag: string | void;
+  data: VNodeData | void;
+  children: ?Array<VNode>;
+  text: string | void;
+  elm: Node | void;
+  ns: string | void;
+  context: Component | void; // rendered in this component's scope
+  key: string | number | void;
+  componentOptions: VNodeComponentOptions | void;
+  componentInstance: Component | void; // component instance
+  parent: VNode | void; // component placeholder node
+
+  // strictly internal
+  raw: boolean; // contains raw HTML? (server only)
+  isStatic: boolean; // hoisted static node
+  isRootInsert: boolean; // necessary for enter transition check
+  isComment: boolean; // empty comment placeholder?
+  isCloned: boolean; // is a cloned node?
+  isOnce: boolean; // is a v-once node?
+  asyncFactory: Function | void; // async component factory function
+  asyncMeta: Object | void;
+  isAsyncPlaceholder: boolean;
+  ssrContext: Object | void;
+  fnContext: Component | void; // real context vm for functional nodes
+  fnOptions: ?ComponentOptions; // for SSR caching
+  devtoolsMeta: ?Object; // used to store functional render context for devtools
+  fnScopeId: ?string; // functional scope id support
+
+  constructor (
+    tag?: string,
+    data?: VNodeData,
+    children?: ?Array<VNode>,
+    text?: string,
+    elm?: Node,
+    context?: Component,
+    componentOptions?: VNodeComponentOptions,
+    asyncFactory?: Function
+  ) {
+    this.tag = tag
+    this.data = data
+    this.children = children
+    this.text = text
+    this.elm = elm
+    this.ns = undefined
+    this.context = context
+    this.fnContext = undefined
+    this.fnOptions = undefined
+    this.fnScopeId = undefined
+    this.key = data && data.key
+    this.componentOptions = componentOptions
+    this.componentInstance = undefined
+    this.parent = undefined
+    this.raw = false
+    this.isStatic = false
+    this.isRootInsert = true
+    this.isComment = false
+    this.isCloned = false
+    this.isOnce = false
+    this.asyncFactory = asyncFactory
+    this.asyncMeta = undefined
+    this.isAsyncPlaceholder = false
+  }
+
+  // DEPRECATED: alias for componentInstance for backwards compat.
+  /* istanbul ignore next */
+  get child (): Component | void {
+    return this.componentInstance
+  }
+}
+
+export const createEmptyVNode = (text: string = '') => {
+  const node = new VNode()
+  node.text = text
+  node.isComment = true
+  return node
+}
+
+export function createTextVNode (val: string | number) {
+  return new VNode(undefined, undefined, undefined, String(val))
+}
+
+// optimized shallow clone
+// used for static nodes and slot nodes because they may be reused across
+// multiple renders, cloning them avoids errors when DOM manipulations rely
+// on their elm reference.
+export function cloneVNode (vnode: VNode): VNode {
+  const cloned = new VNode(
+    vnode.tag,
+    vnode.data,
+    // #7975
+    // clone children array to avoid mutating original in case of cloning
+    // a child.
+    vnode.children && vnode.children.slice(),
+    vnode.text,
+    vnode.elm,
+    vnode.context,
+    vnode.componentOptions,
+    vnode.asyncFactory
+  )
+  cloned.ns = vnode.ns
+  cloned.isStatic = vnode.isStatic
+  cloned.key = vnode.key
+  cloned.isComment = vnode.isComment
+  cloned.fnContext = vnode.fnContext
+  cloned.fnOptions = vnode.fnOptions
+  cloned.fnScopeId = vnode.fnScopeId
+  cloned.asyncMeta = vnode.asyncMeta
+  cloned.isCloned = true
+  return cloned
+}
+```
+
+这里属性虽然很多，实际上是借鉴了**开源库 [snabbdom](https://github.com/snabbdom/snabbdom)实现的**。
+
+​	VNode是<font color=pink>**对真实DOM的一种抽象描述**，核心就是标签名、数据、子节点、键值等关键属性</font>。且VNode只是用来映射到真实DOM的渲染，不需要包含DOM的方法，所以非常轻量和简单。
+
+​	Virtual DOM（虚拟DOM） 除了它的数据结构的定义，映射到真实的 DOM 实际上**<font color=skyblue>要经历 VNode 的 create、diff、patch 等过程</font>**。
+
+
+
+### 7.5 createElement
+
+Vue利用createElement创建VNode
+
+<mark style="background-color: #40E0D0">位置：src/core/vdom/create-element.js</mark>
+
+```js
+export function createElement (
+  context: Component,
+  tag: any,
+  data: any,
+  children: any,
+  normalizationType: any,
+  alwaysNormalize: boolean
+): VNode | Array<VNode> {
+  if (Array.isArray(data) || isPrimitive(data)) {
+    normalizationType = children
+    children = data
+    data = undefined
+  }
+  if (isTrue(alwaysNormalize)) {
+    normalizationType = ALWAYS_NORMALIZE
+  }
+  return _createElement(context, tag, data, children, normalizationType)
+}
+```
+
+​	createElement方法实际上是<font color=red>**对`_createElement`方法的封装**</font>，允许传入的参数更加灵活，处理参数后再调用真正创建VNode的函数`_createElement`:
+
+```js
+export function _createElement (
+  context: Component,
+  tag?: string | Class<Component> | Function | Object,
+  data?: VNodeData,
+  children?: any,
+  normalizationType?: number
+): VNode | Array<VNode> {
+  if (isDef(data) && isDef((data: any).__ob__)) {
+ 	//避免使用被观察的数据作为vnode数据，总会在每次渲染中创建新的vnode数据对象
+    ...
+  }
+  // object syntax in v-bind
+  if (isDef(data) && isDef(data.is)) {
+    tag = data.is
+  }
+  if (!tag) {
+    // in case of component :is set to falsy value
+    return createEmptyVNode()
+  }
+  // warn against non-primitive key
+  if (process.env.NODE_ENV !== 'production' &&
+    isDef(data) && isDef(data.key) && !isPrimitive(data.key)
+  ) {
+    if (!__WEEX__ || !('@binding' in data.key)) {
+      warn(
+        'Avoid using non-primitive value as key, ' +
+        'use string/number value instead.',
+        context
+      )
+    }
+  }
+  // support single function children as default scoped slot
+  if (Array.isArray(children) &&
+    typeof children[0] === 'function'
+  ) {
+    data = data || {}
+    data.scopedSlots = { default: children[0] }
+    children.length = 0
+  }
+  if (normalizationType === ALWAYS_NORMALIZE) {
+    children = normalizeChildren(children)
+  } else if (normalizationType === SIMPLE_NORMALIZE) {
+    children = simpleNormalizeChildren(children)
+  }
+  let vnode, ns
+  if (typeof tag === 'string') {
+    let Ctor
+    ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
+    if (config.isReservedTag(tag)) {
+      // platform built-in elements
+      if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn) && data.tag !== 'component') {
+        warn(
+          `The .native modifier for v-on is only valid on components but it was used on <${tag}>.`,
+          context
+        )
+      }
+      vnode = new VNode(
+        config.parsePlatformTagName(tag), data, children,
+        undefined, undefined, context
+      )
+    } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
+      // component
+      vnode = createComponent(Ctor, data, context, children, tag)
+    } else {
+      // unknown or unlisted namespaced elements
+      // check at runtime because it may get assigned a namespace when its
+      // parent normalizes children
+      vnode = new VNode(
+        tag, data, children,
+        undefined, undefined, context
+      )
+    }
+  } else {
+    // direct component options / constructor
+    vnode = createComponent(tag, data, context, children)
+  }
+  if (Array.isArray(vnode)) {
+    return vnode
+  } else if (isDef(vnode)) {
+    if (isDef(ns)) applyNS(vnode, ns)
+    if (isDef(data)) registerDeepBindings(data)
+    return vnode
+  } else {
+    return createEmptyVNode()
+  }
+}
+```
+
+#### （1）参数列表
+
+`_createElement` 方法有 **5 个参数**：
+
+1. `context` 表示 <font color=pink>VNode 的上下文环境</font>，它是 `Component` 类型
+2. `tag` 表示<font color=pink>标签</font>，它可以是一个字符串，也可以是一个 `Component`；
+3. `data` 表示 <font color=pink>VNode 的数据</font>，它是一个 `VNodeData` 类型，可以在 `flow/vnode.js` 中找到它的定义；
+4. `children` 表示当前 <font color=pink>VNode 的子节点</font>，它是任意类型的，它接下来需要被规范为标准的 VNode 数组；
+5. `normalizationType` 表示<font color=pink>子节点规范的类型</font>，类型不同规范的方法也就不一样，它主要是参考 `render` 函数是编译生成的还是用户手写的。
+
+
+
+#### （2）内部方法分析
+
+主要针对createElement函数中的children规范化和VNode创建进行分析：
+
+##### （2.1）children规范化
+
+​	**虚拟DOM是一个树状结构，每一个 VNode 可能会有若干个子节点，这些子节点应该也是 VNode 的类型**。`_createElement` 接收的第 4 个参数 children 是任意类型的，因此我们需要把它们规范成 VNode 类型。
+
+```js
+if (normalizationType === ALWAYS_NORMALIZE) {
+  children = normalizeChildren(children)
+} else if (normalizationType === SIMPLE_NORMALIZE) {
+  children = simpleNormalizeChildren(children)
+}
+```
+
+根据传入的`normalizationType`的不同，分别调用不同的方法
+
+
+
+###### 1、`simpleNormalizeChildren(children)`
+
+当值为1时，调用<font color=skyblue>`simpleNormalizeChildren(children)`</font>，该方法调用场景是<font color=pink> `render` 函数是编译生成的</font>。理论上编译生成的 `children` 都已经是 VNode 类型的，但这里有一个例外，就是 `functional component` 函数式组件返回的是一个数组而不是一个根节点，所以会通过 `Array.prototype.concat` 方法把整个 `children` 数组打平，让它的深度只有一层。
+
+```js
+export function simpleNormalizeChildren (children: any) {
+  for (let i = 0; i < children.length; i++) {
+    if (Array.isArray(children[i])) {
+      return Array.prototype.concat.apply([], children)
+    }
+  }
+  return children
+}
+```
+
+
+
+###### 2、`normalizeChildren(children)`
+
+当值为2时，调用<font color=skyblue>`normalizeChildren(children)`</font>，该方法的调用场景有 2 种，一个场景是<font color=pink> `render` 函数是用户手写的</font>，当 `children` 只有一个节点的时候，Vue.js 从接口层面允许用户把 `children` 写成基础类型用来创建单个简单的文本节点，这种情况会调用 `createTextVNode` 创建一个文本节点的 VNode；另一个场景是<font color=pink>当编译 `slot`、`v-for` 的时</font>候会产生嵌套数组的情况，会调用 `normalizeArrayChildren` 方法。
+
+```js
+export function normalizeChildren (children: any): ?Array<VNode> {
+  return isPrimitive(children)
+    ? [createTextVNode(children)]
+    : Array.isArray(children)
+      ? normalizeArrayChildren(children)
+      : undefined
+}
+```
+
+**通过对children的规范化，children变成了一个类型为VNode的数组。**
+
+
+
+##### （2.2）VNode创建
+
+规范`children`后，会创建一个VNode的实例
+
+```js
+let vnode, ns
+if (typeof tag === 'string') {
+  let Ctor
+  ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
+  if (config.isReservedTag(tag)) {
+    // platform built-in elements
+    if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn) && data.tag !== 'component') {
+      warn(
+        `The .native modifier for v-on is only valid on components but it was used on <${tag}>.`,
+        context
+      )
+    }
+    vnode = new VNode(
+      config.parsePlatformTagName(tag), data, children,
+      undefined, undefined, context
+    )
+  } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
+    // component
+    vnode = createComponent(Ctor, data, context, children, tag)
+  } else {
+    // unknown or unlisted namespaced elements
+    // check at runtime because it may get assigned a namespace when its
+    // parent normalizes children
+    vnode = new VNode(
+      tag, data, children,
+      undefined, undefined, context
+    )
+  }
+} else {
+  // direct component options / constructor
+  vnode = createComponent(tag, data, context, children)
+}
+```
+
+对传入的tag做判断：
+
+1. 如果是 `string` 类型:
+   1. 接着判断如果是内置的一些节点，则直接创建一个普通 VNode，
+   2. 如果是为已注册的组件名，则通过 `createComponent` 创建一个组件类型的 VNode，
+   3. 否则创建一个未知的标签的 VNode。 
+2. 如果是 `tag` 是一个 `Component` 类型:
+   1. 则直接调用 `createComponent` 创建一个组件类型的 VNode 并返回。
+
+
+
+#### （3）总结
+
+​	`createElement` 创建 VNode 的过程，每个 VNode 有 `children`，`children` 每个元素也是一个 VNode，这样就形成了一个 VNode Tree。
+
+​	回到 `mountComponent` 函数的过程， `vm._render`通过`createElement`方法创建了一个 VNode，而这个 VNode 真正渲染成一个真实的 DOM 这个过程是通过 `vm._update` 完成的。
+
+
+
+### 7.6 update
+
+Vue的`_update`是实例的一个私有方法，被调用的时机有两种情况。目前只分析首次渲染，数据更新涉及到响应式原理和diff算法后面详细解释。
+
+`_update`方法的作用是把VNode渲染成真实的DOM
+
+<mark style="background-color: #40E0D0">位置：src/core/instance/lifecycle.js</mark>
+
+```js
+Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
+  const vm: Component = this
+  const prevEl = vm.$el
+  const prevVnode = vm._vnode
+  const restoreActiveInstance = setActiveInstance(vm)
+  vm._vnode = vnode
+  // Vue.prototype.__patch__ is injected in entry points
+  // based on the rendering backend used.
+  if (!prevVnode) {
+    // initial render
+    vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
+  } else {
+    // updates
+    vm.$el = vm.__patch__(prevVnode, vnode)
+  }
+  restoreActiveInstance()
+  // update __vue__ reference
+  if (prevEl) {
+    prevEl.__vue__ = null
+  }
+  if (vm.$el) {
+    vm.$el.__vue__ = vm
+  }
+  // if parent is an HOC, update its $el as well
+  if (vm.$vnode && vm.$parent && vm.$vnode === vm.$parent._vnode) {
+    vm.$parent.$el = vm.$el
+  }
+  // updated hook is called by the scheduler to ensure that children are
+  // updated in a parent's updated hook.
+}
+```
 

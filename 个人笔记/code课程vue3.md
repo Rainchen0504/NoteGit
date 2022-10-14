@@ -1981,49 +1981,40 @@ render(){
 }
 ```
 
+
+
 #### 3.1、参数一
 
 类型：String ｜ Object ｜ Function
 
-一个HTML标签或者组件名，该参数是必须的；
-
-
+一个<font color=skyblue>HTML标签或者组件名</font>，该参数是**必须的**；
 
 #### 3.2、参数二
 
 类型：Object 
 
-与attribute、prop和事件相对应的对象，会在模板中使用。
-
-
-
-
+<font color=skyblue>与attribute、prop和事件相对应的对象</font>，会在模板中使用。该参数是**可选的**；
 
 
 
 #### 3.3、参数三
 
-类型
+类型：String ｜ Array ｜ Object
+
+子VNode，<font color=skyblue>使用`h()`创建，或使用字符串获取“文本Vnode”或者有插槽的对象</font>。该参数是**可选的**；
 
 
 
-**参数二**：类名、事件等，**可选的**
-
-![image-20211228144207789](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281442860.png)
-
-**参数三**：内容或子Vnode，**可选的**
-
-![image-20211228144312744](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281443664.png)
-
-如果没有第二个参数，那么通常可以将第三个参数作为第二个参数传入，但是<font color=red>为了避免产生歧义，可以将null作为第二个参数传入，将children作为第三个参数传入</font>。
+- 如果没有第二个参数，那么通常可以将第三个参数作为第二个参数传入;
+- <font color=red>为了避免产生歧义，可以将null作为第二个参数传入，将children作为第三个参数传入</font>;
 
 
 
-### （3）使用h函数
+### （4）使用h函数
 
 h函数可以在两个地方使用：
 
-- <font color=red>render函数选项</font>中；
+#### 4.1、render函数中
 
 ```js
 import {h} from "vue";
@@ -2034,7 +2025,11 @@ export default {
 }
 ```
 
-- <font color=red>setup函数选项</font>中(setup本身需要是一个函数类型，函数再返回h函数创建的VNode)；
+
+
+#### 4.2、setup函数
+
+<font color=red>setup函数选项</font>中(setup本身需要是一个函数类型，函数再返回h函数创建的VNode)；
 
 ```js
 import {h} from "vue";
@@ -2047,7 +2042,7 @@ export default {
 
 
 
-### （4）h函数案例(计数器)
+### （5）h函数案例(计数器)
 
 ```js
 import {h} from "vue";
@@ -2072,7 +2067,7 @@ export default {
 
 
 
-### （5）函数组件和插槽的使用
+### （6）函数组件和插槽的使用
 
 ```js
 //父组件
@@ -2108,16 +2103,16 @@ export default{
 
 
 
-## 19、jsx
+## 22、jsx
 
 ### （1）jsx的babel配置
 
-如果希望项目中使用jsx，那么需要添加对jsx的支持：
+如果希望项目中使用jsx，那么<font color=pinkred>需要添加对jsx的支持</font>：
 
--  jsx通常会通过Babel来进行转换(React编写的jsx就是通过babel转换的);
+-  jsx通常<font color=pink>需要Babel来进行转换</font>(React编写的jsx就是通过babel转换的);
 - 对于Vue来说，只需要在Babel中配置对应的插件即可;
 
-安装babel支持Vue的jsx插件：
+**安装babel支持Vue的jsx插件**：
 
 ```js
  npm install @vue/babel-plugin-jsx -D
@@ -2201,7 +2196,7 @@ export default {
 
 
 
-# 三、Vue3动画
+# 四、Vue3动画
 
 Vue提供了一些内置组件和对应的API来完成动画。
 
@@ -2496,7 +2491,7 @@ npm install gsap
 
 
 
-# 七、Vue source源码学习
+# 五、Vue source源码学习
 
 ![image-20211230110742607](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112301137210.png)
 
@@ -3030,33 +3025,23 @@ function reactive(raw) {
 
 
 
+# 六、VueRouter路由
 
+## 1、路由发展
 
-
-
-# 八、VueRouter路由
-
-## 1、前端路由概述
-
-​	路由器主要维护的是一个映射表， 映射表会决定数据的流向。
+路由器<font color=pink>主要维护的是一个映射表</font>， 映射表会**决定数据的流向**。
 
 路由的发展阶段：
 
-- 后端路由阶段；
-- 前后端分离阶段；
-- 单页面富应用（SPA）；
+### （1）后端路由阶段
 
-
-
-
-
-## 2、后端路由阶段
-
-#### （1）后端路由过程：
+#### 1.1、后端路由过程：
 
 ​	当页面中需要<font color=red>请求不同的**路径**内容</font>时, 交给服务器来进行处理, 服务器渲染好整个页面, 并且将页面返回给客户端。这种情况下渲染好的页面, <font color=red>不需要单独加载任何的js和css</font>, 可以直接交给浏览器展示, 这样也<font color=red>有利于SEO的优化</font>。
 
-#### （2）后端路由缺点：
+
+
+#### 1.2、后端路由缺点：
 
 - 一种情况是<font color=red>整个页面的模块由后端人员来编写和维护的</font>；
 - 另一种情况是前端开发人员如果要开发页面, <font color=red>需要通过PHP和Java等语言来编写页面代码</font>；
@@ -3064,17 +3049,15 @@ function reactive(raw) {
 
 
 
+### （2）前后端分离阶段
 
-
-## 3、前后端分离阶段
-
-#### （1）前端渲染理解
+#### 2.1、前端渲染理解
 
 ​	每次请求涉及到的静态资源都会从**静态资源服务器获取**，这些资源**包括HTML+CSS+JS**，然后在前端对这些请求回来的资源进行渲染；
 
 ​	客户端每请求一次，都会从静态资源服务器请求文件，后端只负责提供API；
 
-#### （2）前后分离
+#### 2.2、前后分离
 
 前端通过Ajax获取数据，并且可以通过JavaScript将数据渲染到页面中；
 
@@ -3082,23 +3065,27 @@ function reactive(raw) {
 
 
 
+### （3）单页面富应用阶段
+
+其实SPA最主要的特点就是在前后端分离的基础上加了一层前端路由，也就是前端来维护一套路由规则。
+
+其核心是<font color=red>**改变URL，但是页面不进行整体的刷新**</font>
 
 
-## 4、URL的hash和history
 
-#### 1、hash模式
+## 2、URL的hash和history
 
-​		hash模式也就是锚点，本质上是改变window.location的href属性。<font color=red>可以通过直接赋值location.hash来改变href，但是页面不发生刷新</font>；hash的优势就是兼容好，在老版IE中都可以运行，但是缺陷是<font color=red>**路径有一个#**</font>，显得不像一个真实的路径。
+### （1）hash模式
 
-#### 2、history模式
+- hash模式也就是锚点，<font color=pink>本质上是改变window.location的href属性</font>。
+- <font color=deepre>可以通过直接赋值location.hash来改变href，但是页面不发生刷新</font>；
+- hash的优势就是兼容好，在老版IE中都可以运行，但是缺陷是<font color=red>**路径有一个#**</font>，显得不像一个真实的路径。
+
+
+
+### （2）history模式
 
 ![image-20220104173500311](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201041735932.png)
-
-
-
-
-
-## 5、HTML5的History
 
 history接口是HTML5新增的，有六种模式改变不刷新页面:
 
@@ -3118,41 +3105,30 @@ back	//向后改变路径;
 
 
 
-
-
-## 6、vue-router(4.x版本)
+## 3、vue-router(4.x版本)
 
 ### （1）认识vue-router
 
-- vue-router是基于路由和组件的
-  - <font color=red>路由用于设定访问路径，将路径和组件映射起来</font>；
-  - 在vue-router的单页面应用中，页面的路径的改变就是组件的切换。
-
-- 安装Vue Router
+1. vue-router是**Vue.js的官方路由**
+2. vue-router是**基于路由和组件的**
+   1. 路由用于<font color=deepred>设定访问路径，将路径和组件映射起来</font>；
+   2. 在vue-router的单页面应用中，页面的路径的改变就是组件的切换。
+3. 安装Vue Router
 
 ```js
-npm install vue-router@4
+npm install vue-router
 ```
 
 
 
 ### （2）路由的使用步骤
 
-#### 第一步：
-
-创建路由组件的组件；
-
-#### 第二步：
-
-配置路由映射：组件和路径映射关系的routes数组；
-
-#### 第三步：
-
-通过createRouter创建路由对象，并且传入routes和history模式；
-
-#### 第四步：
-
-使用路由: 通过`<router-link>`和`<router-view>`
+1. 第一步：创建路由需要映射的组件；
+2. 第二步：<font color=deepre>通过createRouter创建路由对象</font>，并且**传入routes和history模式**；
+   1. 配置路由映射：组件和路径映射关系数组；
+   2. 创建基于hash或者history的模式；
+3. 使用app注册路由对象
+4. 使用路由: 通过`<router-link>`和`<router-view>`
 
 ![image-20220104172242458](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201041722369.png)
 
@@ -3160,7 +3136,10 @@ npm install vue-router@4
 
 ### （3）路由的默认路径
 
-实现默认让路径跳到首页，即`<router-view>`渲染首页组件，需在routes中配置一个映射，<font color=red>path配置的根路径为"/"，redirect重定向，将根路径重定向到"/home"路径下</font>。
+​	实现`<router-view>`渲染**默认组件**，需在routes中配置一个映射。
+
+1. <font color=deepre>path配置的根路径为"/"</font>；
+2. <font color=deepre>redirect重定向</font>，将根路径重定向到"/XX"路径下。
 
 ```js
 const routes = [
@@ -3176,26 +3155,24 @@ const routes = [
 
 **router-link有很多属性可以配置:**
 
-- to属性
-  - 是一个字符串，或者是一个对象；
-- replace属性
-  - 设置replace属性的话，当点击时，会调用router.replace()，而不是router.push()；
-- active-class属性
-  - 设置激活a元素后应用的class，默认是router-link-active；
-- exact-active-class属性
-  - 链接精准激活时，应用于渲染的 <a> 的 class，默认是router-link-exact-active；
+1. <font color=pink>to属性</font>：是一个字符串，或者是一个对象；
+2. <font color=pink>replace属性</font>：设置replace属性的话，当点击时，会调用router.replace()，而不是router.push()；
+3. <font color=pink>active-class属性</font>：设置激活a元素后应用的class，默认是router-link-active；
+4. <font color=pink>exact-active-class属性</font>：链接精准激活时，应用于渲染的 <a> 的 class，默认是router-link-exact-active；
 
 
 
-### （5）<font color=red>路由懒加载</font>
+### （5）路由懒加载
 
-#### 1、**路由懒加载（按需加载）的好处**：
+#### 5.1、优点
 
 ​	当打包构建应用时，JavaScript 包会变得非常大，影响页面加载。把不同路由对应的组件分割成不同的代码块，然后**当路由被访问时才加载对应的组件**，从而<font color=red>提高首屏的渲染效率</font>。
 
-#### 2、Vue router默认支持动态导入组件
 
-component可以传入一个组件，也可以接收一个函数，该函数需要返回一个Promise，而import函数就是返回一个Promise
+
+#### 5.2、动态导入组件
+
+component<font color=pink>可以传入一个组件，也可以接收一个函数</font>，**该函数需要返回一个Promise，而import函数就是返回一个Promise**
 
 ```js
 const routes = [
@@ -3210,7 +3187,9 @@ const routes = [
 ]
 ```
 
-#### 3、打包效果
+
+
+#### 5.3、打包效果
 
 分包是没有一个明确的名称的，webpack从3.x开始支持对分包进行命名(chunk name)
 
@@ -3222,11 +3201,11 @@ component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
 
 ### （6）动态路由
 
-#### 1、基本匹配
+#### 6.1、基本匹配
 
 有时候需要将给定匹配模式的路由映射到同一个组件：
 
-比如有个user组件，应该对所有用户进行渲染，但是用户的ID是不同的，在Vue Router中，可以<font color=red>在路径中使用一个动态字段来实现</font>，可以称之为<font color=red>路径参数</font>。
+比如有个user组件，应该对所有用户进行渲染，但是用户的ID是不同的，在Vue Router中，可以<font color=pink>在路径中使用一个动态字段来实现</font>，可以称之为<font color=deepred>路径参数</font>。
 
 ```js
 {
@@ -3243,17 +3222,14 @@ component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
 
 
 
-#### 2、获取动态路由的值
+#### 6.2、获取动态路由值
 
 针对上例如何在组件中获取路由的参数值：
 
-- ##### 在template中直接通过`$route.params`获取值；
-
-- ##### 在created中，通过`this.$route.params`获取值；
-
-- ##### 在setup中，要使用vue-router库提供的一个hook useRoute；
-
-  - 在这个Hook中会返回一个Route对象，对象中保存着当前路由相关的值。
+- template中直接通过`$route.params`获取值；
+  - 在created中，通过`this.$route.params`获取值；
+  - 在setup中，要使用vue-router库提供的一个hook useRoute；
+    - 在这个Hook中会返回一个Route对象，对象中保存着当前路由相关的值。
 
 ```vue
 <template>
@@ -3278,7 +3254,7 @@ component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
 
 
 
-#### 3、匹配多个参数
+#### 6.3、匹配多个参数
 
 | 匹配模式              | 匹配路径              | $route.params                |
 | --------------------- | --------------------- | ---------------------------- |
@@ -3294,11 +3270,11 @@ component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
 
 
 
-### 补充：Not Found
-
-#### （1）没找到匹配的页面
+### （7）Not Found
 
 **对于没有匹配到的路由，我们通常会匹配到固定的某个页面**
+
+写法一：
 
 ```js
 //固定写法
@@ -3312,7 +3288,9 @@ component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
 
 ![image-20220108214239904](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201082142537.png)
 
-#### （2）匹配规则加*
+
+
+写法二：
 
 在`/:pathMatch(.*)`后面又加一个 *
 
@@ -3330,9 +3308,9 @@ component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
 
 
 
-### （7）页面路由跳转
+### （8）路由跳转
 
-#### 1、push跳转
+#### 8.1、push跳转
 
 使用push的特点是<font color=red>**压入一个新的页面**</font>，用户在点返回时，<font color=red>上一个页面还可以回退</font>。
 
@@ -3344,9 +3322,23 @@ turn(){this.$route.push("/Home");};
 
 - 也可以传入一个对象
 
-```js
-turn(){this.$route.push({path:'/Home'})};
-```
+  - 不传参
+
+    ```js
+    turn(){
+      this.$route.push({path:'/Home'})
+    };
+    ```
+
+  - query传参
+
+    ```js
+    this.$router.push({
+      path:"/Home",
+      query:{ name:"zhang", age:24 }
+    })
+    ```
+
 
 - 在setup中编写情况下，<font color=red>**通过useRouter来获取**</font>
 
@@ -3357,7 +3349,9 @@ const turn = () => {
 }
 ```
 
-#### 2、replace跳转
+
+
+#### 8.2、replace跳转
 
 对当前页面进行替换
 
@@ -3375,30 +3369,9 @@ route.replace(...)
 
 
 
-### （8）<font color=red>query方式传参</font>
+#### 8.3、前进后退
 
-- 通过query传递参数对象
-
-```js
-turn(){
-  this.$router.push({
-    path:"/Home",
-    query:{ name:"zhang", age:24 }
-  })
-}
-```
-
-- 界面中通过$route.query获取参数
-
-```vue
-<h2>query: {{$route.query.name}}-{{$route.query.age}}</h2>
-```
-
-
-
-### （9）页面的前进后退
-
-#### 1、router的go方法
+##### 1. go方法
 
 ```js
 router.go(1)；//向前移动一条记录，和router.forward()相同
@@ -3407,71 +3380,23 @@ router.go(3)；//前进3条记录
 router.go(100)；//如果没有那么多记录，静默失败
 ```
 
-#### 2、router有back方法
+
+
+##### 2. back方法
 
 通过调用`history.back()`回溯历史。相当于`router.go(-1)`;
 
-#### 3、router有forward方法
+
+
+##### 3. forward方法
 
 过调用`history.forward()`在历史中前进。相当于`router.go(1)`;
 
 
 
-### （10）router-link的v-slot
+### （9）动态修改路由
 
-​	3.x版本的路由中，router-link有一个tag属性，可以决定router-link渲染成什么元素。但是在4.x版本的路由开始，tag属性被移除了，但是提供了更加灵活的v-slot方式来定制渲染的内容。
-
-​	通过一个作用于插槽暴露底层的定制能力，这是一个更高阶的API。
-
-#### v-slot使用流程
-
-- 首先，需要**使用custom表示整个元素要自定义**
-  - 如果不写，自定义的内容<font color=red>会被包裹在一个a元素中</font>
-- 其次，**使用v-slot作用于插槽来获取内部传递的值**
-  - href：解析后的URL，将会作为`<a>`元素的`href`属性;
-  - route：解析后的规范化的route对象；
-  - navigate：触发导航的函数；
-  - isActive：是否匹配的状态；
-  - isExactActive：是否精准匹配的状态；
-
-```js
-<router-link to="/about" v-slot="{href,route,navigate,isActive,isExactActive}">
-  <p @click="navigator">跳转about</p>
-  <div>
-    <p>href:{{href}}</p>
-    <p>route:{{route}}</p>
-    <p>navigate:{{navigate}}</p>
-    <p>isActive:{{isActive}}</p>
-    <p>isExactActive:{{isExactActive}}</p>
-  </div>
-</router-link>
-```
-
-
-
-### （11）router-view的v-slot
-
-router-view也提供给我们一个插槽，主要用于` <transition> `和 `<keep-alive>`组件来包裹你的路由组件，其中Component表示要渲染的组件。
-
-```js
-<router-view v-slot="props">
-  <transition name="zhang">
-    <keep-alive>
-      <component :is="props.Component"></component>
-  	</keep-alive>
-	</transition>
-</router-view>
-```
-
-除过传一个props对象，还可以写`v-slot={Component,route}`
-
-component表示要传递给`<component>`的VNodes；
-
-route表示解析出的标准路由地址；
-
-
-
-### （12）动态添加路由
+#### 9.1、动态添加路由
 
 使用场景：根据用户不同的权限，注册不同的路由。
 
@@ -3497,11 +3422,11 @@ router.addRoute('home',homeNewRoute)
 
 
 
-### （13）动态删除路由
+#### 9.2、动态删除路由
 
 删除路由有以下三种方式：
 
-##### 方式一：添加一个name相同的路由
+1. 方式一：添加一个name相同的路由
 
 ```js
 router.addRoute({path:'/about',name:'about',component:About})
@@ -3509,7 +3434,9 @@ router.addRoute({path:'/about',name:'about',component:About})
 router.addRoute({path:'/other',name:'about',component:Other})
 ```
 
-##### 方式二：通过removeRoute方法，传入路由的名称
+
+
+2. 方式二：通过removeRoute方法，传入路由的名称
 
 ```js
 router.addRoute({path:'/about',name:'about',component:About})
@@ -3517,7 +3444,9 @@ router.addRoute({path:'/about',name:'about',component:About})
 router.removeRoute('about')
 ```
 
-##### 方式三：通过addRoute方法的返回值回调
+
+
+3. 方式三：通过addRoute方法的返回值回调
 
 ```js
 const removeRoute = router.addRoute(routeRecord);
@@ -3526,7 +3455,7 @@ removeRoute() //删除路由如果存在的话
 
 
 
-### （14）路由的其他方法补充
+#### 9.3、路由其他方法
 
 `router.hasRoute()`：**检查路由是否存在**。
 
@@ -3534,33 +3463,29 @@ removeRoute() //删除路由如果存在的话
 
 
 
-### （15）路由导航守卫
+### （10）路由导航守卫
 
-vue-router 提供的导航守卫主要用来通过跳转或取消的方式守卫导航。
+vue-router 提供的导航守卫主要用来<font color=deepred>通过跳转或取消的方式守卫导航</font>。
 
-**全局的前置守卫beforeEach是在导航触发时会被回调的:**
+#### 10.1、参数
 
-- 它有两个参数：
+**<font color=color>全局的前置守卫beforeEach</font>是在导航触发时会被回调的**，有两个参数：
 
-  - to：即将进入的路由Route对象；
-  - from：即将离开的路由Route对象；
+- to：即将进入的路由Route对象；
+- from：即将离开的路由Route对象；
 
-- 它有返回值
 
-  - false：取消当前导航；
 
-  - true：进行默认跳转；
+#### 10.2、返回值
 
-  - 不返回或者undefined：进行默认导航；
-
-  - 返回一个路由地址：
-
-     √ 可以是一个string类型的路径；
-
-     √ 可以是一个对象，对象中包含path、query、params等信息；
+- false：取消当前导航；
+- true：进行默认跳转；
+- 不返回或者undefined：进行默认导航；
+- 返回一个路由地址：
+  - 可以是一个string类型的路径；
+  - 可以是一个对象，对象中包含path、query、params等信息；
 
 - 可选的第三个参数：next
-
   - 在Vue2中我们是通过next函数来决定如何进行跳转的；
   - 但是在Vue3中我们是通过返回值来控制的，不再推荐使用next函数，这是因为开发中很容易调用多次next；
 
@@ -3572,13 +3497,13 @@ router.beforeEach((to,from) => {
 
 
 
-### （16）常用的登录守卫
+#### 10.3、常用的登录守卫
 
 ![image-20220106184841848](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201061848218.png)
 
 
 
-### （17）完整的导航解析流程
+#### 10.4、完整的导航流程
 
 - 导航被触发。
 - 在失活的组件里调用 beforeRouteLeave 守卫。(也就是from组件里的守卫)
@@ -3595,15 +3520,67 @@ router.beforeEach((to,from) => {
 
 
 
-### （18）路由元信息
+### （11）router-link的v-slot
+
+​	3.x版本的路由中，router-link有一个tag属性，可以决定router-link渲染成什么元素。但是在4.x版本的路由开始，tag属性被移除了，但是提供了更加灵活的v-slot方式来定制渲染的内容。
+
+​	<font color=blue>通过一个**作用域插槽**暴露底层的定制能力，这是一个更高阶的API</font>。
+
+#### 11.1、使用流程
+
+##### 1. 第一步
+
+- 首先，需要**使用custom表示整个元素要自定义**
+  - 如果不写，自定义的内容<font color=red>会被包裹在一个a元素中</font>
+- 其次，**使用v-slot作用于插槽来获取内部传递的值**
+  - href：解析后的URL，将会作为`<a>`元素的`href`属性;
+  - route：解析后的规范化的route对象；
+  - navigate：触发导航的函数；
+  - isActive：是否匹配的状态；
+  - isExactActive：是否精准匹配的状态；
+
+```js
+<router-link to="/about" v-slot="{href,route,navigate,isActive,isExactActive}">
+  <p @click="navigator">跳转about</p>
+  <div>
+    <p>href:{{href}}</p>
+    <p>route:{{route}}</p>
+    <p>navigate:{{navigate}}</p>
+    <p>isActive:{{isActive}}</p>
+    <p>isExactActive:{{isExactActive}}</p>
+  </div>
+</router-link>
+```
+
+
+
+### （12）router-view的v-slot
+
+router-view也提供给我们一个插槽，主要用于` <transition> `和 `<keep-alive>`组件来包裹你的路由组件，其中Component表示要渲染的组件。
+
+```js
+<router-view v-slot="props">
+  <transition name="zhang">
+    <keep-alive>
+      <component :is="props.Component"></component>
+  	</keep-alive>
+	</transition>
+</router-view>
+```
+
+除过传一个props对象，还可以写`v-slot={Component,route}`
+
+component表示要传递给`<component>`的VNodes；
+
+route表示解析出的标准路由地址；
+
+
+
+### （13）路由元信息
 
 希望将任意信息附加在路由上，比如过渡名称、谁可以访问路由等。可以通过接收属性对象的meta属性来实现，可以在路由地址和导航守卫上被访问到。
 
 访问时该属性包含在路由守卫的to对象中`to.meta.XX`
-
-
-
-
 
 
 
