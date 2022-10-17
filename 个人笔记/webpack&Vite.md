@@ -1160,7 +1160,7 @@ new HtmlWebpackPlugin({
 
 # 三、Vite
 
-## 认识vite
+## 1、认识vite
 
 #### （1）Vite (法语意为"快速的") 是一种新型前端构建工具，能够显著提升前端开发体验。
 
@@ -1237,5 +1237,133 @@ Vite实际上是有两个工具的
 ```js
 npm install @vitejs/create-app -g //安装vite脚手架
 create-app xxx //创建项目
+```
+
+
+
+## 2、Vite性能优化
+
+### （1）Lighthouse
+
+使用浏览器自带的Lighthouse查看网页性能：
+
+1. Performance页面表现结果，提供了很多的时间信息。
+2. FCP (First Contentful Paint)：首次内容绘制的时间，浏览器第一次绘制DOM相关的内容，也是用户第一次看到页面内容的时间。
+3. Speed Index: 页面各个可见部分的显示平均时间，当页面上存在轮播图或者需要从后端获取内容加载时，这个数据会被影响到。
+4. LCP (Largest Contentful Paint)：最大内容绘制时间，页面最大的元素绘制完成的时间。
+5. TTI（Time to Interactive）：从页面开始渲染到用户可以与页面进行交互的时间，内容必须渲染完毕，交互元素绑定的事件已经注册完成。
+6. TBT（Total Blocking Time）：记录了首次内容绘制到用户可交互之间的时间，这段时间内，主进程被阻塞，会阻碍用户的交互，页面点击无反应。
+7. CLS（Cumulative Layout Shift）：计算布局偏移值得分，会比较两次渲染帧的内容偏移情况，可能导致用户想点击A按钮，但下一帧中，A按钮被挤到旁边，导致用户实际点击了B按钮。
+
+
+
+### （2）代码分析
+
+vite项目打包js基于rollup，因此使用rollup插件对代码结构进行分析。
+
+```shell
+npm install rollup-plugin-visualizer
+```
+
+在vite.config.js文件中引入插件并配置：
+
+```js
+import { visualizer } from 'rollup-plugin-visualizer';
+plugins: [
+	vue(), 
+	vueJsx(),
+	visualizer({
+		open:true
+ 	})
+]
+```
+
+最后使用`npm run build`打包，浏览器会自动弹出项目代码资源结构。
+
+![image-20221017175950036](https://raw.githubusercontent.com/Rainchen0504/picture/master/202210171759206.png)
+
+
+
+### （3）配置优化
+
+#### 3.1、build配置
+
+```js
+build:{
+  chunkSizeWarningLimit:2000,//超大静态资源警告门槛
+  cssCodeSplit:true, //css 拆分
+  sourcemap:false, //不生成sourcemap
+  minify:false, //是否禁用最小化混淆，esbuild打包速度最快，terser打包体积最小。
+  assetsInlineLimit:5000 //小于该值 图片将打包成Base64 
+  terserOptions: {
+    compress: {
+      drop_console: true,//打包删除console
+      drop_debugger: true,//打包删除debugger
+      pure_funcs: ['console.log'],
+    },
+    output: {
+      comments: true // 去掉注释内容
+    }
+  }
+},
+```
+
+
+
+#### 3.2、PWA离线存储
+
+```
+npm install vite-plugin-pwa -D
+```
+
+PWA 技术的出现就是让web网页无限接近于Native 应用
+
+1. 可以添加到主屏幕，利用manifest实现
+2. 可以实现离线缓存，利用service worker实现
+3. 可以发送通知，利用service worker实现
+
+```js
+VitePWA({
+  workbox:{
+    cacheId:"XIaoman",//缓存名称
+    runtimeCaching:[
+      {
+        urlPattern:/.*\.js.*/, //缓存文件
+        handler:"StaleWhileRevalidate", //重新验证时失效
+        options:{
+          cacheName:"XiaoMan-js", //缓存js，名称
+          expiration:{
+            maxEntries:30, //缓存文件数量 LRU算法
+            maxAgeSeconds:30 * 24 * 60 * 60 //缓存有效期
+
+          }
+        }
+      }
+    ]
+  },
+})
+```
+
+
+
+#### 3.3、gzip静态资源压缩
+
+```shell
+npm i vite-plugin-compression -D
+```
+
+Vite.config.js文件配置
+
+```js
+//引入
+import viteCompression from 'vite-plugin-compression'
+//在plugins配置数组里添加gzip插件
+plugins: [viteCompression({
+  verbose: true,
+  disable: false,
+  threshold: 10240,
+  algorithm: 'gzip',
+  ext: '.gz',
+})],
 ```
 

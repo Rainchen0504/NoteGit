@@ -2188,6 +2188,1272 @@ export default {
 
 
 
+# 四、VueRouter路由
+
+## 1、路由发展
+
+路由器<font color=pink>主要维护的是一个映射表</font>， 映射表会**决定数据的流向**。
+
+路由的发展阶段：
+
+### （1）后端路由阶段
+
+#### 1.1、后端路由过程：
+
+​	当页面中需要<font color=red>请求不同的**路径**内容</font>时, 交给服务器来进行处理, 服务器渲染好整个页面, 并且将页面返回给客户端。这种情况下渲染好的页面, <font color=red>不需要单独加载任何的js和css</font>, 可以直接交给浏览器展示, 这样也<font color=red>有利于SEO的优化</font>。
+
+
+
+#### 1.2、后端路由缺点：
+
+- 一种情况是<font color=red>整个页面的模块由后端人员来编写和维护的</font>；
+- 另一种情况是前端开发人员如果要开发页面, <font color=red>需要通过PHP和Java等语言来编写页面代码</font>；
+- 通常情况下<font color=red>HTML代码和数据以及对应的逻辑会混在一起</font>, 编写和维护都是非常糟糕的事情；
+
+
+
+### （2）前后端分离阶段
+
+#### 2.1、前端渲染理解
+
+​	每次请求涉及到的静态资源都会从**静态资源服务器获取**，这些资源**包括HTML+CSS+JS**，然后在前端对这些请求回来的资源进行渲染；
+
+​	客户端每请求一次，都会从静态资源服务器请求文件，后端只负责提供API；
+
+#### 2.2、前后分离
+
+前端通过Ajax获取数据，并且可以通过JavaScript将数据渲染到页面中；
+
+最大的优点就是前后端责任的清晰，后端专注于数据上，前端专注于交互和可视化上；
+
+
+
+### （3）单页面富应用阶段
+
+其实SPA最主要的特点就是在前后端分离的基础上加了一层前端路由，也就是前端来维护一套路由规则。
+
+其核心是<font color=red>**改变URL，但是页面不进行整体的刷新**</font>
+
+
+
+## 2、URL的hash和history
+
+### （1）hash模式
+
+- hash模式也就是锚点，<font color=pink>本质上是改变window.location的href属性</font>。
+- <font color=deepre>可以通过直接赋值location.hash来改变href，但是页面不发生刷新</font>；
+- hash的优势就是兼容好，在老版IE中都可以运行，但是缺陷是<font color=red>**路径有一个#**</font>，显得不像一个真实的路径。
+
+
+
+### （2）history模式
+
+![image-20220104173500311](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201041735932.png)
+
+history接口是HTML5新增的，有六种模式改变不刷新页面:
+
+```js
+replaceState	//替换原来的路径;
+
+pushState	//使用新的路径;
+
+popState	//路径的回退监听;
+
+go	//向前或向后改变路径; 
+
+forward	//向前改变路径; 
+
+back	//向后改变路径;
+```
+
+
+
+## 3、vue-router(4.x版本)
+
+### （1）认识vue-router
+
+1. vue-router是**Vue.js的官方路由**
+2. vue-router是**基于路由和组件的**
+   1. 路由用于<font color=deepred>设定访问路径，将路径和组件映射起来</font>；
+   2. 在vue-router的单页面应用中，页面的路径的改变就是组件的切换。
+3. 安装Vue Router
+
+```js
+npm install vue-router
+```
+
+
+
+### （2）路由的使用步骤
+
+1. 第一步：创建路由需要映射的组件；
+2. 第二步：<font color=deepre>通过createRouter创建路由对象</font>，并且**传入routes和history模式**；
+   1. 配置路由映射：组件和路径映射关系数组；
+   2. 创建基于hash或者history的模式；
+3. 使用app注册路由对象
+4. 使用路由: 通过`<router-link>`和`<router-view>`
+
+![image-20220104172242458](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201041722369.png)
+
+
+
+### （3）路由的默认路径
+
+​	实现`<router-view>`渲染**默认组件**，需在routes中配置一个映射。
+
+1. <font color=deepre>path配置的根路径为"/"</font>；
+2. <font color=deepre>redirect重定向</font>，将根路径重定向到"/XX"路径下。
+
+```js
+const routes = [
+  {path: '/',redirect: '/home'},
+  {path: '/home',component: Home},
+  {path: '/about',component: About}
+]
+```
+
+
+
+### （4）router-link
+
+**router-link有很多属性可以配置:**
+
+1. <font color=pink>to属性</font>：是一个字符串，或者是一个对象；
+2. <font color=pink>replace属性</font>：设置replace属性的话，当点击时，会调用router.replace()，而不是router.push()；
+3. <font color=pink>active-class属性</font>：设置激活a元素后应用的class，默认是router-link-active；
+4. <font color=pink>exact-active-class属性</font>：链接精准激活时，应用于渲染的 <a> 的 class，默认是router-link-exact-active；
+
+
+
+### （5）路由懒加载
+
+#### 5.1、优点
+
+​	当打包构建应用时，JavaScript 包会变得非常大，影响页面加载。把不同路由对应的组件分割成不同的代码块，然后**当路由被访问时才加载对应的组件**，从而<font color=red>提高首屏的渲染效率</font>。
+
+
+
+#### 5.2、动态导入组件
+
+component<font color=pink>可以传入一个组件，也可以接收一个函数</font>，**该函数需要返回一个Promise，而import函数就是返回一个Promise**
+
+```js
+const routes = [
+  {
+    path: '/',
+    redirect: '/home',
+  },
+  {
+    path: '/home',
+    component: () => import('../pages/Home.vue')
+  }
+]
+```
+
+
+
+#### 5.3、打包效果
+
+分包是没有一个明确的名称的，webpack从3.x开始支持对分包进行命名(chunk name)
+
+```js
+component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
+```
+
+
+
+### （6）动态路由
+
+#### 6.1、基本匹配
+
+有时候需要将给定匹配模式的路由映射到同一个组件：
+
+比如有个user组件，应该对所有用户进行渲染，但是用户的ID是不同的，在Vue Router中，可以<font color=pink>在路径中使用一个动态字段来实现</font>，可以称之为<font color=deepred>路径参数</font>。
+
+```js
+{
+  path:"/user/:id",
+	component:() => import('../pages/User.vue')
+}
+```
+
+在router-link中进行如下跳转：
+
+```vue
+<router-link to="/user/123">用户：123</router-link>
+```
+
+
+
+#### 6.2、获取动态路由值
+
+针对上例如何在组件中获取路由的参数值：
+
+- template中直接通过`$route.params`获取值；
+  - 在created中，通过`this.$route.params`获取值；
+  - 在setup中，要使用vue-router库提供的一个hook useRoute；
+    - 在这个Hook中会返回一个Route对象，对象中保存着当前路由相关的值。
+
+```vue
+<template>
+	<div>
+    <h2>用户界面：{{ $route.params.id }}</h2>
+  </div>
+</template>
+<script>
+  import { useRouter } from 'vue-router'；
+	export default {
+    created(){
+      console.log(this.$route.params.id)
+    },
+    setup(){
+      //调用router函数
+      const route = useRouter();
+      console.log(route.params.id);
+    },
+  }
+</script>
+```
+
+
+
+#### 6.3、匹配多个参数
+
+| 匹配模式              | 匹配路径              | $route.params                |
+| --------------------- | --------------------- | ---------------------------- |
+| /users/:id            | /users/123            | { id: '123' }                |
+| /users/:id/info/:name | /users/123/info/zhang | { id: '123', name: 'zhang' } |
+
+```js
+{
+  path:'/user/:id/info/:name',
+  component: () => import ('../pages/User.vue') 
+}
+```
+
+
+
+### （7）Not Found
+
+**对于没有匹配到的路由，我们通常会匹配到固定的某个页面**
+
+写法一：
+
+```js
+//固定写法
+{
+  path:'/:pathMatch(.*)',
+  component: () => import('../pages/notfound.vue')
+}
+```
+
+可以通过` $route.params.pathMatch`获取到传入的参数:
+
+![image-20220108214239904](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201082142537.png)
+
+
+
+写法二：
+
+在`/:pathMatch(.*)`后面又加一个 *
+
+```js
+//固定写法
+{
+  path:'/:pathMatch(.*)*',
+  component: () => import('../pages/notfound.vue')
+}
+```
+
+- 区别在于解析时是否解析`/`
+
+![image-20220108214635193](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201082146338.png)
+
+
+
+### （8）路由跳转
+
+#### 8.1、push跳转
+
+使用push的特点是<font color=red>**压入一个新的页面**</font>，用户在点返回时，<font color=red>上一个页面还可以回退</font>。
+
+- 常见通过方法跳转
+
+```js
+turn(){this.$route.push("/Home");};
+```
+
+- 也可以传入一个对象
+
+  - 不传参
+
+    ```js
+    turn(){
+      this.$route.push({path:'/Home'})
+    };
+    ```
+
+  - query传参
+
+    ```js
+    this.$router.push({
+      path:"/Home",
+      query:{ name:"zhang", age:24 }
+    })
+    ```
+
+- 在setup中编写情况下，<font color=red>**通过useRouter来获取**</font>
+
+```js
+const router = useRouter();
+const turn = () => {
+  router.push('/Home')
+}
+```
+
+
+
+#### 8.2、replace跳转
+
+对当前页面进行替换
+
+**声明式**
+
+```js
+<router-link :to="..." replace>
+```
+
+**编程式**
+
+```js
+route.replace(...)
+```
+
+
+
+#### 8.3、前进后退
+
+##### 1. go方法
+
+```js
+router.go(1)；//向前移动一条记录，和router.forward()相同
+router.go(-1)；//返回一条记录，和router.back()相同
+router.go(3)；//前进3条记录
+router.go(100)；//如果没有那么多记录，静默失败
+```
+
+
+
+##### 2. back方法
+
+通过调用`history.back()`回溯历史。相当于`router.go(-1)`;
+
+
+
+##### 3. forward方法
+
+过调用`history.forward()`在历史中前进。相当于`router.go(1)`;
+
+
+
+### （9）动态修改路由
+
+#### 9.1、动态添加路由
+
+使用场景：根据用户不同的权限，注册不同的路由。
+
+使用方法：<font color=red>**addRoute方法**</font>
+
+应用案例：
+
+```js
+const newRoute = [
+  path:"/new",
+  component: () => import("../page/New.vue")
+]
+//动态添加路由
+router.addRoute(newRoute)
+
+const homeNewRoute = [
+  path:"newroute",
+  component: () => import('../page/NewRoute.vue')
+]
+//为home添加一个children子路由，只需传入对应的name
+router.addRoute('home',homeNewRoute)
+```
+
+
+
+#### 9.2、动态删除路由
+
+删除路由有以下三种方式：
+
+1. 方式一：添加一个name相同的路由
+
+```js
+router.addRoute({path:'/about',name:'about',component:About})
+//这将删除之前已经添加的路由，因为名字必须是唯一的
+router.addRoute({path:'/other',name:'about',component:Other})
+```
+
+
+
+2. 方式二：通过removeRoute方法，传入路由的名称
+
+```js
+router.addRoute({path:'/about',name:'about',component:About})
+//删除路由
+router.removeRoute('about')
+```
+
+
+
+3. 方式三：通过addRoute方法的返回值回调
+
+```js
+const removeRoute = router.addRoute(routeRecord);
+removeRoute() //删除路由如果存在的话 
+```
+
+
+
+#### 9.3、路由其他方法
+
+`router.hasRoute()`：**检查路由是否存在**。
+
+`router.getRoutes()`：**获取一个包含所有路由记录的数组**。
+
+
+
+### （10）路由导航守卫
+
+vue-router 提供的导航守卫主要用来<font color=deepred>通过跳转或取消的方式守卫导航</font>。
+
+#### 10.1、参数
+
+**<font color=color>全局的前置守卫beforeEach</font>是在导航触发时会被回调的**，有两个参数：
+
+- to：即将进入的路由Route对象；
+- from：即将离开的路由Route对象；
+
+
+
+#### 10.2、返回值
+
+- false：取消当前导航；
+- true：进行默认跳转；
+- 不返回或者undefined：进行默认导航；
+- 返回一个路由地址：
+  - 可以是一个string类型的路径；
+  - 可以是一个对象，对象中包含path、query、params等信息；
+
+- 可选的第三个参数：next
+  - 在Vue2中我们是通过next函数来决定如何进行跳转的；
+  - 但是在Vue3中我们是通过返回值来控制的，不再推荐使用next函数，这是因为开发中很容易调用多次next；
+
+```js
+router.beforeEach((to,from) => {
+  return false
+})
+```
+
+
+
+#### 10.3、常用的登录守卫
+
+![image-20220106184841848](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201061848218.png)
+
+
+
+#### 10.4、完整的导航流程
+
+- 导航被触发。
+- 在失活的组件里调用 beforeRouteLeave 守卫。(也就是from组件里的守卫)
+- 调用全局的 beforeEach 守卫。
+- 在重用的组件里调用 beforeRouteUpdate 守卫(2.2+)。
+- 在路由配置里调用 beforeEnter。（路由对象里的）
+- 解析异步路由组件。
+- 在被激活的组件里调用 beforeRouteEnter。（to组件里的守卫）
+- 调用全局的 beforeResolve 守卫(2.5+)。（全局解析守卫）
+- 导航被确认。（没有回退了）
+- 调用全局的 afterEach 钩子。
+- 触发 DOM 更新。
+- 调用 beforeRouteEnter 守卫中传给 next 的回调函数，创建好的组件实例会作为回调函数的参数传入。
+
+
+
+### （11）router-link的v-slot
+
+​	3.x版本的路由中，router-link有一个tag属性，可以决定router-link渲染成什么元素。
+
+​	但是在4.x版本的路由开始，tag属性被移除了，但是提供了更加灵活的v-slot方式来定制渲染的内容。
+
+`router-link`<font color=blue>通过一个**作用域插槽**暴露底层的定制能力，这是一个更高阶的API</font>。
+
+```vue
+<router-link to="/about" v-slot="{href,route,navigate,isActive,isExactActive}">
+  <p @click="navigator">跳转about</p>
+  <div>
+    <p>href:{{href}}</p>
+    <p>route:{{route}}</p>
+    <p>navigate:{{navigate}}</p>
+    <p>isActive:{{isActive}}</p>
+    <p>isExactActive:{{isExactActive}}</p>
+  </div>
+</router-link>
+```
+
+**注意**⚠️：
+
+1. 需要<font color=deepred>**使用custom表示整个元素要自定义**</font>，如果不写，自定义的内容<font color=red>会被包裹在一个a元素中</font>。
+2. 使用<font color=deepred>v-slot作用域插槽来获取内部传递的值</font>。
+
+参数解析：
+
+- href：解析后的URL，将会作为`<a>`元素的`href`属性;
+- route：解析后的规范化的route对象；
+- navigate：触发导航的函数；
+- isActive：是否匹配的状态；
+- isExactActive：是否精准匹配的状态；
+
+
+
+### （12）router-view的v-slot
+
+router-view也暴露一个v-slot的API，主要用于` <transition> `和 `<keep-alive>`组件来包裹路由组件。
+
+```vue
+<router-view v-slot="{ Component, route }">
+  <transition :name="route.meta.transioton">
+    <keep-alive>
+      <component :is="Component"></component>
+  	</keep-alive>
+	</transition>
+</router-view>
+```
+
+除过传一个props对象，还可以写`v-slot={Component,route}`
+
+- component表示要传递给`<component>`的VNodes；
+- route表示解析出的标准路由地址；
+
+
+
+### （13）路由元信息
+
+​	路由对象<font color=deepred>**配置meta字段**附加路由信息</font>，比如过渡名称、谁可以访问路由等。可以通过接收属性对象的meta属性来实现，可以在路由地址和导航守卫上被访问到。
+
+```js
+const routes = [
+  {
+    path:"/home",
+    component:() => import("./XX"),
+    //路由元信息
+    meta:{require:true}
+  }
+]
+```
+
+访问时该属性包含<font color=blue>在路由守卫的to对象中`to.meta.XX`</font>
+
+
+
+
+
+# 五、Vuex状态管理
+
+## 1、什么是状态管理
+
+​	在开发中处理各种各样的数据，这些数据需要保存在应用程序的某一个位置，这些数据的管理就称之为是**状态管理**。
+
+- 前面管理状态的方法：
+  - 在Vue中，使用组件化开发方式
+  - 在组件中定义data或者在setup中返回使用的数据， 这些数据称之为state;
+  - 在模块template中使用这些数据，模块最终会被渲染成DOM，称之为View；
+  - 模块中行为事件修改state状态，这些事件称之为actions；
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202201131134739.png" alt="image-20220113113411515" style="zoom:80%;" />
+
+<center>单向数据流理念的简单示意</center>
+
+- 状态，驱动应用的数据源；
+- 视图，以声明方式将状态映射到视图；
+- 操作，响应在视图上的用户输入导致的状态变化；
+
+在应用遇到**多个组件共享状态**时，单向数据流的简洁性很容易被破坏，比如多个视图依赖同一个状态，或者来自不同视图的行为需要变更同一状态。
+
+
+
+
+
+## 2、Vuex的状态管理
+
+### （1）Vuex的背后基本思想（借鉴了Flux、Reux、Elm）
+
+​	1、传参的方法对于多层嵌套的组件将会非常繁琐，并且对于兄弟组件间的状态传递无能为力。
+
+​	2、经常会采用父子组件直接引用或者通过事件来变更和同步状态的多份拷贝。以上的这些模式非常脆弱，通常会导致无法维护的代码。
+
+​	因此，把组件的共享状态抽取出来，以一个全局单例模式管理。在这种模式下，我们的组件树构成了一个巨大的 “试图View”， 不管在树的哪个位置，任何组件都能获取状态或者触发行为。
+
+**通过定义和隔离状态管理中的各个概念，并通过强制性的规则来维护视图和状态间的独立性，我们的代码边会变得更加结构化和易于维护、跟踪;**
+
+![image-20220113110237237](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201131132928.png)
+
+### （2）使用Vuex的情景
+
+​	如果需要构建一个中大型单页应用，可能会考虑如何更好地在组件外部管理状态，Vuex 将会成为自然而然的选择。
+
+
+
+
+
+## 3、Vuex的安装使用
+
+### （1）Vuex的安装
+
+​	npm的安装方法
+
+```js
+npm install vue@next
+```
+
+
+
+### （2）创建Store实例
+
+#### 每个Vuex应用的核心就是store（仓库）
+
+- store本质上是一个容器，包含应用中大部分的状态（state）
+
+#### Vuex和单纯的全局对象的区别
+
+- <font color=red>Vuex的状态存储是响应式的</font>
+  - 当Vue组件从store中读取状态的时候，若store中的状态发生变化，那么相应的组件也会被更新；
+- <font color=red>不能直接改变store中的状态</font>
+  - 改变store中的状态的唯一途径就显示<font color=red>**提交 (commit) mutation**</font>；
+  - 可以方便的跟踪每一个状态的变化，从而让能够通过一些工具帮助我们更好的管理应用的状态；
+
+
+
+#### 创建步骤
+
+1、在src目录下的store文件夹创建index.js文件；
+
+2、引入createStore，创建Store对象；
+
+3、在main.js文件中引入store，在createApp(App)这个app实例中use使用；
+
+
+
+### （3）组件中使用Store
+
+组件中使用store的场景有以下三种情况：
+
+- 在模板中使用
+
+```vue
+<template>{{$store.state.xx}}</template>
+```
+
+- 在options api中使用，比如computed
+
+```js
+//拿到$store使用commit提交执行mutation中对应的方法（不能执行异步操作）
+this.$store.commit
+
+//拿到$store使用dispatch提交执行action中对应的方法（可以执行异步操作）
+this.$store.dispatch
+```
+
+- 在setup中使用
+
+```js
+//先引入useStore
+import { useStore } from 'vuex';
+import {computed} from "vue";
+export default{
+  setup(){
+    const store = useStore();
+    const sCounter = computed(() => store.state.counter)
+  }
+}
+```
+
+
+
+### （4）单一状态树
+
+- Vuex使用单一状态树：
+  -  用一个对象就包含了全部的应用层级状态；
+  -  采用的是SSOT，Single Source of Truth，也可以翻译成单一数据源；
+  -  每个应用将仅仅包含一个 store 实例；
+  -  单状态树和模块化并不冲突，后面会说明模块的概念；
+- **单一状态树的优势**
+  - 如果状态信息是保存到多个Store对象中的，那么之后的管理和维护等等都会变得特别困难，所以使用单一状态树管理应用层级的全部状态；
+  - 单一状态树能让使用者采用最直接的方式找到某个状态的片段，而且在之后的维护和调试过程中可以非常方便的管理和维护。
+
+
+
+
+
+### （5）组件获取State状态
+
+- 在组件模版中获取状态使用`$store.state.xx`，同时也可以使用计算属性
+
+```vue
+computed: {
+ 	counter(){
+		return this.$store.state.counter
+	} 
+}
+```
+
+- 如果我们有很多个状态都需要获取话，可以使用mapState辅助函数
+
+mapState的方式一：对象类型；
+
+```js
+import { mapState } from 'vuex'
+export default {
+  computed: {
+    ...mapState({
+      counter:state => state.counter,
+      name:state => state.name,
+    })
+  }
+}
+```
+
+mapState的方式二：数组类型；
+
+```js
+import { mapState } from 'vuex'
+export default {
+  computed: {
+    ...mapState(['name','age','counter'])
+  }
+}
+```
+
+也可以使用展开运算符和来原有的computed混合在一起；
+
+
+
+### （6）在setup中使用mapState
+
+​	在setup中单个获取装是非常简单的，通过useStore拿到store后去获取某个状态即可；
+
+```js
+import { useStore } from "vuex";
+import { computed } from "vue";
+export default{
+  setup(){
+    const store = useStore();
+    const name = computed(() => store.state.name)
+    return {name}
+  }
+}
+```
+
+​	默认情况下，Vuex并没有在setup中提供非常方便的使用mapState的方式，因此这里写一个封装函数：
+
+```js
+//封装函数，写在单独的hooks文件里useState.js
+import { mapState,useStore } from "vuex";
+import {computed} from "vue";
+export function useState(mapper){
+    const store = useStore();
+    //mapState返回的是一个对象，对象中每个属性的值都是函数
+    const storeStateFn = mapState(mapper);
+    
+    //封装一个函数，把mapState中返回对象的每个属性值函数放到computed中；
+    //因为computed要求里面是个函数
+    const storeState = {};
+    Object.keys(storeStateFn).froEach((fnKey) => {
+      const fn = storeStateFn[fnKey].bind({$store:store});
+      storeState[fnKey] = computed(fn);
+    })
+    return storeState 
+}
+```
+
+
+
+### （7）getters的基本使用
+
+当某些属性需要经过变化后来使用时，可以使用getters
+
+```vue
+<div>
+  	<!-- 在模板中使用 -->
+		<h2>{{$store.getters.totalPrice}}</h2>
+</div>
+<script>
+		//在store中使用，可以接收两个参数
+  	const store = createStore({
+      	getters:{
+            totalPrice(state,getters){
+              	return state.books.price + getters.myName
+            }
+        }
+    })
+</script>
+```
+
+另外，getters中的函数本身可以返回一个函数，那么在使用时相当于重新调用这个函数
+
+```js
+const store = createStore({
+    getters:{
+        totalPrice(state,getters){
+          	return(price) => {
+              	totalPrice += state.books.price + getters.myName;
+              	return totalPrice;
+            }
+        }
+    }
+})
+```
+
+
+
+### （8）mapGetters的辅助函数
+
+- 在optionAPI中使用
+
+```js
+computed:{
+  ...mapGetters(['ttalPrice','myName']),
+  ...mapGetters([
+    	finalPrice:"totalPrice",
+    	finalName:"myName",
+  ])
+}
+```
+
+- <font color=red>在setup中使用</font>
+
+  ```js
+  import { computed } from 'vue'
+  import { mapGetters, useStore } from 'vuex'
+  export function useGetters(mapper) {
+      // 拿到store独享
+      const store = useStore()
+      // 获取到对应的对象的functions: {name: function, age: function}
+      const storeStateFns = mapGetters(mapper)
+      // 对数据进行转换
+      const storeState = {}
+      Object.keys(storeStateFns).forEach(fnKey => {
+          const fn = storeStateFns[fnKey].bind({$store: store})
+          storeState[fnKey] = computed(fn)
+      })
+      return storeState
+  }
+  ```
+
+
+
+### （9）Mutations的基本使用
+
+更改Vuex里store状态state的唯一方法是提交mutation：
+
+```js
+mutations:{
+  increment(state){
+    state.counter++
+  }
+}
+```
+
+
+
+### （10）Mutation携带数据
+
+提交mutation时会携带一些数据：
+
+```js
+mutations:{
+  increment(state,payload){
+    state.counter += payload
+  }
+}
+```
+
+其中，payload可以是**对象类型**
+
+```js
+addNumber(state,payload){
+  state.counter += payload.count
+}
+//当payload是对象时，提交方式
+$store.commit({
+  type:"addNumber",
+  count:100
+})
+```
+
+
+
+### （11）Mutations辅助函数
+
+- 在optionAPI中使用
+
+```js
+methods: {
+  	...mapMutations(["increment", "decrement"]),
+    ...mapMutations({
+    		add: "increment"
+  	})
+},
+```
+
+- 在setup中使用
+
+```js
+setup() {
+    const storeMutations = mapMutations(["increment", "decrement"])
+    return {
+      	...storeMutations
+    }
+}
+```
+
+
+
+### （12）mutation原则
+
+1. <font color=red>**mutation必须是同步函数**</font>；
+2. 因为devtool工具会记录mutation的日记
+3. 每一条mutation被记录，devtools都需要捕捉到前一状态和后一状态的快照；
+4. 但是在mutation中执行异步操作，就无法追踪到数据的变化；
+5. 所以Vuex的重要原则中要求 mutation必须是同步函数
+
+
+
+### （13）actions的基本使用
+
+actions类似于mutation，不同之处在于：
+
+- actions<font color=red>**提交的是mutation**</font>，**不是直接更改状态**；
+- actions**可以包含任意<font color=red>异步操作</font>**；
+
+```js
+mutations:{
+  increment(state){
+    state.counter++
+  }
+},
+  
+actions:{
+  increment(context){
+    context.commit("increment")
+  }
+}
+```
+
+actions中有个**非常重要的参数context**
+
+1、context是一个和store实例均有相同方法和属性的context对象；
+
+2、所以可以从其中获取到commit方法来提交一个mutation，或者通过 context.state和context.getters来获取 state和getters;
+
+
+
+### （14）actions的分发操作
+
+- 分发使用的是<font color=red>store上的**dispatch函数**</font>
+
+```js
+add(){
+  this.$store.dispatch("increment")
+}
+```
+
+- 同时可以携带参数
+
+```js
+add(){
+  this.$store.dispatch("increment",{count:100})
+}
+```
+
+- 也可以以对象的形式分发
+
+```js
+add(){
+  this.$store.dispatch({
+    type:"increment",
+    count:100
+  })
+}
+```
+
+
+
+### （15）actions的辅助函数
+
+action也有对应的辅助函数，分为<font color=orange>对象类型写法</font>和<font color=red>数组类型写法</font>
+
+- optionAPI写法
+
+![image-20220119200906568](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192009761.png)
+
+- setup写法
+
+![image-20220119200927337](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192009624.png)
+
+
+
+### （16）actions的异步操作
+
+Action 通常是异步的，如何知道action什么时候结束的方法：
+
+**可以通过让action返回一个Promise函数，在Promise的then中处理完成后的操作**
+
+```js
+//store的index文件
+actions:{
+  increment(context){
+    //返回一个promise
+    return new Promise((resolve,reject) => {
+      //这里执行异步操作
+      axios.get().then(res => {
+        context.commit("increment")
+        resolve("异步完成")
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+}
+
+//在组件中使用
+const store = useStore();
+const increment = () => {
+  store.dispatch("increment")
+  	.then(res => {
+    	//这里获取的是resolve里的值
+			console.log(res)    
+  	}).catch(res => {
+    	//这里获取的是reject里的值
+    	console.log(res)
+  	})
+}
+```
+
+
+
+### （17）module的基本使用
+
+​	由于使用单一状态树，应用的所有状态会集中到一个比较大的对象，当应用变得非常复杂时，store 对象就有可
+
+能变得相当臃肿。
+
+​	为了解决臃肿问题，Vuex允许将store分割成<font color=red>**模块**</font>（module）。
+
+​	<font color=blue>每个模块拥有自己的 state、mutation、action、getter、甚至是嵌套子模块</font>。
+
+![image-20220119202653923](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192026956.png)
+
+
+
+### （18）module的命名空间
+
+- 对于模块内部的 mutation 和 getter，接收的第一个参数是<font color=red>**模块的局部状态对象**</font>
+- 默认情况下，模块内部的action和mutation仍然是注册在**全局的命名空间**中的
+  - 这样使得多个模块能够对同一个 action 或 mutation 作出响应
+  - Getter 同样也默认注册在全局命名空间
+- 如果<font color=red>希望模块具有更高的封装度和复用性</font>，可以<font color=blue>添加`namespaced: true`的方式使其成为**带命名空间的模块**</font>
+  - 当模块被注册后，它的所有 getter、action 及 mutation 都会自动根据模块注册的路径调整命名
+
+#### module的例子：
+
+##### 组件分发home模块的状态和方法：
+
+![image-20220119203640930](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192036716.png)
+
+##### Vuex的store文件中module文件下home模块的写法：
+
+![image-20220119203740401](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192037916.png)
+
+##### Vuex的store文件根模块index的写法：
+
+![image-20220119203757183](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192037330.png)
+
+
+
+### （19）module修改或派发根组件
+
+需要多传一个参数`{root:true}`
+
+```js
+changeNameAction({commit,dispatch,state,rootState,getters,rootGetters}){
+  commit("changeName");
+  commit("changeRootName",null,{root:true});
+  dispatch("changePootNameAction",null,{root:true});
+}
+```
+
+
+
+### （20）module的辅助函数的三种用法
+
+#### 1、第一种:通过完整模块空间名称查找
+
+![image-20220119205213422](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192052247.png)
+
+#### 2、第二种：第一个参数传入模块空间名称，后面写上要使用的属性
+
+![image-20220119205433133](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192054718.png)
+
+#### 3、第三种：通过 createNamespacedHelpers 生成一个模块的辅助函数
+
+![image-20220119205623569](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192056929.png)
+
+
+
+### （21）在setup中使用module
+
+![image-20220119210022580](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192100512.png)
+
+**上面的例子中引入了useState和useGetter**
+
+useState的hooks文件
+
+```js
+import { mapState, createNamespacedHelpers } from 'vuex'
+import { useMapper } from './useMapper'
+
+//mapper映射
+export function useState(moduleName, mapper) {
+  console.log("6",moduleName);
+  console.log("7",mapper);
+  let mapperFn = mapState
+  if (typeof moduleName === 'string' && moduleName.length > 0) {
+    mapperFn = createNamespacedHelpers(moduleName).mapState
+  } else {
+    mapper = moduleName
+  }
+
+  return useMapper(mapper, mapperFn)
+}
+```
+
+useGetter的hooks文件
+
+```js
+import { mapGetters, createNamespacedHelpers } from 'vuex'
+import { useMapper } from './useMapper'
+
+export function useGetters(moduleName, mapper) {
+  let mapperFn = mapGetters
+  if (typeof moduleName === 'string' && moduleName.length > 0) {
+    mapperFn = createNamespacedHelpers(moduleName).mapGetters
+  } else {
+    mapper = moduleName
+  }
+
+  return useMapper(mapper, mapperFn)
+}
+```
+
+其中，公共部分抽取useMapper
+
+```js
+import { computed } from 'vue'
+import { useStore } from 'vuex'
+
+export function useMapper(mapper, mapFn) {
+  // 拿到store独享
+  const store = useStore()
+
+  // 获取到对应的对象的functions: {name: function, age: function}
+  const storeStateFns = mapFn(mapper)
+
+  // 对数据进行转换
+  const storeState = {}
+  Object.keys(storeStateFns).forEach(fnKey => {
+    const fn = storeStateFns[fnKey].bind({$store: store})
+    storeState[fnKey] = computed(fn)
+  })
+
+  return storeState
+}
+```
+
+
+
+### （22）nextTick
+
+将回调推迟到下一个 DOM 更新周期之后执行。在更改了一些数据以等待 DOM 更新后立即使用它。
+
+<font color=red>nextTick内部实际上是将包裹的函数**放到微任务队列的最后执行**</font>（<font color=blue>watch函数、组件的更新、生命周期回调等等都是一个个微任务</font>）
+
+
+
+
+
+# 五、Pinia状态管理
+
+## 1、什么是Pinai
+
+Pinia本质上依然是一个<font color=deepred>**状态管理的库**</font>，用于**跨组件、页面进行状态共享**(这点和Vuex、Redux一样)
+
+
+
+## 2、对比Vuex
+
+1. 提供了一个更简单的 API，具有更少的仪式，提供了 Composition-API 风格的 API；
+2. 与 TypeScript 一起使用时具有可靠的类型推断支持；
+3. mutations不再存在；
+4. 不再有modules的嵌套结构；
+5. 不再有命名空间的概念，不需要记住复杂关系；
+
+![image-20221015155013144](https://raw.githubusercontent.com/Rainchen0504/picture/master/202210151550685.png)
+
+
+
+## 3、使用方法
+
+### （1）安装
+
+```shell
+npm install pinia;
+yarn add pinia;
+```
+
+
+
+### （2）导入
+
+创建一个pinia并传递给应用程序
+
+```js
+import { createPinia } from "pinia";
+const pinia = createPinia();
+export default pinia;
+```
+
+
+
+### （3）挂载
+
+```js
+import pinia from "./store";
+createApp(App).use(pinia).mount("#app");
+```
+
+
+
+## 4、Store
+
+一个Store是一个实体，会持有为绑定到你组件树的状态和业务逻辑，保存了全局的状态。
+
+像始终存在，并且每个人都可以读取和写入的组件
+
+可以定义任意数量的store管理状态
+
 
 
 
@@ -3025,1194 +4291,7 @@ function reactive(raw) {
 
 
 
-# 六、VueRouter路由
 
-## 1、路由发展
-
-路由器<font color=pink>主要维护的是一个映射表</font>， 映射表会**决定数据的流向**。
-
-路由的发展阶段：
-
-### （1）后端路由阶段
-
-#### 1.1、后端路由过程：
-
-​	当页面中需要<font color=red>请求不同的**路径**内容</font>时, 交给服务器来进行处理, 服务器渲染好整个页面, 并且将页面返回给客户端。这种情况下渲染好的页面, <font color=red>不需要单独加载任何的js和css</font>, 可以直接交给浏览器展示, 这样也<font color=red>有利于SEO的优化</font>。
-
-
-
-#### 1.2、后端路由缺点：
-
-- 一种情况是<font color=red>整个页面的模块由后端人员来编写和维护的</font>；
-- 另一种情况是前端开发人员如果要开发页面, <font color=red>需要通过PHP和Java等语言来编写页面代码</font>；
-- 通常情况下<font color=red>HTML代码和数据以及对应的逻辑会混在一起</font>, 编写和维护都是非常糟糕的事情；
-
-
-
-### （2）前后端分离阶段
-
-#### 2.1、前端渲染理解
-
-​	每次请求涉及到的静态资源都会从**静态资源服务器获取**，这些资源**包括HTML+CSS+JS**，然后在前端对这些请求回来的资源进行渲染；
-
-​	客户端每请求一次，都会从静态资源服务器请求文件，后端只负责提供API；
-
-#### 2.2、前后分离
-
-前端通过Ajax获取数据，并且可以通过JavaScript将数据渲染到页面中；
-
-最大的优点就是前后端责任的清晰，后端专注于数据上，前端专注于交互和可视化上；
-
-
-
-### （3）单页面富应用阶段
-
-其实SPA最主要的特点就是在前后端分离的基础上加了一层前端路由，也就是前端来维护一套路由规则。
-
-其核心是<font color=red>**改变URL，但是页面不进行整体的刷新**</font>
-
-
-
-## 2、URL的hash和history
-
-### （1）hash模式
-
-- hash模式也就是锚点，<font color=pink>本质上是改变window.location的href属性</font>。
-- <font color=deepre>可以通过直接赋值location.hash来改变href，但是页面不发生刷新</font>；
-- hash的优势就是兼容好，在老版IE中都可以运行，但是缺陷是<font color=red>**路径有一个#**</font>，显得不像一个真实的路径。
-
-
-
-### （2）history模式
-
-![image-20220104173500311](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201041735932.png)
-
-history接口是HTML5新增的，有六种模式改变不刷新页面:
-
-```js
-replaceState	//替换原来的路径;
-
-pushState	//使用新的路径;
-
-popState	//路径的回退监听;
-
-go	//向前或向后改变路径; 
-
-forward	//向前改变路径; 
-
-back	//向后改变路径;
-```
-
-
-
-## 3、vue-router(4.x版本)
-
-### （1）认识vue-router
-
-1. vue-router是**Vue.js的官方路由**
-2. vue-router是**基于路由和组件的**
-   1. 路由用于<font color=deepred>设定访问路径，将路径和组件映射起来</font>；
-   2. 在vue-router的单页面应用中，页面的路径的改变就是组件的切换。
-3. 安装Vue Router
-
-```js
-npm install vue-router
-```
-
-
-
-### （2）路由的使用步骤
-
-1. 第一步：创建路由需要映射的组件；
-2. 第二步：<font color=deepre>通过createRouter创建路由对象</font>，并且**传入routes和history模式**；
-   1. 配置路由映射：组件和路径映射关系数组；
-   2. 创建基于hash或者history的模式；
-3. 使用app注册路由对象
-4. 使用路由: 通过`<router-link>`和`<router-view>`
-
-![image-20220104172242458](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201041722369.png)
-
-
-
-### （3）路由的默认路径
-
-​	实现`<router-view>`渲染**默认组件**，需在routes中配置一个映射。
-
-1. <font color=deepre>path配置的根路径为"/"</font>；
-2. <font color=deepre>redirect重定向</font>，将根路径重定向到"/XX"路径下。
-
-```js
-const routes = [
-  {path: '/',redirect: '/home'},
-  {path: '/home',component: Home},
-  {path: '/about',component: About}
-]
-```
-
-
-
-### （4）router-link
-
-**router-link有很多属性可以配置:**
-
-1. <font color=pink>to属性</font>：是一个字符串，或者是一个对象；
-2. <font color=pink>replace属性</font>：设置replace属性的话，当点击时，会调用router.replace()，而不是router.push()；
-3. <font color=pink>active-class属性</font>：设置激活a元素后应用的class，默认是router-link-active；
-4. <font color=pink>exact-active-class属性</font>：链接精准激活时，应用于渲染的 <a> 的 class，默认是router-link-exact-active；
-
-
-
-### （5）路由懒加载
-
-#### 5.1、优点
-
-​	当打包构建应用时，JavaScript 包会变得非常大，影响页面加载。把不同路由对应的组件分割成不同的代码块，然后**当路由被访问时才加载对应的组件**，从而<font color=red>提高首屏的渲染效率</font>。
-
-
-
-#### 5.2、动态导入组件
-
-component<font color=pink>可以传入一个组件，也可以接收一个函数</font>，**该函数需要返回一个Promise，而import函数就是返回一个Promise**
-
-```js
-const routes = [
-  {
-    path: '/',
-    redirect: '/home',
-  },
-  {
-    path: '/home',
-    component: () => import('../pages/Home.vue')
-  }
-]
-```
-
-
-
-#### 5.3、打包效果
-
-分包是没有一个明确的名称的，webpack从3.x开始支持对分包进行命名(chunk name)
-
-```js
-component: () => import( /*webpackChunkName:"home-chunk"*/ '../pages/Home.vue')
-```
-
-
-
-### （6）动态路由
-
-#### 6.1、基本匹配
-
-有时候需要将给定匹配模式的路由映射到同一个组件：
-
-比如有个user组件，应该对所有用户进行渲染，但是用户的ID是不同的，在Vue Router中，可以<font color=pink>在路径中使用一个动态字段来实现</font>，可以称之为<font color=deepred>路径参数</font>。
-
-```js
-{
-  path:"/user/:id",
-	component:() => import('../pages/User.vue')
-}
-```
-
-在router-link中进行如下跳转：
-
-```vue
-<router-link to="/user/123">用户：123</router-link>
-```
-
-
-
-#### 6.2、获取动态路由值
-
-针对上例如何在组件中获取路由的参数值：
-
-- template中直接通过`$route.params`获取值；
-  - 在created中，通过`this.$route.params`获取值；
-  - 在setup中，要使用vue-router库提供的一个hook useRoute；
-    - 在这个Hook中会返回一个Route对象，对象中保存着当前路由相关的值。
-
-```vue
-<template>
-	<div>
-    <h2>用户界面：{{ $route.params.id }}</h2>
-  </div>
-</template>
-<script>
-  import { useRouter } from 'vue-router'；
-	export default {
-    created(){
-      console.log(this.$route.params.id)
-    },
-    setup(){
-      //调用router函数
-      const route = useRouter();
-      console.log(route.params.id);
-    },
-  }
-</script>
-```
-
-
-
-#### 6.3、匹配多个参数
-
-| 匹配模式              | 匹配路径              | $route.params                |
-| --------------------- | --------------------- | ---------------------------- |
-| /users/:id            | /users/123            | { id: '123' }                |
-| /users/:id/info/:name | /users/123/info/zhang | { id: '123', name: 'zhang' } |
-
-```js
-{
-  path:'/user/:id/info/:name',
-  component: () => import ('../pages/User.vue') 
-}
-```
-
-
-
-### （7）Not Found
-
-**对于没有匹配到的路由，我们通常会匹配到固定的某个页面**
-
-写法一：
-
-```js
-//固定写法
-{
-  path:'/:pathMatch(.*)',
-  component: () => import('../pages/notfound.vue')
-}
-```
-
-可以通过` $route.params.pathMatch`获取到传入的参数:
-
-![image-20220108214239904](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201082142537.png)
-
-
-
-写法二：
-
-在`/:pathMatch(.*)`后面又加一个 *
-
-```js
-//固定写法
-{
-  path:'/:pathMatch(.*)*',
-  component: () => import('../pages/notfound.vue')
-}
-```
-
-- 区别在于解析时是否解析`/`
-
-![image-20220108214635193](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201082146338.png)
-
-
-
-### （8）路由跳转
-
-#### 8.1、push跳转
-
-使用push的特点是<font color=red>**压入一个新的页面**</font>，用户在点返回时，<font color=red>上一个页面还可以回退</font>。
-
-- 常见通过方法跳转
-
-```js
-turn(){this.$route.push("/Home");};
-```
-
-- 也可以传入一个对象
-
-  - 不传参
-
-    ```js
-    turn(){
-      this.$route.push({path:'/Home'})
-    };
-    ```
-
-  - query传参
-
-    ```js
-    this.$router.push({
-      path:"/Home",
-      query:{ name:"zhang", age:24 }
-    })
-    ```
-
-
-- 在setup中编写情况下，<font color=red>**通过useRouter来获取**</font>
-
-```js
-const router = useRouter();
-const turn = () => {
-  router.push('/Home')
-}
-```
-
-
-
-#### 8.2、replace跳转
-
-对当前页面进行替换
-
-**声明式**
-
-```js
-<router-link :to="..." replace>
-```
-
-**编程式**
-
-```js
-route.replace(...)
-```
-
-
-
-#### 8.3、前进后退
-
-##### 1. go方法
-
-```js
-router.go(1)；//向前移动一条记录，和router.forward()相同
-router.go(-1)；//返回一条记录，和router.back()相同
-router.go(3)；//前进3条记录
-router.go(100)；//如果没有那么多记录，静默失败
-```
-
-
-
-##### 2. back方法
-
-通过调用`history.back()`回溯历史。相当于`router.go(-1)`;
-
-
-
-##### 3. forward方法
-
-过调用`history.forward()`在历史中前进。相当于`router.go(1)`;
-
-
-
-### （9）动态修改路由
-
-#### 9.1、动态添加路由
-
-使用场景：根据用户不同的权限，注册不同的路由。
-
-使用方法：<font color=red>**addRoute方法**</font>
-
-应用案例：
-
-```js
-const newRoute = [
-  path:"/new",
-  component: () => import("../page/New.vue")
-]
-//动态添加路由
-router.addRoute(newRoute)
-
-const homeNewRoute = [
-  path:"newroute",
-  component: () => import('../page/NewRoute.vue')
-]
-//为home添加一个children子路由，只需传入对应的name
-router.addRoute('home',homeNewRoute)
-```
-
-
-
-#### 9.2、动态删除路由
-
-删除路由有以下三种方式：
-
-1. 方式一：添加一个name相同的路由
-
-```js
-router.addRoute({path:'/about',name:'about',component:About})
-//这将删除之前已经添加的路由，因为名字必须是唯一的
-router.addRoute({path:'/other',name:'about',component:Other})
-```
-
-
-
-2. 方式二：通过removeRoute方法，传入路由的名称
-
-```js
-router.addRoute({path:'/about',name:'about',component:About})
-//删除路由
-router.removeRoute('about')
-```
-
-
-
-3. 方式三：通过addRoute方法的返回值回调
-
-```js
-const removeRoute = router.addRoute(routeRecord);
-removeRoute() //删除路由如果存在的话 
-```
-
-
-
-#### 9.3、路由其他方法
-
-`router.hasRoute()`：**检查路由是否存在**。
-
-`router.getRoutes()`：**获取一个包含所有路由记录的数组**。
-
-
-
-### （10）路由导航守卫
-
-vue-router 提供的导航守卫主要用来<font color=deepred>通过跳转或取消的方式守卫导航</font>。
-
-#### 10.1、参数
-
-**<font color=color>全局的前置守卫beforeEach</font>是在导航触发时会被回调的**，有两个参数：
-
-- to：即将进入的路由Route对象；
-- from：即将离开的路由Route对象；
-
-
-
-#### 10.2、返回值
-
-- false：取消当前导航；
-- true：进行默认跳转；
-- 不返回或者undefined：进行默认导航；
-- 返回一个路由地址：
-  - 可以是一个string类型的路径；
-  - 可以是一个对象，对象中包含path、query、params等信息；
-
-- 可选的第三个参数：next
-  - 在Vue2中我们是通过next函数来决定如何进行跳转的；
-  - 但是在Vue3中我们是通过返回值来控制的，不再推荐使用next函数，这是因为开发中很容易调用多次next；
-
-```js
-router.beforeEach((to,from) => {
-  return false
-})
-```
-
-
-
-#### 10.3、常用的登录守卫
-
-![image-20220106184841848](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201061848218.png)
-
-
-
-#### 10.4、完整的导航流程
-
-- 导航被触发。
-- 在失活的组件里调用 beforeRouteLeave 守卫。(也就是from组件里的守卫)
-- 调用全局的 beforeEach 守卫。
-- 在重用的组件里调用 beforeRouteUpdate 守卫(2.2+)。
-- 在路由配置里调用 beforeEnter。（路由对象里的）
-- 解析异步路由组件。
-- 在被激活的组件里调用 beforeRouteEnter。（to组件里的守卫）
-- 调用全局的 beforeResolve 守卫(2.5+)。（全局解析守卫）
-- 导航被确认。（没有回退了）
-- 调用全局的 afterEach 钩子。
-- 触发 DOM 更新。
-- 调用 beforeRouteEnter 守卫中传给 next 的回调函数，创建好的组件实例会作为回调函数的参数传入。
-
-
-
-### （11）router-link的v-slot
-
-​	3.x版本的路由中，router-link有一个tag属性，可以决定router-link渲染成什么元素。但是在4.x版本的路由开始，tag属性被移除了，但是提供了更加灵活的v-slot方式来定制渲染的内容。
-
-​	<font color=blue>通过一个**作用域插槽**暴露底层的定制能力，这是一个更高阶的API</font>。
-
-#### 11.1、使用流程
-
-##### 1. 第一步
-
-- 首先，需要**使用custom表示整个元素要自定义**
-  - 如果不写，自定义的内容<font color=red>会被包裹在一个a元素中</font>
-- 其次，**使用v-slot作用于插槽来获取内部传递的值**
-  - href：解析后的URL，将会作为`<a>`元素的`href`属性;
-  - route：解析后的规范化的route对象；
-  - navigate：触发导航的函数；
-  - isActive：是否匹配的状态；
-  - isExactActive：是否精准匹配的状态；
-
-```js
-<router-link to="/about" v-slot="{href,route,navigate,isActive,isExactActive}">
-  <p @click="navigator">跳转about</p>
-  <div>
-    <p>href:{{href}}</p>
-    <p>route:{{route}}</p>
-    <p>navigate:{{navigate}}</p>
-    <p>isActive:{{isActive}}</p>
-    <p>isExactActive:{{isExactActive}}</p>
-  </div>
-</router-link>
-```
-
-
-
-### （12）router-view的v-slot
-
-router-view也提供给我们一个插槽，主要用于` <transition> `和 `<keep-alive>`组件来包裹你的路由组件，其中Component表示要渲染的组件。
-
-```js
-<router-view v-slot="props">
-  <transition name="zhang">
-    <keep-alive>
-      <component :is="props.Component"></component>
-  	</keep-alive>
-	</transition>
-</router-view>
-```
-
-除过传一个props对象，还可以写`v-slot={Component,route}`
-
-component表示要传递给`<component>`的VNodes；
-
-route表示解析出的标准路由地址；
-
-
-
-### （13）路由元信息
-
-希望将任意信息附加在路由上，比如过渡名称、谁可以访问路由等。可以通过接收属性对象的meta属性来实现，可以在路由地址和导航守卫上被访问到。
-
-访问时该属性包含在路由守卫的to对象中`to.meta.XX`
-
-
-
-# 九、Vuex的状态管理
-
-## 1、什么是状态管理
-
-​	在开发中处理各种各样的数据，这些数据需要保存在应用程序的某一个位置，这些数据的管理就称之为是**状态管理**。
-
-- 前面管理状态的方法：
-  - 在Vue中，使用组件化开发方式
-  - 在组件中定义data或者在setup中返回使用的数据， 这些数据称之为state;
-  - 在模块template中使用这些数据，模块最终会被渲染成DOM，称之为View；
-  - 模块中行为事件修改state状态，这些事件称之为actions；
-
-<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202201131134739.png" alt="image-20220113113411515" style="zoom:80%;" />
-
-<center>单向数据流理念的简单示意</center>
-
-- 状态，驱动应用的数据源；
-- 视图，以声明方式将状态映射到视图；
-- 操作，响应在视图上的用户输入导致的状态变化；
-
-在应用遇到**多个组件共享状态**时，单向数据流的简洁性很容易被破坏，比如多个视图依赖同一个状态，或者来自不同视图的行为需要变更同一状态。
-
-
-
-
-
-## 2、Vuex的状态管理
-
-### （1）Vuex的背后基本思想（借鉴了Flux、Reux、Elm）
-
-​	1、传参的方法对于多层嵌套的组件将会非常繁琐，并且对于兄弟组件间的状态传递无能为力。
-
-​	2、经常会采用父子组件直接引用或者通过事件来变更和同步状态的多份拷贝。以上的这些模式非常脆弱，通常会导致无法维护的代码。
-
-​	因此，把组件的共享状态抽取出来，以一个全局单例模式管理。在这种模式下，我们的组件树构成了一个巨大的 “试图View”， 不管在树的哪个位置，任何组件都能获取状态或者触发行为。
-
-**通过定义和隔离状态管理中的各个概念，并通过强制性的规则来维护视图和状态间的独立性，我们的代码边会变得更加结构化和易于维护、跟踪;**
-
-![image-20220113110237237](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201131132928.png)
-
-### （2）使用Vuex的情景
-
-​	如果需要构建一个中大型单页应用，可能会考虑如何更好地在组件外部管理状态，Vuex 将会成为自然而然的选择。
-
-
-
-
-
-## 3、Vuex的安装使用
-
-### （1）Vuex的安装
-
-​	npm的安装方法
-
-```js
-npm install vue@next
-```
-
-
-
-### （2）创建Store实例
-
-#### 每个Vuex应用的核心就是store（仓库）
-
-- store本质上是一个容器，包含应用中大部分的状态（state）
-
-#### Vuex和单纯的全局对象的区别
-
-- <font color=red>Vuex的状态存储是响应式的</font>
-  - 当Vue组件从store中读取状态的时候，若store中的状态发生变化，那么相应的组件也会被更新；
-- <font color=red>不能直接改变store中的状态</font>
-  - 改变store中的状态的唯一途径就显示<font color=red>**提交 (commit) mutation**</font>；
-  - 可以方便的跟踪每一个状态的变化，从而让能够通过一些工具帮助我们更好的管理应用的状态；
-
-
-
-#### 创建步骤
-
-1、在src目录下的store文件夹创建index.js文件；
-
-2、引入createStore，创建Store对象；
-
-3、在main.js文件中引入store，在createApp(App)这个app实例中use使用；
-
-
-
-### （3）组件中使用Store
-
-组件中使用store的场景有以下三种情况：
-
-- 在模板中使用
-
-```vue
-<template>{{$store.state.xx}}</template>
-```
-
-- 在options api中使用，比如computed
-
-```js
-//拿到$store使用commit提交执行mutation中对应的方法（不能执行异步操作）
-this.$store.commit
-
-//拿到$store使用dispatch提交执行action中对应的方法（可以执行异步操作）
-this.$store.dispatch
-```
-
-- 在setup中使用
-
-```js
-//先引入useStore
-import { useStore } from 'vuex';
-import {computed} from "vue";
-export default{
-  setup(){
-    const store = useStore();
-    const sCounter = computed(() => store.state.counter)
-  }
-}
-```
-
-
-
-### （4）单一状态树
-
-- Vuex使用单一状态树：
-  -  用一个对象就包含了全部的应用层级状态；
-  - 采用的是SSOT，Single Source of Truth，也可以翻译成单一数据源；
-  - 每个应用将仅仅包含一个 store 实例；
-  - 单状态树和模块化并不冲突，后面会说明模块的概念；
-- **单一状态树的优势**
-  - 如果状态信息是保存到多个Store对象中的，那么之后的管理和维护等等都会变得特别困难，所以使用单一状态树管理应用层级的全部状态；
-  - 单一状态树能让使用者采用最直接的方式找到某个状态的片段，而且在之后的维护和调试过程中可以非常方便的管理和维护。
-
-
-
-
-
-### （5）组件获取State状态
-
-- 在组件模版中获取状态使用`$store.state.xx`，同时也可以使用计算属性
-
-```vue
-computed: {
- 	counter(){
-		return this.$store.state.counter
-	} 
-}
-```
-
-- 如果我们有很多个状态都需要获取话，可以使用mapState辅助函数
-
-mapState的方式一：对象类型；
-
-```js
-import { mapState } from 'vuex'
-export default {
-  computed: {
-    ...mapState({
-      counter:state => state.counter,
-      name:state => state.name,
-    })
-  }
-}
-```
-
-mapState的方式二：数组类型；
-
-```js
-import { mapState } from 'vuex'
-export default {
-  computed: {
-    ...mapState(['name','age','counter'])
-  }
-}
-```
-
-也可以使用展开运算符和来原有的computed混合在一起；
-
-
-
-### （6）在setup中使用mapState
-
-​	在setup中单个获取装是非常简单的，通过useStore拿到store后去获取某个状态即可；
-
-```js
-import { useStore } from "vuex";
-import { computed } from "vue";
-export default{
-  setup(){
-    const store = useStore();
-    const name = computed(() => store.state.name)
-    return {name}
-  }
-}
-```
-
-​	默认情况下，Vuex并没有在setup中提供非常方便的使用mapState的方式，因此这里写一个封装函数：
-
-```js
-//封装函数，写在单独的hooks文件里useState.js
-import { mapState,useStore } from "vuex";
-import {computed} from "vue";
-export function useState(mapper){
-    const store = useStore();
-    //mapState返回的是一个对象，对象中每个属性的值都是函数
-    const storeStateFn = mapState(mapper);
-    
-    //封装一个函数，把mapState中返回对象的每个属性值函数放到computed中；
-    //因为computed要求里面是个函数
-    const storeState = {};
-    Object.keys(storeStateFn).froEach((fnKey) => {
-      const fn = storeStateFn[fnKey].bind({$store:store});
-      storeState[fnKey] = computed(fn);
-    })
-    return storeState 
-}
-```
-
-
-
-### （7）getters的基本使用
-
-当某些属性需要经过变化后来使用时，可以使用getters
-
-```vue
-<div>
-  	<!-- 在模板中使用 -->
-		<h2>{{$store.getters.totalPrice}}</h2>
-</div>
-<script>
-		//在store中使用，可以接收两个参数
-  	const store = createStore({
-      	getters:{
-            totalPrice(state,getters){
-              	return state.books.price + getters.myName
-            }
-        }
-    })
-</script>
-```
-
-另外，getters中的函数本身可以返回一个函数，那么在使用时相当于重新调用这个函数
-
-```js
-const store = createStore({
-    getters:{
-        totalPrice(state,getters){
-          	return(price) => {
-              	totalPrice += state.books.price + getters.myName;
-              	return totalPrice;
-            }
-        }
-    }
-})
-```
-
-
-
-### （8）mapGetters的辅助函数
-
-- 在optionAPI中使用
-
-```js
-computed:{
-  ...mapGetters(['ttalPrice','myName']),
-  ...mapGetters([
-    	finalPrice:"totalPrice",
-    	finalName:"myName",
-  ])
-}
-```
-
-- <font color=red>在setup中使用</font>
-
-  ```js
-  import { computed } from 'vue'
-  import { mapGetters, useStore } from 'vuex'
-  export function useGetters(mapper) {
-      // 拿到store独享
-      const store = useStore()
-      // 获取到对应的对象的functions: {name: function, age: function}
-      const storeStateFns = mapGetters(mapper)
-      // 对数据进行转换
-      const storeState = {}
-      Object.keys(storeStateFns).forEach(fnKey => {
-          const fn = storeStateFns[fnKey].bind({$store: store})
-          storeState[fnKey] = computed(fn)
-      })
-      return storeState
-  }
-  ```
-
-
-
-### （9）Mutations的基本使用
-
-更改Vuex里store状态state的唯一方法是提交mutation：
-
-```js
-mutations:{
-  increment(state){
-    state.counter++
-  }
-}
-```
-
-
-
-### （10）Mutation携带数据
-
-提交mutation时会携带一些数据：
-
-```js
-mutations:{
-  increment(state,payload){
-    state.counter += payload
-  }
-}
-```
-
-其中，payload可以是**对象类型**
-
-```js
-addNumber(state,payload){
-  state.counter += payload.count
-}
-//当payload是对象时，提交方式
-$store.commit({
-  type:"addNumber",
-  count:100
-})
-```
-
-
-
-### （11）Mutations辅助函数
-
-- 在optionAPI中使用
-
-```js
-methods: {
-  	...mapMutations(["increment", "decrement"]),
-    ...mapMutations({
-    		add: "increment"
-  	})
-},
-```
-
-- 在setup中使用
-
-```js
-setup() {
-    const storeMutations = mapMutations(["increment", "decrement"])
-    return {
-      	...storeMutations
-    }
-}
-```
-
-
-
-### （12）mutation原则
-
-1. <font color=red>**mutation必须是同步函数**</font>；
-2. 因为devtool工具会记录mutation的日记
-3. 每一条mutation被记录，devtools都需要捕捉到前一状态和后一状态的快照；
-4. 但是在mutation中执行异步操作，就无法追踪到数据的变化；
-5. 所以Vuex的重要原则中要求 mutation必须是同步函数
-
-
-
-### （13）actions的基本使用
-
-actions类似于mutation，不同之处在于：
-
-- actions<font color=red>**提交的是mutation**</font>，**不是直接更改状态**；
-- actions**可以包含任意<font color=red>异步操作</font>**；
-
-```js
-mutations:{
-  increment(state){
-    state.counter++
-  }
-},
-  
-actions:{
-  increment(context){
-    context.commit("increment")
-  }
-}
-```
-
-actions中有个**非常重要的参数context**
-
-1、context是一个和store实例均有相同方法和属性的context对象；
-
-2、所以可以从其中获取到commit方法来提交一个mutation，或者通过 context.state和context.getters来获取 state和getters;
-
-
-
-### （14）actions的分发操作
-
-- 分发使用的是<font color=red>store上的**dispatch函数**</font>
-
-```js
-add(){
-  this.$store.dispatch("increment")
-}
-```
-
-- 同时可以携带参数
-
-```js
-add(){
-  this.$store.dispatch("increment",{count:100})
-}
-```
-
-- 也可以以对象的形式分发
-
-```js
-add(){
-  this.$store.dispatch({
-    type:"increment",
-    count:100
-  })
-}
-```
-
-
-
-### （15）actions的辅助函数
-
-action也有对应的辅助函数，分为<font color=orange>对象类型写法</font>和<font color=red>数组类型写法</font>
-
-- optionAPI写法
-
-![image-20220119200906568](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192009761.png)
-
-- setup写法
-
-![image-20220119200927337](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192009624.png)
-
-
-
-### （16）actions的异步操作
-
-Action 通常是异步的，如何知道action什么时候结束的方法：
-
-**可以通过让action返回一个Promise函数，在Promise的then中处理完成后的操作**
-
-```js
-//store的index文件
-actions:{
-  increment(context){
-    //返回一个promise
-    return new Promise((resolve,reject) => {
-      //这里执行异步操作
-      axios.get().then(res => {
-        context.commit("increment")
-        resolve("异步完成")
-      }).catch(err => {
-        reject(err)
-      })
-    })
-  }
-}
-
-//在组件中使用
-const store = useStore();
-const increment = () => {
-  store.dispatch("increment")
-  	.then(res => {
-    	//这里获取的是resolve里的值
-			console.log(res)    
-  	}).catch(res => {
-    	//这里获取的是reject里的值
-    	console.log(res)
-  	})
-}
-```
-
-
-
-### （17）module的基本使用
-
-​	由于使用单一状态树，应用的所有状态会集中到一个比较大的对象，当应用变得非常复杂时，store 对象就有可
-
-能变得相当臃肿。
-
-​	为了解决臃肿问题，Vuex允许将store分割成<font color=red>**模块**</font>（module）。
-
-​	<font color=blue>每个模块拥有自己的 state、mutation、action、getter、甚至是嵌套子模块</font>。
-
-![image-20220119202653923](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192026956.png)
-
-
-
-### （18）module的命名空间
-
-- 对于模块内部的 mutation 和 getter，接收的第一个参数是<font color=red>**模块的局部状态对象**</font>
-- 默认情况下，模块内部的action和mutation仍然是注册在**全局的命名空间**中的
-  - 这样使得多个模块能够对同一个 action 或 mutation 作出响应
-  - Getter 同样也默认注册在全局命名空间
-- 如果<font color=red>希望模块具有更高的封装度和复用性</font>，可以<font color=blue>添加`namespaced: true`的方式使其成为**带命名空间的模块**</font>
-  - 当模块被注册后，它的所有 getter、action 及 mutation 都会自动根据模块注册的路径调整命名
-
-#### module的例子：
-
-##### 组件分发home模块的状态和方法：
-
-![image-20220119203640930](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192036716.png)
-
-##### Vuex的store文件中module文件下home模块的写法：
-
-![image-20220119203740401](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192037916.png)
-
-##### Vuex的store文件根模块index的写法：
-
-![image-20220119203757183](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192037330.png)
-
-
-
-### （19）module修改或派发根组件
-
-需要多传一个参数`{root:true}`
-
-```js
-changeNameAction({commit,dispatch,state,rootState,getters,rootGetters}){
-  commit("changeName");
-  commit("changeRootName",null,{root:true});
-  dispatch("changePootNameAction",null,{root:true});
-}
-```
-
-
-
-### （20）module的辅助函数的三种用法
-
-#### 1、第一种:通过完整模块空间名称查找
-
-![image-20220119205213422](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192052247.png)
-
-#### 2、第二种：第一个参数传入模块空间名称，后面写上要使用的属性
-
-![image-20220119205433133](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192054718.png)
-
-#### 3、第三种：通过 createNamespacedHelpers 生成一个模块的辅助函数
-
-![image-20220119205623569](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192056929.png)
-
-
-
-### （21）在setup中使用module
-
-![image-20220119210022580](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192100512.png)
-
-**上面的例子中引入了useState和useGetter**
-
-useState的hooks文件
-
-```js
-import { mapState, createNamespacedHelpers } from 'vuex'
-import { useMapper } from './useMapper'
-
-//mapper映射
-export function useState(moduleName, mapper) {
-  console.log("6",moduleName);
-  console.log("7",mapper);
-  let mapperFn = mapState
-  if (typeof moduleName === 'string' && moduleName.length > 0) {
-    mapperFn = createNamespacedHelpers(moduleName).mapState
-  } else {
-    mapper = moduleName
-  }
-
-  return useMapper(mapper, mapperFn)
-}
-```
-
-useGetter的hooks文件
-
-```js
-import { mapGetters, createNamespacedHelpers } from 'vuex'
-import { useMapper } from './useMapper'
-
-export function useGetters(moduleName, mapper) {
-  let mapperFn = mapGetters
-  if (typeof moduleName === 'string' && moduleName.length > 0) {
-    mapperFn = createNamespacedHelpers(moduleName).mapGetters
-  } else {
-    mapper = moduleName
-  }
-
-  return useMapper(mapper, mapperFn)
-}
-```
-
-其中，公共部分抽取useMapper
-
-```js
-import { computed } from 'vue'
-import { useStore } from 'vuex'
-
-export function useMapper(mapper, mapFn) {
-  // 拿到store独享
-  const store = useStore()
-
-  // 获取到对应的对象的functions: {name: function, age: function}
-  const storeStateFns = mapFn(mapper)
-
-  // 对数据进行转换
-  const storeState = {}
-  Object.keys(storeStateFns).forEach(fnKey => {
-    const fn = storeStateFns[fnKey].bind({$store: store})
-    storeState[fnKey] = computed(fn)
-  })
-
-  return storeState
-}
-```
-
-
-
-### （22）nextTick
-
-将回调推迟到下一个 DOM 更新周期之后执行。在更改了一些数据以等待 DOM 更新后立即使用它。
-
-<font color=red>nextTick内部实际上是将包裹的函数**放到微任务队列的最后执行**</font>（<font color=blue>watch函数、组件的更新、生命周期回调等等都是一个个微任务</font>）
 
 
 
