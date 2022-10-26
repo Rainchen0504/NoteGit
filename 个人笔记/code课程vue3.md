@@ -2186,6 +2186,14 @@ export default {
 
 
 
+## 23、nextTick
+
+将回调推迟到下一个 DOM 更新周期之后执行。在更改了一些数据以等待 DOM 更新后立即使用它。
+
+<font color=red>nextTick内部实际上是将包裹的函数**放到微任务队列的最后执行**</font>（<font color=blue>watch函数、组件的更新、生命周期回调等等都是一个个微任务</font>）
+
+
+
 
 
 # 四、VueRouter路由
@@ -2764,99 +2772,111 @@ const routes = [
 
 ## 1、什么是状态管理
 
-​	在开发中处理各种各样的数据，这些数据需要保存在应用程序的某一个位置，这些数据的管理就称之为是**状态管理**。
+​	在开发中处理各种各样的数据，这些数据需要保存在应用程序的某一个位置，这些数据的管理就称之为是**<font color=deepred>状态管理</font>**。
 
-- 前面管理状态的方法：
-  - 在Vue中，使用组件化开发方式
-  - 在组件中定义data或者在setup中返回使用的数据， 这些数据称之为state;
-  - 在模块template中使用这些数据，模块最终会被渲染成DOM，称之为View；
-  - 模块中行为事件修改state状态，这些事件称之为actions；
+### 1.1、组件管理状态方法
+
+- 在Vue中，使用<font color=blue>组件化开发方式</font>；
+- 在组件中<font color=blue>定义data或者在setup中返回使用的数据</font>，**<font color=red>称之为State</font>**；
+- 在<font color=blue>模块template</font>中使用这些数据，模块最终会被渲染成DOM，**<font color=red>称之为View</font>**；
+- 模块中<font color=blue>行为事件</font>修改state状态，**<font color=red>称之为actions</font>**；
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202201131134739.png" alt="image-20220113113411515" style="zoom:80%;" />
 
 <center>单向数据流理念的简单示意</center>
 
+### 1.2、组件方法分解
+
 - 状态，驱动应用的数据源；
 - 视图，以声明方式将状态映射到视图；
 - 操作，响应在视图上的用户输入导致的状态变化；
 
-在应用遇到**多个组件共享状态**时，单向数据流的简洁性很容易被破坏，比如多个视图依赖同一个状态，或者来自不同视图的行为需要变更同一状态。
+​	在应用遇到**<font color=blue>多个组件共享状态</font>**时，<font color=deepred>单向数据流的简洁性很容易被破坏</font>，比如多个视图依赖同一个状态，或者来自不同视图的行为需要变更同一状态。
 
 
 
+## 2、思想场景
+
+### 2.1、基本思想
+
+vuex的开发借鉴了<font color=deepred>Flux、Redux、Elm(纯函数语言，redux借鉴它的思想)</font>。
+
+#### （1）设计初衷
+
+1. 传参的方法对于多层嵌套的组件将会非常繁琐，并且对于兄弟组件间的状态传递无能为力。
+2. 经常会采用父子组件直接引用或者通过事件来变更和同步状态的多份拷贝，通常会导致无法维护的代码。
 
 
-## 2、Vuex的状态管理
 
-### （1）Vuex的背后基本思想（借鉴了Flux、Reux、Elm）
+#### （2）解决问题
 
-​	1、传参的方法对于多层嵌套的组件将会非常繁琐，并且对于兄弟组件间的状态传递无能为力。
-
-​	2、经常会采用父子组件直接引用或者通过事件来变更和同步状态的多份拷贝。以上的这些模式非常脆弱，通常会导致无法维护的代码。
-
-​	因此，把组件的共享状态抽取出来，以一个全局单例模式管理。在这种模式下，我们的组件树构成了一个巨大的 “试图View”， 不管在树的哪个位置，任何组件都能获取状态或者触发行为。
+​	因此，把组件的共享状态抽取出来，以<font color=red>一个**全局单例模式**管理</font>。在这种模式下，组件树构成了一个巨大的 “视图View”， 不管在树的哪个位置，任何组件都能获取状态或者触发行为。
 
 **通过定义和隔离状态管理中的各个概念，并通过强制性的规则来维护视图和状态间的独立性，我们的代码边会变得更加结构化和易于维护、跟踪;**
 
 ![image-20220113110237237](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201131132928.png)
 
-### （2）使用Vuex的情景
+### 2.2、使用情景
 
-​	如果需要构建一个中大型单页应用，可能会考虑如何更好地在组件外部管理状态，Vuex 将会成为自然而然的选择。
-
-
+​	如果需要构建一个<font color=blue>**中大型单页应用**</font>，可能会考虑如何更好地在组件外部管理状态，Vuex 将会成为自然而然的选择。
 
 
 
-## 3、Vuex的安装使用
+## 3、安装方法
 
-### （1）Vuex的安装
+采用npm的安装方法
 
-​	npm的安装方法
-
-```js
-npm install vue@next
+```shell
+npm install vuex
 ```
 
 
 
-### （2）创建Store实例
+## 4、使用过程
 
-#### 每个Vuex应用的核心就是store（仓库）
+### 4.1、Store
 
-- store本质上是一个容器，包含应用中大部分的状态（state）
+#### （1）创建Store
 
-#### Vuex和单纯的全局对象的区别
+##### ①核心仓库store
+
+<font color=deepred>每个Vuex应用的核心就是store</font>，本质<font color=blue>是一个容器</font>，包含应用大部分的状态。
+
+
+
+##### ②store和全局对象区别
 
 - <font color=red>Vuex的状态存储是响应式的</font>
-  - 当Vue组件从store中读取状态的时候，若store中的状态发生变化，那么相应的组件也会被更新；
+  - 当Vue组件从store中读取状态的时候，若store中的状态发生变化，那么相应的组件也会被更新
 - <font color=red>不能直接改变store中的状态</font>
-  - 改变store中的状态的唯一途径就显示<font color=red>**提交 (commit) mutation**</font>；
-  - 可以方便的跟踪每一个状态的变化，从而让能够通过一些工具帮助我们更好的管理应用的状态；
+  - 改变store中的状态的唯一途径就显示<font color=deepred>**提交 (commit) mutation**</font>；
+  - 方便的跟踪每一个状态的变化；
 
 
 
-#### 创建步骤
+#### （2）使用Store
 
-1、在src目录下的store文件夹创建index.js文件；
+##### ①挂载store
 
-2、引入createStore，创建Store对象；
+1. 在src目录下的store文件夹创建index.js文件；
+2.  引入createStore，创建Store对象；
+3. 在main.js文件中引入store，在createApp(App)这个app实例中use使用；
 
-3、在main.js文件中引入store，在createApp(App)这个app实例中use使用；
 
 
-
-### （3）组件中使用Store
+##### ②组件使用
 
 组件中使用store的场景有以下三种情况：
 
-- 在模板中使用
+###### 1.模板中使用
 
 ```vue
 <template>{{$store.state.xx}}</template>
 ```
 
-- 在options api中使用，比如computed
+
+
+###### 2.optionsAPI 使用
 
 ```js
 //拿到$store使用commit提交执行mutation中对应的方法（不能执行异步操作）
@@ -2866,7 +2886,9 @@ this.$store.commit
 this.$store.dispatch
 ```
 
-- 在setup中使用
+
+
+###### 3.componsitionAPI 使用
 
 ```js
 //先引入useStore
@@ -2882,91 +2904,121 @@ export default{
 
 
 
-### （4）单一状态树
+### 4.2、单一状态树
 
 - Vuex使用单一状态树：
-  -  用一个对象就包含了全部的应用层级状态；
-  -  采用的是SSOT，Single Source of Truth，也可以翻译成单一数据源；
+  -  用<font color=red>一个对象就包含了**全部的应用层级状态**</font>，
+  -  采用的是SSOT(单一数据源)；
   -  每个应用将仅仅包含一个 store 实例；
-  -  单状态树和模块化并不冲突，后面会说明模块的概念；
-- **单一状态树的优势**
+- 单一状态树的优势
   - 如果状态信息是保存到多个Store对象中的，那么之后的管理和维护等等都会变得特别困难，所以使用单一状态树管理应用层级的全部状态；
   - 单一状态树能让使用者采用最直接的方式找到某个状态的片段，而且在之后的维护和调试过程中可以非常方便的管理和维护。
 
 
 
+### 4.3、State
 
+#### （1）模板中获取
 
-### （5）组件获取State状态
-
-- 在组件模版中获取状态使用`$store.state.xx`，同时也可以使用计算属性
+在组件模版中获取状态使用<font color=deepred>`$store.state.xx`</font>，同时**也可以使用计算属性**。
 
 ```vue
-computed: {
- 	counter(){
-		return this.$store.state.counter
-	} 
-}
+<script>
+  export default {
+    computed: {
+      storeCounter() {
+        return this.$store.state.counter
+      }
+    }
+  }
+</script>
 ```
 
-- 如果我们有很多个状态都需要获取话，可以使用mapState辅助函数
 
-mapState的方式一：对象类型；
 
-```js
-import { mapState } from 'vuex'
-export default {
-  computed: {
-    ...mapState({
-      counter:state => state.counter,
-      name:state => state.name,
-    })
+#### （2）辅助函数mapState
+
+##### ①对象形式
+
+```vue
+<script>
+  import { mapState } from 'vuex'
+  export default {
+    computed: {
+    	...mapState({
+        counters:state => state.counter,
+        names:state => state.name,
+    	})
+  	}
   }
-}
+</script>
 ```
 
-mapState的方式二：数组类型；
 
-```js
-import { mapState } from 'vuex'
-export default {
-  computed: {
-    ...mapState(['name','age','counter'])
+
+##### ②数组形式
+
+```vue
+<script>
+  import { mapState } from 'vuex'
+  export default {
+    computed: {
+    	...mapState(['name','age','counter'])
+  	}
   }
-}
+</script>
 ```
 
 也可以使用展开运算符和来原有的computed混合在一起；
 
 
 
-### （6）在setup中使用mapState
+#### （3）setup中使用
 
-​	在setup中单个获取装是非常简单的，通过useStore拿到store后去获取某个状态即可；
+##### ①直接获取
 
-```js
-import { useStore } from "vuex";
-import { computed } from "vue";
-export default{
-  setup(){
-    const store = useStore();
-    const name = computed(() => store.state.name)
-    return {name}
-  }
-}
+在setup中单个获取装是非常简单的，通过useStore拿到store后去获取某个状态即可；
+
+```vue
+<script setup>
+  import { useStore } from 'vuex';
+  import { computed } from "vue";
+  const store = useStore();
+  const name = computed(() => store.state.name)
+</script>
 ```
 
-​	默认情况下，Vuex并没有在setup中提供非常方便的使用mapState的方式，因此这里写一个封装函数：
 
-```js
-//封装函数，写在单独的hooks文件里useState.js
-import { mapState,useStore } from "vuex";
-import {computed} from "vue";
-export function useState(mapper){
+
+##### ②toRefs解构
+
+可以使用toRefs对store.state进行解构
+
+```vue
+<script setup>
+  import { toRefs } from "vue";
+  import { useStore } from 'vuex';
+  const store = useStore();
+  const { name,level } = toRefs(store.state)
+</script>
+```
+
+
+
+##### ③辅助函数封装获取
+
+默认情况下Vuex没在setup中提供方便使用mapState的方式，因此这里写一个封装函数：
+
+```vue
+<script setup>
+  //封装函数，写在单独的hooks文件里useState.js
+  import { mapState,useStore } from "vuex";
+  import {computed} from "vue";
+  export function useState(mapper){
     const store = useStore();
     //mapState返回的是一个对象，对象中每个属性的值都是函数
     const storeStateFn = mapState(mapper);
-    
+
     //封装一个函数，把mapState中返回对象的每个属性值函数放到computed中；
     //因为computed要求里面是个函数
     const storeState = {};
@@ -2975,33 +3027,85 @@ export function useState(mapper){
       storeState[fnKey] = computed(fn);
     })
     return storeState 
-}
-```
-
-
-
-### （7）getters的基本使用
-
-当某些属性需要经过变化后来使用时，可以使用getters
-
-```vue
-<div>
-  	<!-- 在模板中使用 -->
-		<h2>{{$store.getters.totalPrice}}</h2>
-</div>
-<script>
-		//在store中使用，可以接收两个参数
-  	const store = createStore({
-      	getters:{
-            totalPrice(state,getters){
-              	return state.books.price + getters.myName
-            }
-        }
-    })
+  }
+  
+  
+  //使用方法
+  const state = useState({
+    names:state => state.name,
+    ages:state => state.age
+  })
 </script>
 ```
 
-另外，getters中的函数本身可以返回一个函数，那么在使用时相当于重新调用这个函数
+
+
+### 4.4、getters
+
+#### （1）store中定义
+
+当某些属性<font color=deepred>需要经过变化后来使用</font>时，可以使用getters
+
+```js
+const store = createStore({
+  getters:{
+    totalPrice(state,getters){
+    	return state.books.price + getters.myName
+    }
+  }
+})
+```
+
+
+
+#### （2）模板中获取
+
+```vue
+<div>{{$store.getters.totalPrice}}</div>
+<div>{{ totalPrice }}</div>
+<script>
+export default {
+  computed: {
+    totalPrice(){
+      return this.$store.getters.totalPrice
+    } 
+  }
+}
+</script>
+```
+
+
+
+#### （3）可用参数
+
+- getters可以<font color=deepred>接收两个参数</font>：
+
+  - 参数一：state，当前模块的state对象，可以使用state中的值；
+  - 参数二：getters，当前模块的getters对象，可以使用getters中的值；
+
+  ```js
+  const store = createStore({
+    state:() => {
+      count:10,
+      level:100
+    },
+    getters:{
+      doubleCount(state,getters) {
+        	return state.count * 2 + getters.doubleLevel;
+      },
+      doubleLevel(state){
+        	return state.level * 4
+      }
+    }
+  }) 
+  export default store
+  ```
+
+
+
+#### （4）返回函数
+
+​	getters函数本身<font color=blue>可以返回一个函数</font>，使用时可以调用该函数，同时支持传参。
 
 ```js
 const store = createStore({
@@ -3014,153 +3118,303 @@ const store = createStore({
         }
     }
 })
+
+//使用时
+{{$store.getters.totalPrice(111)}}
 ```
 
 
 
-### （8）mapGetters的辅助函数
+#### （5）辅助函数mapGetters
 
-- 在optionAPI中使用
+##### ①数组形式
+
+```vue
+<script>
+ export default {
+   computed:{
+     //数组写法
+     ...mapGetters(['ttalPrice','myName'])
+   }
+ }
+</script>
+```
+
+
+
+##### ②对象形式
+
+```vue
+<script>
+ export default {
+   computed:{
+     //对象写法
+     ...mapGetters([
+       finalPrice:"totalPrice",
+       finalName:"myName",
+     ])
+   }
+ }
+</script>
+```
+
+
+
+#### （6）setup中使用
+
+##### ①直接获取
+
+```vue
+<script setup>
+import {useStore} from "vuex"
+import {computed} from "vue";
+const store = useStore()
+const count = computed(() => store.getters.doubleCount)
+</script>
+```
+
+
+
+##### ②toRefs解构
+
+```vue
+<script setup>
+import { useStore } from "vuex"
+import { toRefs } from "vue";
+const store = useStore()
+const {doubleCount} = toRefs(store.getters)
+</script>
+```
+
+
+
+##### ③辅助函数封装获取
+
+在setup中使用
+
+```vue
+<script setup>
+import { computed } from 'vue'
+import { mapGetters, useStore } from 'vuex'
+export function useGetters(mapper) {
+    // 拿到store独享
+    const store = useStore()
+    // 获取到对应的对象的functions: {name: function, age: function}
+    const storeStateFns = mapGetters(mapper)
+    // 对数据进行转换
+    const storeState = {}
+    Object.keys(storeStateFns).forEach(fnKey => {
+        const fn = storeStateFns[fnKey].bind({$store: store})
+        storeState[fnKey] = computed(fn)
+    })
+    return storeState
+}
+</script>
+```
+
+
+
+### 4.5、Mutation
+
+#### （1）store中定义
 
 ```js
-computed:{
-  ...mapGetters(['ttalPrice','myName']),
-  ...mapGetters([
-    	finalPrice:"totalPrice",
-    	finalName:"myName",
-  ])
-}
-```
-
-- <font color=red>在setup中使用</font>
-
-  ```js
-  import { computed } from 'vue'
-  import { mapGetters, useStore } from 'vuex'
-  export function useGetters(mapper) {
-      // 拿到store独享
-      const store = useStore()
-      // 获取到对应的对象的functions: {name: function, age: function}
-      const storeStateFns = mapGetters(mapper)
-      // 对数据进行转换
-      const storeState = {}
-      Object.keys(storeStateFns).forEach(fnKey => {
-          const fn = storeStateFns[fnKey].bind({$store: store})
-          storeState[fnKey] = computed(fn)
-      })
-      return storeState
+const store = createStore({
+  mutations:{
+    increment(state){
+      state.counter++
+    },
+    decrement(state){
+      state.counter--
+    }
   }
-  ```
+})
+```
 
+更改Vuex里store状态state的<font color=deepred>**唯一方法是提交mutation**</font>：
 
-
-### （9）Mutations的基本使用
-
-更改Vuex里store状态state的唯一方法是提交mutation：
-
-```js
-mutations:{
-  increment(state){
-    state.counter++
-  }
-}
+```vue
+<script>
+ import {mapMutations} from "vuex"
+ export default {
+   methods:{
+     ...mapMutations(["decrement"]),
+   	 change(){
+       this.$store.commit("increment")
+     }
+   }
+ }
+</script>
 ```
 
 
 
-### （10）Mutation携带数据
+#### （2）携带数据
 
-提交mutation时会携带一些数据：
+##### ①值类型
+
+提交mutation时可以携带一些数据作为**<font color=blue>参数</font>**：
 
 ```js
-mutations:{
-  increment(state,payload){
-    state.counter += payload
+const store = createStore({
+  mutations:{
+    increment( state,payload ){
+      state.counter += payload
+    }
   }
-}
+})
 ```
 
-其中，payload可以是**对象类型**
+
+
+##### ②对象类型
+
+对象类型时的提交方式
 
 ```js
-addNumber(state,payload){
-  state.counter += payload.count
-}
-//当payload是对象时，提交方式
 $store.commit({
   type:"addNumber",
   count:100
 })
 ```
 
-
-
-### （11）Mutations辅助函数
-
-- 在optionAPI中使用
+<font color=deepred>payload可以是**对象类型**</font>
 
 ```js
-methods: {
-  	...mapMutations(["increment", "decrement"]),
-    ...mapMutations({
-    		add: "increment"
-  	})
-},
-```
-
-- 在setup中使用
-
-```js
-setup() {
-    const storeMutations = mapMutations(["increment", "decrement"])
-    return {
-      	...storeMutations
-    }
+addNumber(state,payload){
+  state.counter += payload.count
 }
 ```
 
 
 
-### （12）mutation原则
+#### （3）辅助函数mapMutations
 
-1. <font color=red>**mutation必须是同步函数**</font>；
-2. 因为devtool工具会记录mutation的日记
-3. 每一条mutation被记录，devtools都需要捕捉到前一状态和后一状态的快照；
-4. 但是在mutation中执行异步操作，就无法追踪到数据的变化；
-5. 所以Vuex的重要原则中要求 mutation必须是同步函数
+```vue
+<script>
+ import {mapMutations} from "vuex"
+ export default {
+   methods:{
+   	 ...mapMutations(["increment","decrement"])
+   }
+ }
+</script>
+```
 
 
 
-### （13）actions的基本使用
+#### （4）setup中使用
+
+##### ①直接使用
+
+```vue
+<script setup>
+	import { useStore } from "vuex";
+  const store = useStore();
+  const change = () => {
+    store.commit("decrement")
+  }
+</script>
+```
+
+
+
+##### ②辅助函数封装使用
+
+```vue
+<script setup>
+	import { mapMutations, useStore } from "vuex";
+  const store = useStore();
+  const mutations = mapMutations(["increment","decrement"]);
+  const newMutations = {}
+  Object.keys(mutations).forEach((item) => {
+    newMutations[item] = mutations[item].bind({$store:store})
+  })
+  const {increment,decrement} = newMutations
+</script>
+```
+
+
+
+#### （5）mutation原则
+
+- <font color=red>**mutation必须是同步函数**</font>；
+  - 因为devtool工具会记录mutation的日记
+  - 每一条mutation被记录，devtools都需要捕捉到前一状态和后一状态的快照；
+  - 但是在mutation中执行异步操作，就无法追踪到数据的变化；
+
+
+
+### 4.6、Actions
+
+#### （1）store中定义
+
+```js
+const store = createStore({
+  actions:{
+    incrementAction(context){
+      //异步操作,然后提交commit
+      context.commit("increment")
+    }
+  }
+})
+```
+
+<font color=deepred>**Action可以执行异步操作**</font>
+
+```vue
+<script>
+ import {mapActions} from "vuex"
+ export default {
+   methods:{
+     ...mapActions(["incrementAction"]),
+   	 change(){
+       this.$store.dispatch("incrementAction")
+     }
+   }
+ }
+</script>
+```
+
+
+
+#### （2）基本使用
+
+##### ①和mutation的区别
 
 actions类似于mutation，不同之处在于：
 
-- actions<font color=red>**提交的是mutation**</font>，**不是直接更改状态**；
+- actions<font color=red>**提交的是mutation**</font>，**<font color=blue>不是直接更改状态</font>**；
 - actions**可以包含任意<font color=red>异步操作</font>**；
 
-```js
-mutations:{
-  increment(state){
-    state.counter++
+```vue
+<script>
+  mutations:{
+    increment(state){
+      state.counter++
+    }
+  },
+  actions:{
+    increment(context){
+      context.commit("increment")
+    }
   }
-},
-  
-actions:{
-  increment(context){
-    context.commit("increment")
-  }
-}
+</script>
 ```
 
-actions中有个**非常重要的参数context**
 
-1、context是一个和store实例均有相同方法和属性的context对象；
+
+##### ②可用参数
+
+actions中有个**<font color=deepred>非常重要的参数context</font>**
+
+1、context是一个<font color=blue>和store实例均有相同方法和属性的context对象</font>；
 
 2、所以可以从其中获取到commit方法来提交一个mutation，或者通过 context.state和context.getters来获取 state和getters;
 
 
 
-### （14）actions的分发操作
+#### （3）分发操作
 
 - 分发使用的是<font color=red>store上的**dispatch函数**</font>
 
@@ -3191,28 +3445,49 @@ add(){
 
 
 
-### （15）actions的辅助函数
+#### （4）辅助函数mapActions
 
-action也有对应的辅助函数，分为<font color=orange>对象类型写法</font>和<font color=red>数组类型写法</font>
+action也有对应的辅助函数，分为**对象类型写法**和**数组类型写法**；
 
-- optionAPI写法
+##### ①optionAPI写法
 
-![image-20220119200906568](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192009761.png)
+```vue
+<script>
+  import {mapActions} from "vuex";
+  export default {
+    methods:{
+      ...mapActions(["incrementAction","decrementAction"]),
+      ...mapActions({
+        add:"incrementAction",
+        del:"decrementAction"
+      })
+    }
+  }
+</script>
+```
 
-- setup写法
-
-![image-20220119200927337](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192009624.png)
 
 
+##### ②setup写法
 
-### （16）actions的异步操作
+```vue
+<script setup>
+  import { mapActions } from "vuex";
+  const actions1 = mapActions(["decrementAction"])
+  const actions2 = mapActions({
+    add2:"decrementAction"
+  })
+</script>
+```
 
-Action 通常是异步的，如何知道action什么时候结束的方法：
 
-**可以通过让action返回一个Promise函数，在Promise的then中处理完成后的操作**
+
+#### （5）异步操作
+
+Action 通常是异步的，**<font color=deepred>可以让action返回一个Promise函数，在then中处理完成后的操作</font>**，从而知晓action是否结束。
 
 ```js
-//store的index文件
+//store中的js文件
 actions:{
   increment(context){
     //返回一个promise
@@ -3227,69 +3502,102 @@ actions:{
     })
   }
 }
+```
 
-//在组件中使用
-const store = useStore();
-const increment = () => {
-  store.dispatch("increment")
-  	.then(res => {
-    	//这里获取的是resolve里的值
-			console.log(res)    
-  	}).catch(res => {
-    	//这里获取的是reject里的值
-    	console.log(res)
-  	})
-}
+```vue
+<script setup>
+  //在组件中使用
+  import { useStore } from "vuex";
+  const store = useStore();
+  const increment = () => {
+    store.dispatch("increment")
+      .then(res => {
+        //这里获取的是resolve里的值
+        console.log(res)    
+      }).catch(res => {
+        //这里获取的是reject里的值
+        console.log(res)
+      })
+  }
+</script>
 ```
 
 
 
-### （17）module的基本使用
+### 4.7、Module
 
-​	由于使用单一状态树，应用的所有状态会集中到一个比较大的对象，当应用变得非常复杂时，store 对象就有可
+#### （1）基本使用
 
-能变得相当臃肿。
+​	由于使用单一状态树，应用的所有状态会集中到一个比较大的对象，当应用变得非常复杂时，store 对象就有可能变得相当臃肿。为了解决臃肿问题，<font color=blue>Vuex允许将store分割</font>成<font color=red>**模块**</font>（module）。
 
-​	为了解决臃肿问题，Vuex允许将store分割成<font color=red>**模块**</font>（module）。
-
-​	<font color=blue>每个模块拥有自己的 state、mutation、action、getter、甚至是嵌套子模块</font>。
+​	<font color=deepred>**每个模块拥有自己的 state、mutation、action、getter、甚至是嵌套子模块**</font>。
 
 ![image-20220119202653923](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192026956.png)
 
 
 
-### （18）module的命名空间
+#### （2）命名空间
 
-- 对于模块内部的 mutation 和 getter，接收的第一个参数是<font color=red>**模块的局部状态对象**</font>
-- 默认情况下，模块内部的action和mutation仍然是注册在**全局的命名空间**中的
-  - 这样使得多个模块能够对同一个 action 或 mutation 作出响应
-  - Getter 同样也默认注册在全局命名空间
+##### ①局部状态
+
+```js
+//举个例子，counter模块
+const counter = {
+  state: () => ({
+    count: 99
+  }),
+  mutations: {
+    incrementCount(state) {
+      state.count++
+    }
+  },
+  getters: {
+    doubleCount(state, getters, rootState) {
+      return state.count + rootState.rootCounter
+    }
+  },
+  actions: {
+    incrementCountAction(state, commit, rootState) {
+      commit("incrementCount")
+    }
+  }
+}
+export default counter
+```
+
+对于模块内部的 mutation 和 getter，接收的第一个参数state是<font color=red>**模块的局部状态对象**</font>
+
+
+
+##### ②命名空间
+
+- 默认情况下，<font color=deepred>模块内部的getter、action和mutation是注册在**全局的命名空间**中的</font>
+  - 这样使得多个模块能够对同一个 action 或 mutation 作出响应；
 - 如果<font color=red>希望模块具有更高的封装度和复用性</font>，可以<font color=blue>添加`namespaced: true`的方式使其成为**带命名空间的模块**</font>
-  - 当模块被注册后，它的所有 getter、action 及 mutation 都会自动根据模块注册的路径调整命名
+  - 当模块被注册后，它的所有 getter、action 及 mutation 都会**自动根据模块注册的路径调整命名**（在方法前添加模块前缀"XX/方法的形式"）；
 
-#### module的例子：
+举例如下：
 
-##### 组件分发home模块的状态和方法：
+组件分发home模块的状态和方法：
 
 ![image-20220119203640930](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192036716.png)
 
-##### Vuex的store文件中module文件下home模块的写法：
+Vuex的store文件中module文件下home模块的写法：
 
 ![image-20220119203740401](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192037916.png)
 
-##### Vuex的store文件根模块index的写法：
+Vuex的store文件根模块index的写法：
 
 ![image-20220119203757183](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192037330.png)
 
 
 
-### （19）module修改或派发根组件
+#### （3）模块派发根组件
 
-需要多传一个参数`{root:true}`
+如果需要在模块中修改根模块的state数据，<font color=deepred>需要**多传一个参数**`{root:true}`</font>
 
 ```js
 changeNameAction({commit,dispatch,state,rootState,getters,rootGetters}){
-  commit("changeName");
   commit("changeRootName",null,{root:true});
   dispatch("changePootNameAction",null,{root:true});
 }
@@ -3297,29 +3605,34 @@ changeNameAction({commit,dispatch,state,rootState,getters,rootGetters}){
 
 
 
-### （20）module的辅助函数的三种用法
+#### （4）module的辅助函数
 
-#### 1、第一种:通过完整模块空间名称查找
+##### ①通过完整模块空间名称查找
 
 ![image-20220119205213422](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192052247.png)
 
-#### 2、第二种：第一个参数传入模块空间名称，后面写上要使用的属性
+
+
+##### ②传参模块空间名称和使用属性
 
 ![image-20220119205433133](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192054718.png)
 
-#### 3、第三种：通过 createNamespacedHelpers 生成一个模块的辅助函数
+
+
+##### ③生成模块辅助函数
 
 ![image-20220119205623569](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192056929.png)
 
 
 
-### （21）在setup中使用module
+#### （5）setup中使用
 
 ![image-20220119210022580](https://raw.githubusercontent.com/Rainchen0504/picture/master/202201192100512.png)
 
 **上面的例子中引入了useState和useGetter**
 
-useState的hooks文件
+- useState的hooks文件
+
 
 ```js
 import { mapState, createNamespacedHelpers } from 'vuex'
@@ -3327,8 +3640,6 @@ import { useMapper } from './useMapper'
 
 //mapper映射
 export function useState(moduleName, mapper) {
-  console.log("6",moduleName);
-  console.log("7",mapper);
   let mapperFn = mapState
   if (typeof moduleName === 'string' && moduleName.length > 0) {
     mapperFn = createNamespacedHelpers(moduleName).mapState
@@ -3340,7 +3651,8 @@ export function useState(moduleName, mapper) {
 }
 ```
 
-useGetter的hooks文件
+- useGetter的hooks文件
+
 
 ```js
 import { mapGetters, createNamespacedHelpers } from 'vuex'
@@ -3358,7 +3670,8 @@ export function useGetters(moduleName, mapper) {
 }
 ```
 
-其中，公共部分抽取useMapper
+- 公共部分抽取useMapper
+
 
 ```js
 import { computed } from 'vue'
@@ -3384,19 +3697,11 @@ export function useMapper(mapper, mapFn) {
 
 
 
-### （22）nextTick
-
-将回调推迟到下一个 DOM 更新周期之后执行。在更改了一些数据以等待 DOM 更新后立即使用它。
-
-<font color=red>nextTick内部实际上是将包裹的函数**放到微任务队列的最后执行**</font>（<font color=blue>watch函数、组件的更新、生命周期回调等等都是一个个微任务</font>）
 
 
+# 六、Pinia状态管理
 
-
-
-# 五、Pinia状态管理
-
-## 1、什么是Pinai
+## 1、什么是Pinia
 
 Pinia本质上依然是一个<font color=deepred>**状态管理的库**</font>，用于**跨组件、页面进行状态共享**(这点和Vuex、Redux一样)
 
@@ -3405,18 +3710,18 @@ Pinia本质上依然是一个<font color=deepred>**状态管理的库**</font>�
 ## 2、对比Vuex
 
 1. 提供了一个更简单的 API，具有更少的仪式，提供了 Composition-API 风格的 API；
-2. 与 TypeScript 一起使用时具有可靠的类型推断支持；
-3. mutations不再存在；
-4. 不再有modules的嵌套结构；
-5. 不再有命名空间的概念，不需要记住复杂关系；
+2. 与 TypeScript 一起使用时<font color=blue>具有可靠的类型推断支持</font>；
+3. <font color=blue>mutations不再存在</font>；
+4. <font color=blue>不再有modules的嵌套结构</font>；
+5. <font color=blue>不再有命名空间的概念</font>，不需要记住复杂关系；
 
 ![image-20221015155013144](https://raw.githubusercontent.com/Rainchen0504/picture/master/202210151550685.png)
 
 
 
-## 3、使用方法
+## 3、使用过程
 
-### （1）安装
+### 3.1、安装
 
 ```shell
 npm install pinia;
@@ -3425,7 +3730,7 @@ yarn add pinia;
 
 
 
-### （2）导入
+### 3.2、创建
 
 创建一个pinia并传递给应用程序
 
@@ -3437,7 +3742,7 @@ export default pinia;
 
 
 
-### （3）挂载
+### 3.3、挂载
 
 ```js
 import pinia from "./store";
@@ -3448,13 +3753,151 @@ createApp(App).use(pinia).mount("#app");
 
 ## 4、Store
 
-一个Store是一个实体，会持有为绑定到你组件树的状态和业务逻辑，保存了全局的状态。
+​	一个Store<font color=deepred>是一个**实体**</font>，会持有为绑定到组件树的状态和业务逻辑，**保存了全局的状态**，每个人都可以读取和写入的组件，<font color=blue>允许**定义任意数量**的store管理状态</font>。
 
-像始终存在，并且每个人都可以读取和写入的组件
-
-可以定义任意数量的store管理状态
+store的三个核心概念：<font color=red>**state、getters、actions**</font>，一旦store被实例化可以直接访问。
 
 
+
+### 4.1、定义store
+
+创建一个store文件，使用<font color=red> **defineStore()** 定义</font>，并且需要一个<font color=blue>唯一的名称</font>，作为第一个参数传递。
+
+```js
+import { defineStore } from 'pinia'
+const useCouter = defineStore("counter", {
+  state:() => ({
+    counter:0
+  })
+})
+export default useCouter
+```
+
+​	这里第一个参数“counter”是必须的，**Pinia** **使用它来将** **store** **连接到** **devtools**。同时，<font color=deepred>返回的函数统一使用use作为开头命名</font>，这是约定规范。
+
+
+
+### 4.2、使用store
+
+Store在<font color=blue>被使用之前是不会创建的</font>，需要通过调用use函数来使用Store。
+
+```vue
+<template>
+  <div class="home">
+    <h2>count: {{ counterStore.count }}</h2>
+  </div>
+</template>
+<script setup>
+  import useCounter from '@/stores/counter';
+  //创建上面counter的Store实例
+  const counterStore = useCounter()
+</script>
+```
+
+
+
+#### 注意事项⚠️
+
+store**<font color=deepred>不能直接解构，会失去响应式</font>**，pinia提供**<font color=red>storeToRefs()方法</font>**保证从 Store 中提取属性同时保持其响应式。
+
+```vue
+<script setup>
+  import { storeToRefs } from 'pinia'
+  import useCounter from '@/stores/counter';
+  const counterStore = useCounter();
+  //非响应式的
+  const { count } = counterStore;
+  //响应式的
+  const { count } = storeToRefs(counterStore)
+</script>
+```
+
+
+
+## 5、State
+
+<font color=blue>**state是store的核心部分**</font>，在pinia中，状态被定义为返回初始状态的函数。
+
+### 5.1、分发操作
+
+默认情况下可以通过store实例访问状态直接读取和写入状态。
+
+```vue
+<script setup>
+  import useCounter from '@/stores/counter';
+  const counterStore = useCounter();
+  //直接操作状态
+  counterStore.count++
+  counterStore.name = "晨哥"
+</script>
+```
+
+
+
+### 5.2、重置状态
+
+调用store上的 $reset() 方法将状态重置到初始值。
+
+```vue
+<script setup>
+  import useCounter from '@/stores/counter';
+  const counterStore = useCounter();
+  //恢复初始状态值
+  counterStore.$reset()
+</script>
+```
+
+
+
+### 5.3、改变状态
+
+调用 $patch() 方法，允许使用部分“state”对象同时应用多个更改
+
+```vue
+<script setup>
+  import useCounter from '@/stores/counter';
+  const counterStore = useCounter();
+  //同时修改多个值
+  counterStore.$patch({
+    count: 200,
+    name: "哈哈"
+  })
+</script>
+```
+
+
+
+### 5.4、替换状态
+
+调用 $state() 方法替换Store的整个状态
+
+```vue
+<script setup>
+  import useCounter from '@/stores/counter';
+  const counterStore = useCounter();
+  //替换状态
+  counterStore.$state({
+    count: 1,
+    name: "呵呵"
+  })
+</script>
+```
+
+
+
+## 6、Getters
+
+Getters相当于Store的计算属性，getters中可以定义接受一个state作为参数的函数。
+
+
+
+
+
+
+
+
+
+## 7、Actions
 
 
 
