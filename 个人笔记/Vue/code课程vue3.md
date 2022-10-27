@@ -3828,7 +3828,7 @@ store**<font color=deepred>不能直接解构，会失去响应式</font>**，pi
 
 ### 5.1、分发操作
 
-默认情况下可以通过store实例访问状态直接读取和写入状态。
+默认情况下可以<font color=deepred>直接通过store实例访问状态</font>直接读取和写入状态。
 
 ```vue
 <script setup>
@@ -3844,7 +3844,7 @@ store**<font color=deepred>不能直接解构，会失去响应式</font>**，pi
 
 ### 5.2、重置状态
 
-调用store上的 $reset() 方法将状态重置到初始值。
+调用store上的<font color=deepred> $reset() 方法将状态重置</font>到初始值。
 
 ```vue
 <script setup>
@@ -3859,7 +3859,7 @@ store**<font color=deepred>不能直接解构，会失去响应式</font>**，pi
 
 ### 5.3、改变状态
 
-调用 $patch() 方法，允许使用部分“state”对象同时应用多个更改
+调用<font color=deepred> $patch() 方法将部分"state"对象同时更改</font>
 
 ```vue
 <script setup>
@@ -3877,7 +3877,7 @@ store**<font color=deepred>不能直接解构，会失去响应式</font>**，pi
 
 ### 5.4、替换状态
 
-调用 $state() 方法替换Store的整个状态
+调用<font color=deepred> $state() 方法替换Store的整个状态</font>
 
 ```vue
 <script setup>
@@ -3895,17 +3895,299 @@ store**<font color=deepred>不能直接解构，会失去响应式</font>**，pi
 
 ## 6、Getters
 
-Getters相当于Store的计算属性，getters中可以定义接受一个state作为参数的函数。
+Getters<font color=deepred>相当于Store的**计算属性**</font>，getters中可以定义接受一个state作为参数的函数。
+
+### 6.1、store文件中取state
+
+#### （1）this获取
+
+```js
+export default useCounter = defineStore("counter", {
+    state: () => ({
+        counter:100
+    }),
+    getters: {
+        fullCounterfunction(){
+			return this.counter * 5
+		}
+    }
+})
+```
 
 
 
+#### （2）参数获取
+
+```js
+getters:{
+    doubleCounter:(state) => {
+        retrun state.counter
+    }
+}
+```
 
 
 
+### 6.2、访问getter
+
+#### （1）当前store的
+
+```js
+getters:{
+    otherCounter(){
+        return this.state + 1
+    }
+    doubleCounter(){
+        retrun this.otherCounter
+    }
+}
+```
+
+
+
+#### （2）其他store的
+
+```js
+//先引入其他store文件
+import useCounter from "./counter.js";
+export default useValue = defineStore("value", {
+    state:() => ({
+        value:20
+    }),
+    getters:{
+        message:(state) => {
+            const useStore = useCounter();
+            return state.value + useStore.counter
+        }
+    }
+})
+```
+
+同时getters支持返回函数，可以接收参数执行。
 
 
 
 ## 7、Actions
+
+Actions相当于<font color=deepred>组件中的**methods**</font>。
+
+### 7.1、获取状态
+
+和getters一样，在action中**可以通过this访问整个store实例**的所有操作
+
+```js
+export default useCounter = defineStore("counter", {
+    state:() => ({
+        count:10
+    }),
+    actions:{
+        increment(){
+            this.count++
+        },
+        decrement(state){
+            state.count--
+        }
+    }
+})
+```
+
+
+
+### 7.2、异步操作
+
+actions中是支持异步操作的，并且可以使用await。
+
+```js
+actions:{
+    async fetchData(){
+        const res = await fetch("http://xxx");
+        const data = await res.json()
+        return data
+    }
+}
+```
+
+
+
+# 七、Axios请求库
+
+## 1、请求方式
+
+```js
+// axios支持多种请求方式
+axios.get(url[, config])
+axios.delete(url[, config])
+axios.head(url[, config])
+axios.options(url[, config])
+axios.post(url[, data[, config]])
+axios.put(url[, data[, config]])
+axios.patch(url[, data[, config]])
+```
+
+同时还支持同时发送多个请求 `axios.all` 方法，返回一个结果的数组。
+
+
+
+## 2、配置项
+
+### （1）请求地址
+
+```js
+// `url` 是用于请求的服务器 URL
+url: '/xxx',
+```
+
+
+
+### （2）请求类型
+
+不配置默认使用 Get 方法
+
+```js
+// `method` 是创建请求时使用的方法
+method: 'get', // 默认值
+```
+
+
+
+### （3）请求根路径
+
+`baseURL` 将自动加在 `url` 前面，除非 `url` 是一个绝对 URL
+
+```js
+// 可以通过设置一个 baseURL 便于为 axios 实例的方法传递相对 URL
+baseURL: 'https://XXX/api/',
+```
+
+
+
+### （4）请求前数据处理
+
+ `transformRequest` 允许在向服务器发送前，修改请求数据。但是只能用于 'PUT', 'POST' 和 'PATCH' 这几个请求方法。
+
+```js
+//数组中最后一个函数必须返回一个字符串，一个Buffer实例，ArrayBuffer，FormData，或 Stream
+transformRequest: [function (data, headers) {
+    // 对发送的 data 进行任意转换处理
+    return data;
+}],
+```
+
+
+
+### （5）请求后数据处理
+
+`transformResponse` 在传递给 then/catch 前，允许修改响应数据
+
+```js
+//数组中最后一个函数必须返回一个字符串，一个Buffer实例，ArrayBuffer，FormData，或 Stream
+transformResponse: [function (data) {
+    // 对接收的 data 进行任意转换处理
+    return data;
+}],
+```
+
+
+
+### （6）自定义请求头
+
+```js
+headers: {'X-Requested-With': 'XMLHttpRequest'},
+```
+
+
+
+### （7）URL查询对象
+
+`params` 是与请求一起发送的 URL 参数，<font color=deepred>必须是一个简单对象或 URLSearchParams 对象</font>
+
+```js
+params: {
+    ID: 12345
+},
+```
+
+
+
+### （8）请求体
+
+请求方式为 Post 时传递参数，只有 value 会被发送，key 则不会。
+
+```js
+data: 'Country=Brasil&City=Belo Horizonte',
+```
+
+
+
+### （9）超时设置
+
+`timeout` 指定请求超时的毫秒数，如果请求时间超过 `timeout` 的值，则请求会被中断。
+
+```js
+timeout: 1000, // 默认值是0(永不超时)
+```
+
+
+
+### （10）跨域设置
+
+`withCredentials` 表示跨域请求时是否需要使用凭证
+
+```js
+withCredentials: false, // default
+```
+
+
+
+## 3、创建实例
+
+### （1）需求
+
+- 从axios模块中导入对象时, 使用的实例是<font color=deepred>默认的实例</font>;
+- 如果给这个实例添加一些默认配置时就被固定在该实例上，后续开发如果要更改配置项就又需要更改全局配置;
+- 如果要使用特定的baseURL或者timeout就会发生冲突;
+- 因此需要<font color=deepred>创建新的实例</font>，并且<font color=blue>传入各自实例对应的配置信息</font>;
+
+
+
+### （2）实现
+
+使用 `axios.create([config])` 方法创建实例
+
+```js
+const instance = axios.create({
+    baseURL:"XXX",
+    timeout:1000,
+    headers:{}
+})
+instance.post("url",{
+    name:"zhang",age:25
+}).then((res) => {
+    //成功的回调
+}).catch((err) => {
+    //失败的回调
+})
+```
+
+
+
+## 4、请求和响应拦截
+
+
+
+
+
+## 5、axios请求封装
+
+### （1）JS版
+
+
+
+
+
+
+
+### （2）TS版
 
 
 
