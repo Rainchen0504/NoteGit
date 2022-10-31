@@ -459,7 +459,7 @@ plugin可以用于执行<u>更加广泛的任务</u>，比如打包优化、资�
 
 
 
-## 17、常用的webpack插件
+## 17、常用的plugin
 
 ### （1）CleanWebpackPlugin
 
