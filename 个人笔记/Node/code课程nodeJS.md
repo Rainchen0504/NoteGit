@@ -501,7 +501,7 @@ fs.readFile("./abc.txt", {encoding: 'utf-8'}, (err, data) => {
 
 ### （4）文件夹操作
 
-- 新建文件夹
+#### 4.1、新建文件夹
 
 ```js
 //使用fs.mkdir()或fs.mkdirSync()创建一个新文件夹
@@ -514,24 +514,37 @@ if (!fs.existsSync(dirname)) {
 }
 ```
 
-- 获取文件夹内容
+
+
+#### 4.2、获取文件夹内容
+
+##### 同步读取文件夹readdirSync
 
 ```js
-function readFolders(floder){
-  fs.readdir(folder,{withFileTypes:true},(err,files)=>{
-    files.forEach(file => {
-      if(file.isDirextory()){
-        const newFolder = path.resolve(dirname,file.name);
-        readFloders(newFolder);
-      }else{
-        console.log(file.name)
-      }
-    })
-  })
-}
+const result = fs.readdirSync(folder)
+console.log(result)
 ```
 
-- 文件重命名
+
+
+##### 异步回调读取文件夹readdir
+
+```js
+fs.readdir(folder, (err,files)=>{
+  files.forEach(file => {
+    if(file.isDirextory()){
+      const newFolder = path.resolve(dirname,file.name);
+      readFloders(newFolder);
+    }else{
+      console.log(file.name)
+    }
+  })
+})
+```
+
+
+
+#### 4.3、文件重命名
 
 ```js
 fs.rename("./why", "./kobe", err => {
@@ -539,7 +552,9 @@ fs.rename("./why", "./kobe", err => {
 })
 ```
 
-- 删除文件夹
+
+
+#### 4.4、删除文件夹
 
 ```js
 //同步删除文件夹
