@@ -2834,7 +2834,7 @@ return [...map.values()]
 
 
 
-项目当前问题：
+# 项目当前问题：
 
 项目发布时需要把对应项目的数据导出出来，但是由于项目体积较大（组件多，一个项目600+组件，包含地图资源、组件信息、编组信息、项目信息等内容），面临的问题是从服务器导出时将项目资源打包成一个压缩文件，但是打包前要在缓存中定义一个变量存储数据，数据量超过了缓存大小，导致无法导出崩溃。
 
@@ -2844,10 +2844,402 @@ return [...map.values()]
 
 
 
-可视化项目组件状态更新机制
+# 可视化项目组件状态更新机制
 
 1、组件url变更-->请求数据-->刷新数据源-->检查过滤器-->检查数据映射-->自定义参数变更
 
 2、过滤器状态变更-->检查过滤器-->检查数据映射-->输出结果
 
 3、自动刷新重复操作1
+
+
+
+# 11月18日
+
+## 1、Function和eval函数
+
+Function函数和eval函数,可以将一段代码转成对象或执行。
+
+不同点是：
+1、Function()返回的是为表达式创建的匿名函数，不会直接调用，只有当手动去调用创建出来的函数的时候才能调用；eval()返回的是表达式的结果，把字符串转换为代码后就直接执行。
+
+2、eval()可以干扰作用域链，不管你在哪里执行 Function()，它只看到全局作用域。
+
+具体分析
+
+1、eval是一个特殊的函数，它可以将传入的字符串当做JavaScript代码来运行，并会将最后一句执行语句的结果，作为返回值。
+
+语法：`eval(string)`
+
+string参数必须，要计算的字符串，其中含有要计算的javascript表达式或要执行的语句。
+
+```js
+eval("x=10;y=20;document.write(x*y)")
+document.write(eval("2+2"))
+var x=10
+document.write(eval(x+17));
+//输出：200,4,27
+```
+
+2、Function对象（类）
+语法：`let functionName = new Function(arg1,arg2,arg3...,function_body)`
+
+每个arg都是一个函数，最后一个参数是参数主体(要执行的代码),这些参数都必须是字符串。
+
+```js
+function callAnotherFunc(fnFunction, vArgument) {
+  fnFunction(vArgument);
+}
+var doAdd = new Function("iNum", "alert(iNum + 10)");
+callAnotherFunc(doAdd, 10);  
+//输出 "20"
+```
+
+可视化中的案例：
+
+```js
+const el =
+      "/*\ntitle: Basic Line Chart\ncategory: line\ntitleCN: 基础折线图\ndifficulty: 0\n*/\noption = {\n  xAxis: {\n    type: 'category',\n    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']\n  },\n  yAxis: {\n    type: 'value'\n  },\n  series: [\n    {\n      data: [150, 230, 224, 218, 135, 147, 260],\n      type: 'line'\n    }\n  ]\n};\n";
+const detail = `let option = null; \n
+                        ${el} \n
+                        return option`;
+const fun = new Function(detail);
+console.log(fun());
+```
+
+结果相当于
+
+```js
+let option = null;
+option = {
+  xAxis: {
+    type: "category",
+    data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  },
+  yAxis: { type: "value" },
+  series: [
+    {
+      data: [150, 230, 224, 218, 135, 147, 260],
+      type: "line",
+    },
+  ],
+};
+return option;
+//使用时使用return fun(参数)执行
+```
+
+尽管可以使用 Function 构造函数创建函数，但最好不要使用它，因为用它定义函数比用传统方式要慢得多。不过，所有函数都应看作 Function 类的实例。
+
+
+
+## 2、vue3中toRaw和markRaw
+
+### 1、toRaw
+
+​	`toRaw`，将响应式对象（由 `reactive`定义的响应式）转换为普通对象，返回由 reactive 或 readonly 方法转换成响应式代理的普通对象。
+
+
+
+### 2、markRaw
+
+#### （1）作用
+
+标记一个对象,使其永远不会再成为响应式对象。
+
+
+
+#### （2）应用场景
+
+1.有些值不应被设置成响应式时,例如复杂的第三方类库等
+
+2.当渲染具有不可变数据源的大列表时,跳过响应式转换可以提高性能
+
+3.在动态渲染组件的时候我们就可以使用 markRaw 包裹。
+
+
+
+### 3、使用案例
+
+```vue
+<template>
+  <h2>{{state}}</h2>
+  <button @click="testToRaw">测试toRaw</button>
+  <button @click="testMarkRaw">测试markRaw</button>
+</template>
+
+<script lang="ts" setup>
+	import { reactive,markRaw,toRaw } from 'vue'
+  const state = reactive<any>({
+    name: 'tom',
+    age: 25,
+  })
+  const testToRaw = () => {
+    const user = toRaw(state)
+    user.age++  // 界面不会更新
+  }
+  const testMarkRaw = () => {
+    const likes = ['a', 'b']
+    // 往响应式对象中新增一个likes属性，该属性是响应式
+    state.likes = markRaw(likes) // likes数组就不再是响应式的了
+    setTimeout(() => {
+      state.likes[0] += '--'
+    }, 1000) //页面不会更新
+  }
+</script>
+```
+
+
+
+
+
+# 2022年11月22日
+
+jquery实现树状图
+
+```html
+<!DOCTYPE>
+<html>
+<head>
+    <title></title>
+    <meta http-equiv="X-UA-Compatible" charset="utf-8"/>
+	<!--<script src="../js/jquery-1.3.2.min.js" type="text/javascript"></script>-->
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<style type="text/css">
+
+table {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	border-width: 1px;
+	border-color: #666666;
+	border-collapse: collapse;
+	width: 600px;
+}
+table th {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #dedede;
+}
+table td {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #ffffff;
+	width:33%;
+}
+a {
+	color: #99D;
+}
+</style>
+  
+</head>
+<body>
+  <table id="drillTable">
+    <thead>
+      <tr>
+        <th style="text-align: center">区域</th>
+        <th>推送企业总数</th>
+        <th>已提交企业数</th>
+        <th>上报率</th>
+        <th>未填报数</th>
+        <th>填报中数量</th>
+        <th>审核通过数量</th>
+        <th>审核率</th>
+        <th>审核驳回数</th>
+        <th>待审核数量</th>
+      </tr>
+    </thead>
+    <tbody id="tableContainer">
+      <tr
+          d_dept_id="root"
+          d_orgrank="d_orgrank_root"
+          d_level="d_level_1"
+          isShow="yes"
+          style="display: none"
+          >
+        <td>
+          <a class="changeItem"><span id="img">+</span>areaName</a>
+        </td>
+        <td>companyPush</td>
+        <td>companySubmit</td>
+        <td>submitRate</td>
+        <td>companyNotSubmit</td>
+        <td>companyReporting</td>
+        <td>companyAuditPass</td>
+        <td>auditRate</td>
+        <td>companyBack</td>
+        <td>waitAuditList</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <script>
+    var resultList = []
+    function getTableData(param){
+      $.ajax({
+        type: "POST",
+        url: "/directcore/report/getprogress4data",
+        data: param,
+        success: function (result) {
+          if (!result.data){
+            $('#tbody').html('')
+            result.message ? zuidangermsg(result.message) : '';
+          }else {
+            //展示表格并填充数据
+            resultList = [result.data]
+
+
+            $(".changeItem").click(function () {
+              drillDept(this);
+            });
+
+            $(function () {
+              autoFirstClick();
+            });
+
+            function autoFirstClick() {
+              $($("#drillTable").find("a")[0]).click();
+            }
+
+            function getTreeDate(id, list) {
+              if (id === "root") {
+                return list;
+              } else {
+                for (var i = 0; i < list.length; i++) {
+                  if (list[i].areaCode === id) {
+                    return list[i].child;
+                  }
+                  if (list[i].child && list[i].child.length) {
+                    var result = getTreeDate(id, list[i].child);
+                    if (result) {
+                      return result;
+                    }
+                  }
+                }
+              }
+            }
+
+            //当前层的开闭
+            function showClose(deptId) {
+              $("tr[parent_id='" + deptId + "']").each(function (i) {
+                var obj = $(this);
+                var temp_rank = obj.attr("d_orgrank");
+                var temp_flag = obj.attr("isShow");
+
+                if ("yes" == temp_flag) {
+                  obj.attr("isShow", temp_flag == "yes" ? "no" : "yes");
+                  $("tr[d_orgrank^='" + temp_rank + "/" + "']").hide();
+                  obj.hide();
+                } else if ("no" == temp_flag) {
+                  obj.attr("isShow", temp_flag == "yes" ? "no" : "yes");
+                  obj.show();
+                  showCloseChild($(this));
+                  return;
+                }
+              });
+            }
+            //子集递归
+            function showCloseChild(obj) {
+              var temp_flag = obj.attr("isShow");
+              var temp_rank = obj.attr("d_orgrank");
+              var temp_dept_id = obj.attr("d_dept_id");
+              if ("yes" == temp_flag) {
+                obj.show();
+                $("tr[parent_id='" + temp_dept_id + "']").each(function (i) {
+                  showCloseChild(jQuery(this));
+                });
+              } else {
+                return;
+              }
+            }
+            //下钻
+            function drillDept(td) {
+              $(td)
+                .find("#img")
+                .html($(td).find("#img").html() == "+" ? "-" : "+");
+              var objTr = $(td).parent().parent();
+              var d_orgrank_all = objTr.attr("d_orgrank");
+              var d_level = objTr.attr("d_level");
+              var level = parseInt(d_level.substring("d_level_".length));
+              var deptId = objTr.attr("d_dept_id");
+
+              var isExists = $("tr[parent_id='" + deptId + "']");
+              if (isExists.html()) {
+                showClose(deptId);
+                return;
+              }
+
+              //找到点击节点对应的父级书库数据
+              var result = getTreeDate(deptId, resultList); //获取测试数
+
+              var tJson = result;
+              var tHtml = "";
+              var space = "";
+              for (var i = 0; i < level; i++) {
+                space += "&nbsp&nbsp";
+              }
+              for (var i = 0; i < tJson.length; i++) {
+                var tempDeptId = tJson[i].areaCode; //需要改的地方
+                tHtml += "<tr d_dept_id='" + tempDeptId + "'";
+                tHtml += " isShow='yes' ";
+                tHtml += " parent_id='" + deptId + "' ";
+                tHtml += " d_orgrank='" + d_orgrank_all + "/" + tempDeptId;
+                tHtml += "' d_level='d_level_" + (level + 1) + "' >";
+
+                if (tJson[i].child && tJson[i].child.length > 0) {
+                  tHtml +=
+                    "<td style='text-align:left;'>" +
+                    space +
+                    "<a class='xiazaunceng'" +
+                    "><span id='img'>+</span>" +
+                    tJson[i].areaName +
+                    "</a></td>"; //需要改的地方
+                } else {
+                  tHtml +=
+                    "<td style='text-align:left;'>" +
+                    space +
+                    tJson[i].areaName +
+                    "</td>"; //需要改的地方
+                }
+
+                tHtml += "<td>" + tJson[i].quotaData.companyPush + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.companySubmit + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.submitRate + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.companyNotSubmit + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.companyReporting + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.companyAuditPass + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.auditRate + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.companyBack + "</td>"; //需要改的地方
+                tHtml += "<td>" + tJson[i].quotaData.waitAuditList + "</td>"; //需要改的地方
+
+                tHtml += "</tr>";
+              }
+              objTr.after(tHtml);
+							
+              //防止重复绑定，使用unbind()方法先解绑
+              $(".xiazaunceng").unbind().click("click",function (){
+                drillDept(this)
+              })
+            }
+          }
+        },
+        error:function (e){
+          zuidangermsg("操作失败",e.responseJSON.message)
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+```
+
+### 拓展：unbind
+
+unbind() 方法移除被选元素的事件处理程序。
+
+该方法<font color=deepred>能够移除所有的或被选的事件处理程序</font>，或者当事件发生时终止指定函数的运行。
+
+ubind() 适用于任何通过 jQuery 附加的事件处理程序。
+

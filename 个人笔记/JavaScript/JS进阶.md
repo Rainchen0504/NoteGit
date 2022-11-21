@@ -19,11 +19,66 @@ obj.foo()
 
 ### 2、DOM和BOM
 
-DOM文档对象模型：页面所有的内容表示为可修改的对象；
+DOM<font color=deepred>**文档对象模型**</font>：页面所有的内容表示为可修改的对象；
 
-BOM浏览器对象模型：由浏览器提供的用于处理文档之外所有内容的其他对象；
+BOM<font color=deepred>**浏览器对象模型**</font>：由浏览器提供的用于处理文档之外所有内容的其他对象；
 
 获取元素目前最常用的是querySelector和querySelectAll。
+
+
+
+### 3、事件冒泡和事件捕获
+
+在浏览器上对一个元素点击时，不仅仅是单一元素本身，html元素是存在父子元素叠加的。
+
+#### （1）事件冒泡：
+
+​	默认情况下事件是从最内层的元素向外层依次传递的，这个顺序成为事件冒泡。IE采用了事件冒泡的方式。
+
+
+
+#### （2）事件捕获：
+
+​	另一种是从外层到内层的方式，称为事件捕获。Netscape采用了事件捕获的方式。
+
+开发中通常使用的是事件冒泡，监听事件方法一般使用`addEventListener`，第三个参数false表示事件冒泡。true表示事件捕获。
+
+
+
+### 4、事件对象
+
+#### （1）常见属性
+
+1. type:事件的类型;
+2. target:当前事件发生的元素;
+3. currentTarget:当前处理事件的元素;
+4. eventPhase:事件所处的阶段;
+5. offsetX、offsetY:事件发生在元素内的位置;
+6. clientX、clientY:事件发生在客户端内的位置;
+7. pageX、pageY:事件发生在客户端相对于document的位置; 
+8. screenX、screenY:事件发生相对于屏幕的位置
+
+
+
+#### （2）常见方法
+
+**preventDefault**：取消事件的默认行为；
+
+**stopPropagation**：阻止事件的进一步传递（冒泡和捕获都可以阻止）；
+
+
+
+### 5、事件委托
+
+**事件冒泡在某种情况下可以帮助我们实现强大的事件处理模式 –** **事件委托模式**
+
+<font color=red>事件委托模式</font>：
+
+​	当子元素被点击时，父元素可以通过冒泡可以监听到子元素的点击; 
+
+​	并且可以通过event.target获取到当前监听的元素;
+
+减少元素上的事件绑定，提高性能。
 
 
 
@@ -119,13 +174,42 @@ replaceState():打开一个新的地址，并且使用replace；
 
 #### （1）默认绑定
 
-​	默认绑定全局对象window上
+​	默认<font color=blue>绑定全局对象window</font>上。独立函数调用采用的就是默认绑定。
+
+```js
+function test1() {
+  console.log(this);//window对象
+  test2();
+}
+function test2() {
+  console.log(this);//window对象
+}
+test1();
+```
 
 
 
 #### （2）隐式绑定
 
-​	通过对象调用内部方法，该方法的this指向发起调用的对象
+​	通过<font color=blue>对象调用内部方法</font>，该方法的this指向发起调用的对象
+
+```js
+function foo() {
+  console.log(this);
+}
+
+var obj1 = {
+  name: "obj1",
+  foo: foo,
+};
+
+var obj2 = {
+  name: "obj2",
+  obj1: obj1,
+};
+
+obj2.obj1.foo();//{name: 'obj1', foo: ƒ}
+```
 
 
 
@@ -185,11 +269,11 @@ function newObj(fn,...args){
 
 ### 8、this绑定规则优先级
 
-<FONT COLOR=DEEPRED>默认绑定优先级最低，显示绑定高于隐式绑定，new绑定高于隐式绑定，new绑定优先级高于bind。</font>
+<FONT COLOR=DEEPRED>默认绑定优先级最低，显式绑定高于隐式绑定，new绑定高于隐式绑定，new绑定优先级高于bind。</font>
 
 注意⚠️：
 
-如果显示绑定null或undefined，则会使用默认规则；
+如果显式绑定null或undefined，则会使用默认规则；
 
 独立函数调用也是默认绑定；
 
@@ -201,7 +285,33 @@ function newObj(fn,...args){
 
 不会绑定this、arguments属性，不能作为构造函数来使用（不能使用new关键字）
 
+#### （1）this指向
 
+​	箭头函数不会创建自己的this指针，<font color=red>**只会从自己的作用域链的上一层继承this**</font>。通过 `call()` *或* `apply()` 方法调用一个函数时，**<font color=blue>只能传递参数</font>**，指定this的第一个参数会被忽略，这种现象对于 bind 方法同样成立。
+
+
+
+#### （2）写法优化
+
+1. 如果只有一个参数，可以省略参数的()
+
+   ```js
+   nums.forEach(item => {})
+   ```
+
+2. 如果函数执行体中只有一行代码，可以省略大括号
+
+   ```js
+   nums.forEach(item => log(item))
+   ```
+
+3. 如果函数执行体只有返回一个对象那么需要给对象加()
+
+   ```js
+   let bar = () => ({name:"abc"})//表示返回对象{name:"abc"}
+   ```
+
+   
 
 ### 10、浏览器内核
 
@@ -505,9 +615,126 @@ fooCurry(10)(20)(30);
 
 
 
+### 25、手写apply/call/bind
+
+#### （1）call、apply和bind的区别
+
+- call和apply会**改变this的指向并<font color=red>立即执行函数</font>**
+  - apply接受数组参数；
+  - call接受参数序列；
+
+- bind不会立即执行函数而是返回this改变后的函数。
+
+
+
+#### （2）apply
+
+```javascript
+//函数对象
+function foo(age) {
+  console.log(this, age);
+}
+
+//apply，接受参数是个数组
+Function.prototype.ycapply = function (thisArg, otherArg) {
+  //第一个参数是要绑定的this,当前this是调用的函数对象。第二个参数是数组
+  thisArg =
+    thisArg === undefined || thisArg === null ? window : Object(thisArg);
+  //将this指向从函数对象绑定到thisArg上
+  Object.defineProperty(thisArg, "fn", {
+    enumerable: false,
+    configurable: true,
+    value: this,
+  });
+  thisArg.fn(...otherArg);
+  delete thisArg.fn;
+};
+foo.ycapply({ name: "zhang" }, [25]); //{name: 'zhang'} 25
+```
+
+
+
+#### （3）call
+
+```javascript
+//函数对象
+function foo(name,age){
+  console.log(this,name,age)
+}
+
+//call,接受参数序列
+Function.prototype.yccall = function (thisArg, ...otherArg) {
+  thisArg =
+    thisArg === null || thisArg === undefined ? window : Object(thisArg);
+  Object.defineProperty(thisArg, "fn", {
+    enumerable: false,
+    configurable: true,
+    value: this,
+  });
+  thisArg.fn(...otherArg);
+  delete thisArg.fn;
+};
+foo.yccall({ name: "zhang" },"man",25);
+```
+
+还可以将重复部分封装在原型上
+
+```javascript
+Function.prototype.ycexec = function(thisArg, otherArgs) {
+  thisArg = (thisArg === null || thisArg === undefined)? window: Object(thisArg)
+  Object.defineProperty(thisArg, "fn", {
+    enumerable: false,
+    configurable: true,
+    value: this
+  })
+  thisArg.fn(...otherArgs)
+  delete thisArg.fn
+}
+Function.prototype.ycapply = function(){
+  this.ycexec(thisArg,otherArgs)
+}
+Function.prototype.yccall = function(){
+  this.ycexec(thisArg,otherArgs)
+}
+```
+
+
+
+#### （4）bind
+
+```javascript
+//手写bind，返回this改变后的函数
+function foo(name, age, height, address) {
+  console.log(this, name, age, height, address);
+}
+Function.prototype.ycbind = function (thisArg, ...otherArgs) {
+  thisArg =
+    thisArg === null || thisArg === undefined ? window : Object(thisArg);
+  Object.defineProperty(thisArg, "fn", {
+    enumerable: false,
+    configurable: true,
+    writable: false,
+    value: this,
+  });
+  return (...newArgs) => {
+    var allArg = [...otherArgs, ...newArgs];
+    thisArg.fn(...allArg);
+  };
+};
+
+var newFoo = foo.ycbind("abc", "kobe", 30);
+//使用时要调用才执行
+```
+
+
+
+
+
 ### 21、组合函数
 
 封装组合函数，同时调用传入的函数
+
+#### （1）封装前
 
 ```javascript
 //封装前
@@ -524,7 +751,13 @@ function compose(num) {
   return pow(double(num));
 }
 console.log(compose(2));//16
+```
 
+
+
+#### （2）封装后
+
+```js
 //封装通用函数
 function composeFn(...fns) {
   var length = fns.length;
@@ -554,11 +787,23 @@ console.log(newFn(2));//16
 
 ### 22、对象属性操作
 
-#### （1）属性描述符
+​	想要对一个属性进行比较精确的操作控制就可以使用属性描述符，通过属性描述符，可以<font color=deepred>精准的添加和修改对象的属性</font>。属性描述符**需要使用`Object.defineProperty`对对象进行添加或修改**。
 
-属性描述符需要使用`Object.defineProperty`对对象进行添加或修改。
+#### （1）Object.defineProperty
 
-##### 1.1数据属性
+接收三个参数：
+
+- obj：要定义属性的对象；
+- prop：要定义或修改的属性名称或symbol
+- descriptor：要定义或修改的属性描述符
+
+返回值是被传递给函数的对象
+
+
+
+#### （2）属性描述符分类
+
+##### 2.1、数据属性
 
 configurable：是否可通过delete删除属性或修改特性；
 
@@ -566,11 +811,11 @@ enumerable：是否可通过for-in或Object.keys遍历；
 
 writeable：是否可修改属性值；
 
-value：属性值，读取属性时会返回该值；
+value：属性值，读取属性时会返回该值，默认是undefined；
 
 
 
-##### 1.2存取属性
+##### 2.2、存取属性
 
 configurable：是否可通过delete删除属性或修改特性；
 
@@ -582,7 +827,7 @@ set：设置属性执行函数；
 
 
 
-#### （2）对象方法补充
+#### （3）对象方法补充
 
 - Object.defineProperties()：在一个对象上定义多个属性；
 - Object.getOwnPropertyDescriptor()：获取对象的描述符；
@@ -594,9 +839,9 @@ set：设置属性执行函数；
 
 ### 23、对象原型
 
-每个对象都有一个内置属性[[prototype]]，该属性指向另外一个对象，当使用key获取对象的value时，对象中没有该属性，就会访问[[prototype]]内置属性指向的对象的属性。
+**<font color=red>每个对象都有一个内置属性[[prototype]]</font>**，该属性指向另外一个对象，当使用key获取对象的value时，对象中没有该属性，就会访问[[prototype]]内置属性指向的对象的属性。
 
-每个函数都有一个prototype属性，使用构造函数创建的对象的[[prototype]]属性始终指向该构造函数的prototype。
+**<font color=red>每个函数都有一个prototype属性</font>**，使用构造函数创建的对象的[[prototype]]属性始终指向该构造函数的prototype。
 
 #### （1）获取原型方式
 
@@ -660,14 +905,45 @@ obj.__proto__.__proto__;//[Object:null prototype]{}
 
 
 
-#### （3）类
+#### （3）class类
 
-- 当通过new关键字调用一个Person类时, 默认调用class中的constructor方法；
 - class定义的类, 不能作为一个普通的函数进行调用，只能通过new方法创建实例；
-- 类中的this，指向实例化的目标对象；
 - 在子类的构造函数中使用this或者返回默认对象之前，必须先通过super调用父类的构造函数；
 - 子类方法中扩充父类方法也需要通过super调用父类方法；
 - JS只支持单继承（不支持多继承）
+
+
+
+##### 3.1、定义类
+
+```js
+class myClass {
+  //class方法
+  constructor(){...};
+  methods1(){};
+  methods2(){};
+  ...
+}
+```
+
+
+
+##### 3.2、使用类
+
+​	**在JS中，<font color=red>类的表现形式就是构造函数</font>。**使用 `new MyClass()` 来创建具有上述列出的所有方法的新对象。`new` 会自动调用 `constructor()` 方法，因此<font color=red>可以在 `constructor()` 中初始化对象</font>。
+
+- 构造函数：
+  - 构造函数是一个普通函数，和普通函数没有区别；
+  - 当一个普通函数被new操作符调用后，这个函数就被称为是一个构造函数；
+
+- 函数使用new操作符调用后执行的操作：
+  1. 在内存中创建一个空对象；
+  2. 在对象内部的隐式原型属性被赋值为构造函数的原型对象属性；
+  3. 构造函数的this会指向创建出的新对象；
+  4. 执行构造函数的内部代码即函数体；
+  5. 如果构造函数没有返回非空对象，则返回创建出来的新对象。
+
+**注意⚠️：类的方法之间没有逗号**
 
 
 
@@ -706,118 +982,6 @@ d instanceOf Object;//true,所有对象都是Object的实例
 let obj = {name:"zhang"};
 Object.prototype.hasOwnProperty.call(obj,'name')//true
 obj.hasOwnProperty('age')//false
-```
-
-
-
-### 25、手写apply/call/bind
-
-#### （1）call、apply和bind的区别
-
-- call和apply会**改变this的指向并<font color=red>立即执行函数</font>**
-  - apply接受数组参数；
-  - call接受参数序列；
-
-- bind不会立即执行函数而是返回this改变后的函数。
-
-
-
-#### （2）apply
-
-```javascript
-//函数对象
-function foo(name,age){
-  console.log(this,name,age)
-}
-
-//apply，接受参数是个数组
-Function.prototype.ycapply = function(thisArg,otherArg){
-  //第一个参数是要绑定的this,当前this是调用的函数对象。第二个参数是数组
-  thisArg = (thisArg === undefined || thisArg === null) ? window : Object(thisArg);
-  //将this指向从函数对象绑定到thisArg上
-  Object.defineProperty(thisArg, "fn", {
-    enumerable:false,
-    configurable:true,
-    value: this,
-  });
-  thisArg.fn(...otherArg);
-  delete thisArg.fn;
-}
-foo.ycapply({ name: "zhang" }, [25, "man"]);//{name: 'zhang'} 25 'man'
-```
-
-
-
-#### （3）call
-
-```javascript
-//函数对象
-function foo(name,age){
-  console.log(this,name,age)
-}
-
-//call,接受参数序列
-Function.prototype.yccall = function (thisArg, ...otherArg) {
-  thisArg =
-    thisArg === null || thisArg === undefined ? window : Object(thisArg);
-  Object.defineProperty(thisArg, "fn", {
-    enumerable: false,
-    configurable: true,
-    value: this,
-  });
-  thisArg.fn(...otherArg);
-  delete thisArg.fn;
-};
-foo.yccall({ name: "zhang" }, 25, "man");
-```
-
-还可以将重复部分封装在原型上
-
-```javascript
-Function.prototype.ycexec = function(thisArg, otherArgs) {
-  thisArg = (thisArg === null || thisArg === undefined)? window: Object(thisArg)
-  Object.defineProperty(thisArg, "fn", {
-    enumerable: false,
-    configurable: true,
-    value: this
-  })
-  thisArg.fn(...otherArgs)
-  delete thisArg.fn
-}
-Function.prototype.ycapply = function(){
-  this.ycexec(thisArg,otherArgs)
-}
-Function.prototype.yccall = function(){
-  this.ycexec(thisArg,otherArgs)
-}
-```
-
-
-
-#### （4）bind
-
-```javascript
-//手写bind，返回this改变后的函数
-function foo(name, age, height, address) {
-  console.log(this, name, age, height, address);
-}
-Function.prototype.ycbind = function (thisArg, ...otherArgs) {
-  thisArg =
-    thisArg === null || thisArg === undefined ? window : Object(thisArg);
-  Object.defineProperty(thisArg, "fn", {
-    enumerable: false,
-    configurable: true,
-    writable: false,
-    value: this,
-  });
-  return (...newArgs) => {
-    var allArg = [...otherArgs, ...newArgs];
-    thisArg.fn(...allArg);
-  };
-};
-
-var newFoo = foo.ycbind("abc", "kobe", 30);
-//使用时要调用才执行
 ```
 
 
@@ -883,9 +1047,7 @@ indexOf查找某项元素，找到返回第一次出现索引，没找到返回-
 
 - flat数组扁平化
 - flatMap
-- trimStart和trimEnd方法
-
-消除首尾空格
+- trimStart和trimEnd方法消除首尾空格
 
 
 
@@ -937,8 +1099,8 @@ obj = null;//触发销毁
 
 <font color=deepred>对比Object.defineProperty</font>：
 
-1. Object.defineProperty设计之初不是为了监听整个对象中所有属性的，需要使用遍历对每个属性实现；
-2. 新增、删除属性Object.defineProperty是无能为力的；
+1. Object.defineProperty设计之初不是为了监听整个对象中所有属性的，**需要使用遍历对每个属性实现**；
+2. **新增、删除属性Object.defineProperty是无能为力的**；
 
 #### （1）基本使用
 
@@ -988,19 +1150,23 @@ const objProxy = new Proxy(obj, {
 
 ### 35、Reflect
 
+也是ES6新增的一个API，它是**一个对象**，字面的意思是**反射**
+
 #### （1）作用
 
-- 提供了很多操作JavaScript对象的方法，像Object中操作对象的方法；
+- 提供了很多<font color=deepred>操作JavaScript对象的方法</font>，像Object中操作对象的方法；
 - 获取原型的方法Reflect.getPrototypeOf(target)类似于 Object.getPrototypeOf()；
 - 属性描述符比如Reflect.defineProperty(target, propertyKey, attributes)类似于Object.defineProperty() ;
 
 
 
-#### （2）和Object的区别
+#### （2）设计目的
 
-​	早期的ECMA规范中没有考虑到对 **对象本身** 的操作如何设计会更加规范，所以将这些API放到了Object上面; 
+​	早期的ECMA规范中没有考虑到对 **对象本身** 的操作如何设计会更加规范，所以将这些API放到了Object上面;  但是Object作为一个构造函数，这些操作实际上放到它身上并不合适，因此新增Reflect做到不操作原对象。
 
-​	所以在ES6中新增了Reflect，让这些操作都集中到了Reflect对象上; 同时可以不操作原对象;
+
+
+#### （3）和Object的区别
 
 | Method Name                   | `Object`                                                     | `Reflect`                                                    |
 | :---------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
@@ -1020,20 +1186,32 @@ const objProxy = new Proxy(obj, {
 
 
 
-#### （3）使用方法
+#### （3）常见方法使用
+
+##### 3.1、Reflect.has
+
+##### 3.2、Reflect.get
+
+##### 3.3、Reflect.set
+
+##### 3.4、Reflect.deleteProperty
 
 ```js
 const objProxy = new Proxy(obj, {
   has:function(target, key){
+    //判断一个对象是否存在某个属性，和 in 运算符 的功能完全相同
     return Reflect.has(target, key)
   },
   get:function(target, key，receiver){
+    //获取对象身上某个属性的值，类似于 target[name]
     return Reflect.get(target, key, receiver)
   },
   set:function(target, key, valu,receiver){
+    //将值分配给属性的函数。返回一个Boolean，如果更新成功，则返回true
     return Reflect.set(target, key, value, receiver)
   },
   deleteProperty:function(target, key){
+    //作为函数的delete操作符，相当于执行 delete target[name]
     return Reflect.deleteProperty(target, key)
   }
 })
@@ -1910,4 +2088,8 @@ async function getData() {
 }
 getData()
 ```
+
+
+
+
 

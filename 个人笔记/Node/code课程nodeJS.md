@@ -2,8 +2,6 @@
 
 **Node*.*js** 是一个基于 Chrome V8 引擎的 JavaScript 运行环境。*Node*.*js* 使用了一个事件驱动、非阻塞式 I/O 的模型,使其轻量又高效。
 
-
-
 # 一、Node基础
 
 ## 1、浏览器内核
@@ -54,7 +52,7 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
   - 如果函数值调用一次，Ignition会进行解释并执行字节码
 - **TurboFan**是一个<font color=orange>编译器，可以将字节码直接编译为CPU可以直接执行的机器码</font>；
   - 如果一个函数被多次调用，那么就会被标记为热点函数，那么就会经过TurboFan转换成优化的机器码，提高代码的执行性能
-  - 但是，机器码实际上也会被还原为ByteCode，这是因为如果后续执行函数的过程中，类型发生了变化(比如sum函数原来执行的是number类型，后 来执行变成了string类型)，之前优化的机器码并不能正确的处理运算，就会逆向的转换成字节码;
+  - 但是，机器码实际上也会被还原为ByteCode，这是因为如果后续执行函数的过程中，类型发生了变化(比如sum函数原来执行的是number类型，后来执行变成了string类型)，之前优化的机器码并不能正确的处理运算，就会逆向的转换成字节码;
 
 
 
@@ -675,6 +673,20 @@ npx的原理非常简单，它会到当前目录的node_modules/.bin目录下查
 
 
 
+## 6、npm发包
+
+- 注册npm账号
+- 命令行登录`npm login`
+- 修改package.json
+- 发布到npm仓库中`npm publish`
+- 更新仓库
+  - 修改版本号
+  - 重新发布
+- 删除发布的包`npm unpublish`
+- 让发布的包过期`npm deprecate`
+
+
+
 ## 6、pnpm
 
 ### （1）特点
@@ -696,6 +708,17 @@ npx的原理非常简单，它会到当前目录的node_modules/.bin目录下查
 可以通过pnpm store path命令获取当前活跃的store目录
 
 
+
+### （3）安装和使用
+
+安装`npm install -g pnpm`
+
+| npm命令             | pnpm等价命令      |
+| ------------------- | ----------------- |
+| npm install         | pnpm install      |
+| npm install <pkg>   | pnpm add <pkg>    |
+| npm uninstall <pkg> | pnpm remove <pkg> |
+| npm run <cmd>       | pnpm <cmd>        |
 
 # 五、创建个人脚手架
 

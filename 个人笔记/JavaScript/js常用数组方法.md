@@ -532,6 +532,36 @@ arr4.flat(Infinity);	// [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 
+### 29、from()
+
+`Array.from()`方法对一个类似数组或者可迭代对象<font color=deepred>创建一个新的、浅拷贝的数组实例</font>。
+
+```js
+const list1 = Array.from([1,2,3], x => x + x)	//[2, 4, 6]
+const list2 = Array.from('foo')	//["f", "o", "o"]
+const data = [
+  { name: "questions", value: 17 },
+  { name: "schools", value: 25 }
+];
+const names = Array.from(data, (el) => el.name);	//[ 'questions', 'schools' ]
+```
+
+语法:
+
+```js
+// 箭头函数
+Array.from(arrayLike, (element) => { /* … */ } )
+// 映射函数
+Array.from(arrayLike, mapFn)
+```
+
+参数：
+
+1. arrayLike表示想要转换成数组的伪数组或可迭代对象；
+2. mapFn可选的，如果指定了该参数，新数组中的每个元素会执行该回调函数；
+
+返回值：一个新的数组实例
+
 
 
 ## 总结：

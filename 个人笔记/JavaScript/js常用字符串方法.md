@@ -186,7 +186,7 @@ console.log(str.search(re2)); // returns -1
 
 ### 14、slice()方法
 
-​	slice()方法提取某个字符串的一部分，并返回一个新的字符串，且不会改动原字符串。
+​	slice()方法提取某个字符串的一部分，指定开始位置和结束位置索引，并返回一个新的字符串，且不会改动原字符串。
 
 ```javascript
 const str = 'The quick brown fox jumps over the lazy dog.';
