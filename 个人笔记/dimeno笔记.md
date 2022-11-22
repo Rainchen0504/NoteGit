@@ -2994,7 +2994,7 @@ return option;
 
 # 2022年11月22日
 
-jquery实现树状图
+## jquery实现树状收缩表格
 
 ```html
 <!DOCTYPE>
