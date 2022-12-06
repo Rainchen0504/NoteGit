@@ -243,6 +243,22 @@ v-model的原理是背后有两个操作：
 
 
 
+### （8）v-memo（3.2+）
+
+指定监听的值，根据值是否变化决定是否更新渲染组件。
+
+```vue
+<div v-memo="[valueA, valueB]">
+  ...
+</div>
+```
+
+​	当组件重新渲染，如果 `valueA` 和 `valueB` 都保持不变，这个 `<div>` 及其子项的所有更新都将被跳过。实际上，甚至虚拟 DOM 的 vnode 创建也将被跳过，因为缓存的子树副本可以被重新使用。
+
+注意⚠️：<font color=deepred>v-memo不能用在v-for内部</font>，该指令近用于性能至上场景中的微小优化。
+
+
+
 ## 4、根元素
 
 ​	在vue2中，template模板中只能有一个根元素；vue3是允许template中有多个根元素。
@@ -1646,6 +1662,59 @@ provide("changeInfo",changeInfo)
 
 
 
+## 16、挂载全局变量或方法
+
+开发中如果需要在全局上挂载函数、方法时候可以使用全局挂载的方法：
+
+### （1）vue2
+
+vue2.x版本可以使用`Vue.prototype`挂载在全局，在组件中捷可以使用`this`来调用。
+
+```js
+import Vue from "vue";
+import App from "./App.vue";
+import {XX} from "./utils";
+//设置全局方法或变量
+Vue.prototype.$XX = XX;
+new Vue({
+  render:(h) => h(App)
+}).$mount("#app")
+```
+
+```js
+//使用时通过this调用
+this.$XX()
+```
+
+
+
+### （2）vue3
+
+vue3.x版本通过`app.config.globalProperties`挂载，在组件中可以使用`getCurrentInstance`获取当前组件实例后调用。
+
+```js
+import { createApp } from 'vue';
+import App from './App.vue';
+import { XX } from './utils';
+const app = createApp(App)；
+//设置全局方法或变量
+app.config.globalProperties.$XX = XX;
+app.mount('#app')
+```
+
+```js
+//在组合式API的setup中使用时
+import { getCurrentInstance } from "vue";
+export defautlt {
+  setup(){
+    const { proxy } = getCurrentInstance()
+    proxy.$XX()
+  }
+}
+```
+
+
+
 ## 16、script setup语法
 
 在<font color=red>单文件组件（SFC）中使用组合式API的编译时语法糖</font>
@@ -1733,13 +1802,15 @@ comRef.value.foo()即可使用实例组件暴露出来的方法
 
 下面以三种方式实现一个元素挂载完成后自动获取焦点的功能：
 
-##### 实现方式1：聚焦的默认实现
+##### 2.1、实现方式1：聚焦的默认实现
 
 ![image-20211228162854628](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112281628790.png)
 
 
 
-##### 实现方式2:局部指令
+##### 2.2、实现方式2:局部指令
+
+###### （1）选项式API
 
 自定义一个v-focus的局部指令，只需用在**组件选项中使用directives即可**。
 
@@ -1751,7 +1822,26 @@ comRef.value.foo()即可使用实例组件暴露出来的方法
 
 
 
-##### 实现方式3:全局指令
+###### （2）组合式API
+
+​	全局注册的自定义指令将正常工作。本地的自定义指令在 `<script setup>` 中不需要显式注册，但他们必须遵循 `vNameOfDirective` 这样的命名规范：
+
+```vue
+<input type="text" v-focus />
+
+<script setup>
+	const vFocus = {
+    mounted(el){
+      // 在元素上做些操作
+      el?.focus()
+    }
+  }
+</script>
+```
+
+
+
+##### 2.3、实现方式3:全局指令
 
 自定义一个**全局的v-focus指令**可以让我们在任何地方直接使用
 
@@ -1993,6 +2083,8 @@ render(){
 
 一个<font color=skyblue>HTML标签或者组件名</font>，该参数是**必须的**；
 
+
+
 #### 3.2、参数二
 
 类型：Object 
@@ -2016,22 +2108,24 @@ render(){
 
 ### （4）使用h函数
 
-h函数可以在两个地方使用：
+#### 4.1、选项式API
 
-#### 4.1、render函数中
-
-```js
-import {h} from "vue";
-export default {
-  render(){
-    return h('div',{class:"app"},"hello app")
+```vue
+<script>
+	import {h} from "vue";
+  export default {
+    render(){
+       return h('div',{class:"app"},"hello app")
+    }
   }
-}
+</script>
 ```
 
 
 
-#### 4.2、setup函数
+#### 4.2、组合式API
+
+##### （1）setup函数中
 
 <font color=red>setup函数选项</font>中(setup本身需要是一个函数类型，函数再返回h函数创建的VNode)；
 
@@ -2042,6 +2136,35 @@ export default {
     return () => h('div',{class:"app"},"hello app")
   }
 }
+```
+
+
+
+##### （2）setup语法糖
+
+```vue
+<template>
+	<render></render>
+</template>
+
+<script setup>
+import { h, ref } from "vue";
+import Home from "./Home.vue";
+const counter = ref(0);
+const increment = () => {
+  counter.value++;
+};
+const decrement = () => {
+  counter.value--;
+};
+const render = () =>
+  h("div", { className: "app" }, [
+    h("h2", null, `当前计数${counter.value}`),
+    h("button", { onClick: increment }, "+1"),
+    h("button", { onClick: decrement }, "-1"),
+    h(Home),
+  ]);
+</script>
 ```
 
 
@@ -2107,7 +2230,7 @@ export default{
 
 
 
-## 22、jsx
+## 22、JSX
 
 ### （1）jsx的babel配置
 
@@ -4199,7 +4322,7 @@ instance.post("url",{
 
 
 
-# 四、Vue3动画
+# 八、Vue3动画
 
 Vue提供了一些内置组件和对应的API来完成动画。
 
@@ -4490,15 +4613,462 @@ npm install gsap
 
 
 
+# 九、响应式原理
+
+## 1、响应式逻辑：
+
+```js
+//有一个变量m，初始值为10
+let m = 10;
+console.log(m)
+
+//如果我修改了m的值，希望使用到m的地方也就是log也跟着再执行一次，就称为是响应式的
+m = 40
+```
 
 
 
+## 2、响应式函数设计
 
-# 五、Vue source源码学习
+当然使用变量的代码可能不止一行，所以把这些代码放到一个函数中
+
+```js
+let obj = { name:"zhang" };
+
+//foo函数使用了obj对象的name属性，所以当obj的name属性发生改变时就需要重新执行foo函数
+function foo(){
+  console.log(obj.name)
+}
+```
+
+
+
+## 3、响应式依赖收集函数
+
+开发中有许多函数，并不是所有函数都需要进行响应式，因此封装一个watchFn，指定传入watchFn的函数都是需要响应式的
+
+```js
+let obj = { name: "zhang",age: 25 }
+
+// 保存响应式函数的数组
+let reactiveFns = [];
+function watchFn(fn){
+  reactiveFns.push(fn)
+  fn()
+};
+
+//使用时将需要进行响应式的函数传入watchFn中
+watchFn(function foo() {
+  console.log("foo:", obj.name)
+  console.log("foo", obj.age)
+})
+
+//如果修改了obj的值,只需要将reactiveFns数组中的所有函数执行一遍就行
+obj.name = "chenge"
+reactiveFns.forEach(fn => fn())
+```
+
+
+
+## 4、响应式依赖收集类
+
+实际开发中会监听许多的响应式对象，不可能将这些响应式对象的依赖函数都放在同一个数组中保存，因此设计使用一个类来管理一个对象的某一个属性的所有响应式函数
+
+```js
+class Depend {
+  constructor(){
+    this.reactiveFns = [];
+  }
+  //添加需要保存的响应式函数
+  addDepend(fn){
+    this.reactiveFns.push(fn)
+  }
+  //更改时触发执行函数
+  notify(){
+    this.reactiveFns.forEach(fn => fn())
+  }
+}
+
+let obj = { name: "zhang",age: 25 }
+
+//使用时创建依赖收集函数实例
+const dep = new Depend()
+
+//响应式函数给dep中添加依赖函数
+function watchFn(fn){
+  dep.addDepend(fn)
+  fn()
+}
+
+// ========================= 业务代码 ========================
+watchFn(function foo() {
+  console.log("foo:", obj.name)
+  console.log("foo", obj.age)
+})
+
+//修改obj对象的值
+obj.name = "chenge"
+dep.notify()
+```
+
+
+
+## 5、监听对象属性变化
+
+通过 `Object.defineProperty`的方式（vue2采用的方式）或者通过 `new Proxy` 的方式（vue3采用的方式）来监听对象的属性
+
+```js
+class Depend {
+  constructor(){
+    this.reactiveFns = [];
+  }
+  addDepend(fn){
+    this.reactiveFns.push(fn)
+  }
+  notify(){
+    this.reactiveFns.forEach(fn => fn())
+  }
+}
+
+let obj = { name: "zhang",age: 25 }
+
+const dep = new Depend()
+function watchFn(fn){
+  dep.addDepend(fn)
+  fn()
+}
+
+//监听对象的每个属性
+//方法1
+Object.keys(obj).forEach(key => {
+  let value = obj[key];
+  Object.defineProperty(obj, key, {
+    set:function(newValue){
+      value = newValue
+      dep.notify()
+    },
+    get:function(){
+      return value
+    }
+  })
+})
+//方法2
+// const proxyObj = new Proxy(obj, {
+//   get: function (target, key, receiver) {
+//     Reflect.get(target, key, receiver);
+//   },
+//   set: function (target, key, value, receiver) {
+//     Reflect.set(target, key, value, receiver);
+//     dep.notify();
+//   },
+// });
+
+// ========================= 业务代码 ========================
+watchFn(function foo() {
+  console.log("foo:", obj.name)
+  console.log("foo", obj.age)
+})
+
+//修改obj对象的值
+obj.name = "chenge"
+//proxyObj.name = "chenge";
+```
+
+
+
+## 6、依赖管理
+
+实际开发中会有不同的对象和不同的属性需要管理，只创建一个Depend对象显然是不够的，因此需要创建如下数据结构来保存关系。
+
+![image-20221204010916250](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212040109129.png)
+
+```js
+class Depend {
+  constructor() {
+    this.reactiveFns = [];
+  }
+  addDepend(fn) {
+    if (fn) {
+      this.reactiveFns.push(fn);
+    }
+  }
+  notify() {
+    this.reactiveFns.forEach((fn) => {
+      fn();
+    });
+  }
+}
+
+let obj = { name: "zhang", age: 25 };
+
+let reactiveFn = null;
+function watchFn(fn) {
+  reactiveFn = fn;
+  fn();
+  reactiveFn = null;
+}
+
+const objMap = new WeakMap();
+//封装函数实现通过obj的key获取对应的Depend对象
+function getDepend(obj, key) {
+  // 1.根据对象obj, 找到对应的map对象
+  let map = objMap.get(obj);
+  if (!map) {
+    map = new Map();
+    objMap.set(obj, map);
+  }
+  // 2.根据对象key, 找到对应的depend对象
+  let dep = map.get(key);
+  if (!dep) {
+    dep = new Depend();
+    map.set(key, dep);
+  }
+  return dep;
+}
+
+Object.keys(obj).forEach((key) => {
+  let value = obj[key];
+  Object.defineProperty(obj, key, {
+    set: function (newValue) {
+      value = newValue;
+      const dep = getDepend(obj, key);
+      dep.notify();
+    },
+    get: function () {
+      const dep = getDepend(obj, key);
+      dep.addDepend(reactiveFn);
+      return value;
+    },
+  });
+});
+
+// ========================= 业务代码 ========================
+watchFn(function foo() {
+  console.log("foo:", obj.name);
+  console.log("foo", obj.age);
+});
+
+//修改obj的值
+obj.age = 20;
+```
+
+### 执行顺序：
+
+1、调用`watchFn`函数传入参数函数，变量`reactiveFn`被赋值成传入的参数函数，然后`fn()`执行这个函数；
+
+2、执行函数时需要获取obj对象的name属性和age属性，因此就触发了对象监听的`get方法`；
+
+3、get方法中调用`getDepend`方法，由于objMap里面还没有任何东西，所以创建了新的`weakmap`对象，属性名是obj对象，属性值是一个map结构，map属性名name，值是`new Depend()`并返回`new Depend()`。然后调用`new Depend()`中的`addDepend`方法将变量`reactiveFn`也就是fn函数添加进去；
+
+4、当`obj.name`和`obj.age`属性获取完成后fn()执行结束，将变量`reactiveFn`置为`null`；
+
+5、接着执行`obj.name=20`修改obj的name属性，触发对象监听的`set方法`；
+
+6、set方法获取了`weakmap`中属性名为obj对象的map中属性名为name的dep对象，执行`notify()`方法，在第3步中`reactiveFns`保存着`watchFn`传入的参数函数，所以执行该函数，流程结束；
+
+
+
+## 7、响应式收集类重构
+
+### （1）存在的问题：
+
+- 如果函数中用到两次相同的key的情况下，`dep.addDepend(reactiveFn)`仍会执行两次，即依赖被收集两次；
+- 并不希望将添加`addDepend`在get中执行，因为这是属于Dep收集依赖函数的行为；
+
+### （2）针对性解决方法：
+
+- 防止相同属性的情况下依赖添加重复，在`class Depend`中使用Set保存依赖函数；
+- 添加新方法用于收集依赖
+
+```js
+class Depend {
+  constructor() {
+    this.reactiveFns = new Set();
+  }
+  addDepend(fn) {
+    if (fn) {
+      this.reactiveFns.add(fn);
+    }
+  }
+  depend() {
+    if (reactiveFn) {
+      this.reactiveFns.add(reactiveFn)
+    }
+  }
+  notify() {
+    this.reactiveFns.forEach((fn) => {
+      fn();
+    });
+  }
+}
+
+//设置一个专门执行响应式函数的函数
+let reactiveFn = null
+function watchFn(fn) {
+  reactiveFn = fn
+  fn()
+  reactiveFn = null
+}
+
+const objMap = new WeakMap();
+//封装函数实现通过obj的key获取对应的Depend对象
+function getDepend(obj, key) {
+  // 1.根据对象obj, 找到对应的map对象
+  let map = objMap.get(obj);
+  if (!map) {
+    map = new Map();
+    objMap.set(obj, map);
+  }
+  // 2.根据对象key, 找到对应的depend对象
+  let dep = map.get(key);
+  if (!dep) {
+    dep = new Depend();
+    map.set(key, dep);
+  }
+  return dep;
+}
+
+let obj = { name: "zhang", age: 25 };
+
+Object.keys(obj).forEach((key) => {
+  let value = obj[key];
+  Object.defineProperty(obj, key, {
+    set: function (newValue) {
+      value = newValue;
+      const dep = getDepend(obj, key);
+      dep.notify();
+    },
+    get: function () {
+      const dep = getDepend(obj, key);
+      dep.depend();
+      return value;
+    },
+  });
+});
+
+// ========================= 业务代码 ========================
+watchFn(function foo() {
+  console.log("foo:", obj.name);
+  console.log("foo", obj.age);
+});
+
+//修改obj的值
+obj.age = 20;
+```
+
+
+
+## 8、创建响应式对象
+
+上面都是对单一的obj对象做处理的，下面创建一个函数针对所有对象做响应式对象
+
+```js
+class Depend {
+  constructor(){
+    this.reactiveFns = new Set()
+  }
+  addDepend(fn){
+    if(fn){
+      this.reactiveFns.add(fn)
+    }
+  }
+  depend(){
+    if(reactiveFn){
+      this.reactiveFns.add(reactiveFn)
+    }
+  }
+  notify(){
+    this.reactiveFns.forEach((fn) => {
+      fn();
+    });
+  }
+}
+
+let reactiveFn = null
+function watchFn(fn){
+  reactiveFn = fn
+  fn()
+  reactiveFn = null
+}
+
+const objMap = new WeakMap()
+function getDepend(obj,key){
+  let map = objMap.get(obj)
+  if(!map){
+    map = new Map()
+    objMap.set(obj,map)
+  }
+  let dep = map.get(key)
+  if(!dep){
+    dep = new Depend()
+    map.set(key,dep)
+  }
+  return dep
+}
+
+//vue2的做法
+// function reactive(obj){
+//   Object.keys(obj).forEach(key => {
+//     let value = obj[key]
+//     Object.defineProperty(obj, key, {
+//       set:function(newValue){
+//         value = newValue
+//         const dep = getDepend(obj, key)
+//         dep.notify()
+//       },
+//       get:function(){
+//         const dep = getDepend(obj, key)
+//         dep.depend()
+//         return value
+//       }
+//     })
+//   })
+//   return obj
+// }
+
+//vue3的做法
+function reactive(obj){
+  const objProxy = new Proxy(obj, {
+    set:function(target, key, newValue, receiver){
+      Reflect.set(target, key, newValue, receiver)
+      const dep = getDepend(target, key)
+      dep.notify()
+    },
+    get:function(target, key, receiver){
+      const dep = getDepend(target, key)
+      dep.depend()
+      return Reflect.get(target, key, receiver)
+    }
+  })
+  return objProxy
+}
+
+const obj = reactive({
+  name:"chenge",
+  age:25
+})
+watchFn(function(){
+  console.log(obj.name)
+  console.log(obj.age)
+})
+obj.name = "xigou"
+
+const user = reactive({
+  account:"zyc",
+  password:1997
+})
+watchFn(function() {
+  console.log(user.account)
+  console.log(user.password)
+})
+user.account = "cyz"
+```
+
+
+
+# 十、Vue source源码学习
 
 ![image-20211230110742607](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112301137210.png)
-
-
 
 
 
@@ -5030,7 +5600,7 @@ function reactive(raw) {
 
 
 
-### 
+
 
 # 六、TS与项目结合
 

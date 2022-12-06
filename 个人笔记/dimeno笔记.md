@@ -3243,3 +3243,79 @@ unbind() 方法移除被选元素的事件处理程序。
 
 ubind() 适用于任何通过 jQuery 附加的事件处理程序。
 
+
+
+# 2022年11月24日
+
+## 1、大量数据渲染的动态列表
+
+```vue
+<template>
+<!-- 虚拟列表 -->
+<div>虚拟列表</div>
+<div class="list" @scroll.passive="getScroll($event)">
+  <div :style="sumHeight">
+    <div
+         class="item"
+         v-for="(item, index) in options.slice(min - 2, min + 10)"
+         :key="index"
+         :style="itemHeight(item)"
+         >
+      <!-- 默认创建12个dom -->
+      {{ item.value }}:{{ item.label }}
+  	</div>
+  </div>
+</div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+//定义滚动事件，监听滚动距离,每一行高度为40，计算滚动长度对应的条数
+let min = ref(2)
+const getScroll = (event) => {
+  let scrollTop = event.target.scrollTop
+  //当滚动的距离大于2条数据高度时动态计算
+  if (scrollTop > 2 * 40) {
+    min.value = Math.ceil(scrollTop / 40)
+  } else {
+    min.value = 2
+  }
+}
+
+//模拟10万条数据
+const options = ref(
+  Array.from({ length: 10000 }).map((_, idx) => ({
+    value: `Option ${idx + 1}`,
+    label: `${idx}`,
+  })),
+)
+
+const sumHeight = {
+  height: 40 * options.value.length + 'px',
+  width: '100%',
+}
+
+const itemHeight = (param) => {
+  return { top: `${40 * param.label}px` }
+}
+</script>
+
+<style scoped lang="less">
+.list {
+  margin: 10px auto;
+  width: 98%;
+  height: 400px;
+  overflow: auto;
+  position: relative;
+  border: 1px solid #000;
+  .item {
+    height: 40px;
+    line-height: 40px;
+    position: absolute;
+    margin-left: 40px;
+  }
+}
+</style>
+```
+

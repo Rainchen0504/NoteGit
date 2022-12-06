@@ -757,3 +757,41 @@ module.exports = {
 };
 ```
 
+
+
+# 三、vite项目
+
+## 批量引入文件
+
+### 1、vite构建工具
+
+vite不支持require的引入方式，需要采用`import.meta.globEager(文件目录)`的方式。
+
+```js
+//其中*通配符代表此目录下的每一个文件
+const files = import.meta.globEager("../components/*.js")
+const modules = {};
+for (const key in files) {
+    if (Object.prototype.hasOwnProperty.call(files, key)) {
+        modules[key.replace(/(\.\/|\.js)/g, '')] = files[key].default
+    }
+}
+export default modules;
+```
+
+
+
+### 2、webpack构建工具
+
+webpack就使用的require导入读取文件的方式注册`require.context(文件路径, 是否查找子目录, 匹配文件的正则)`
+
+```js
+const files = require.context('.', false, /\.ts$/);
+const modules = {};
+files.keys().forEach((key) => {
+     if (key === './index.ts') { return; }
+     modules[key.replace(/(\.\/|\.ts)/g, '')] = files(key).default;
+});
+export default modules;
+```
+
