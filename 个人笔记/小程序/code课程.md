@@ -69,25 +69,9 @@
 
 ![image-20221204222531555](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212042225319.png)
 
-
-
-## 6、小程序架构
-
- Vue的MVVM和小程序MVVM对比
-
-![image-20221204224219735](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212042242799.png)
-
-DOM Listeners: ViewModel层可以将DOM的监听绑定到Model层
-
-Data Bindings: ViewModel层可以将数据的变量, 响应式的反应到View层
-
-
-
-## 7、语法
-
 参考微信官方开发文档，下面只挑选说明
 
-### （1）pages文件
+### pages文件
 
 该文件夹中放置的是一个个页面，每个页面文件夹包含四个文件：
 
@@ -130,3 +114,151 @@ Page({
 })
 ```
 
+
+
+## 6、小程序架构
+
+ Vue的MVVM和小程序MVVM对比
+
+![image-20221204224219735](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212042242799.png)
+
+DOM Listeners: ViewModel层可以将DOM的监听绑定到Model层
+
+Data Bindings: ViewModel层可以将数据的变量, 响应式的反应到View层
+
+
+
+## 7、架构模型
+
+小程序采用了<font color=deepred>**双线程**模型架构</font>：
+
+- WXML模块和WXSS样式运行于渲染层，渲染层使用WebView线程渲染（一个程序有多个页面会使用多个WebView线程）；
+- JS脚本运行于逻辑层，逻辑层使用JsCore运行JS脚本；
+- 这两个线程都会经由微信客户端（Native）进行中转交互；
+
+![image-20221209175558414](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212091755739.png)
+
+
+
+## 8、配置文件
+
+小程序很多开发需求都规定在配置文件中，常见的配置文件有
+
+- `project.config.json`：项目配置文件, 比如项目名称、appid等
+- `sitemap.json`：小程序搜索相关的
+- `app.json`：全局配置
+- `paeg.json`：页面配置
+
+
+
+### 全局app配置文件app.json
+
+| 属性   | 类型      | 必填 | 描述               |
+| ------ | --------- | ---- | ------------------ |
+| pages  | stringp[] | 是   | 页面路径列表       |
+| window | Object    | 否   | 全局的默认窗口表现 |
+| tabBar | Object    | 否   | 底部的tab栏的表现  |
+
+pages：页面路径列表，用于指定小程序由哪些页面组成，所有的页面都必须在pages中注册；
+
+window：全局默认窗口展示，包括很多配置属性；
+
+tabBar：底部的tab是个数组；
+
+
+
+### 页面配置文件page.json
+
+​	每个页面也可以使用`.json`文件对当前窗口进行配置，页面中配置项在当前页面会覆盖`app.json`的` window`中相同的配置项。
+
+
+
+## 9、注册小程序App函数
+
+`App()`实例只有一个，是全局共享的（单例对象）
+
+- 可以放置共享对象，但是该数据是非响应式的；
+
+  ```js
+  //全局app.js文件
+  App({
+    //共享数据，非响应式的静态数据
+    globalData:{
+      token:"",
+      userInfo:{}
+    },
+  })
+  
+  //其他页面
+  onLoad(){
+    const app = getApp()
+    console.log(app.globalData.token)
+  }
+  ```
+
+- 全局共享的生命周期函数；
+
+  ```js
+  App({
+    onLaunch(){},//监听小程序初始化
+    onShow(){},//监听小程序启动或切前台
+    onHide(){},//监听小程序切后台
+    onError(){}，//错误监听函数
+    onPageNotFound(){},//页面不存在监听函数
+    onUnhandledRejection(){},//未处理的Promise拒绝事件监听函数
+    onThemeChange(){}//监听系统主题变化
+  })
+  ```
+
+
+
+## 10、注册页面Page函数
+
+​	小程序中每个页面都有一个对应的js文件，调用`Page`函数注册页面实例。注册时可以绑定初始化数据、生命周期回调、事件处理函数等。
+
+注册Page需要做的内容：
+
+1. 在生命周期函数中发送网络请求，从服务器中获取数据；
+2. 初始化一些数据，方便被wxml引用展示；
+3. 监听wxml中的事件，绑定对应的事件函数；
+4. 设置其他监听（包括页面滚动、上拉刷新、下拉加载等）；
+
+```js
+Page({
+    //页面的初始数据
+    data: {},
+    //监听页面加载
+    onLoad(options) {},
+    //监听页面初次渲染完成
+    onReady() {},
+    //监听页面显示
+    onShow() {},
+    //监听页面隐藏
+    onHide() {},
+    //监听页面卸载
+    onUnload() {},
+    //监听用户下拉动作
+    onPullDownRefresh() {},
+    //页面上拉触底事件的处理函数
+    onReachBottom() {},
+    //用户点击右上角分享
+    onShareAppMessage() {}
+})
+```
+
+
+
+## 11、text组件
+
+显示文本，<font color=deepred>类似于`span`标签，是行内元素</font>。
+
+- `user-select`属性设置是否可以让用户选中；
+- `decode`是否解码，可以解析的有` &nbsp; &lt; &gt; &amp; &apos; &ensp; &emsp;`
+
+
+
+## 12、Button组件
+
+创建按钮，默认块级元素
+
+- size按钮大小

@@ -294,7 +294,6 @@ watcher实现了渲染方法`_render`和Dep的关联
 ```js
 class Watcher {
   constructor() {
-    //new一个Watcher对象的时候，将这个对象赋值给Dep.target
     Dep.target = this;
   }
   update() {
@@ -389,5 +388,521 @@ app._data.name = "chenge"; //更新视图的方法
 
 
 
+# 四、响应式原理
 
+创建实例时将data返回的对象属性设置响应式，之后当修改数据时自动触发使用到该属性的函数或方法
+
+```js
+//构建订阅者，对每个属性创建dep依赖
+class Depend {
+  constructor() {
+    this.reactiveFns = new Set();
+  }
+  addDepend(fn) {
+    if (fn) {
+      this.reactiveFns.add(fn);
+    }
+  }
+  depend() {
+    if (reactiveFn) {
+      this.reactiveFns.add(reactiveFn);
+    }
+  }
+  notify() {
+    this.reactiveFns.forEach((el) => el());
+  }
+}
+
+//关系函数，保存每个属性和对象和dep之间的关系
+const objWeakMap = new WeakMap();
+function getDepend(obj, key) {
+  let map = objWeakMap.get(obj);
+  if (!map) {
+    map = new Map();
+    objWeakMap.set(obj, map);
+  }
+  let dep = map.get(key);
+  if (!dep) {
+    dep = new Depend();
+    map.set(key, dep);
+  }
+  return dep;
+}
+
+//需要监听对象的包裹函数
+function reactive(obj) {
+  //这里分别使用2和3的方法
+  //1、2的原理
+  Object.keys(obj).forEach((key) => {
+    let value = obj[key];
+    Object.defineProperty(obj, key, {
+      get: function () {
+        const dep = getDepend(obj, key);
+        dep.depend();
+        return value;
+      },
+      set: function (newValue) {
+        value = newValue;
+        const dep = getDepend(obj, key);
+        dep.notify();
+      },
+    });
+  });
+  return obj;
+
+  //2、3的原理
+  // const proxyObj = new Proxy(obj, {
+  //   get: function (target, key, receiver) {
+  //     const dep = getDepend(target, key);
+  //     dep.depend();
+  //     return Reflect.get(target, key, receiver);
+  //   },
+  //   set: function (target, key, newValue, receiver) {
+  //     Reflect.set(target, key, newValue, receiver);
+  //     const dep = getDepend(target, key);
+  //     dep.notify();
+  //   },
+  // });
+  // return proxyObj;
+}
+
+let reactiveFn = null;
+function watchFn(fn) {
+  reactiveFn = fn;
+  fn();
+  reactiveFn = null;
+}
+
+//使用响应式包裹的目标对象
+const obj = reactive({
+  work: "javascript",
+  age: 35,
+});
+
+//观察函数，表示对这些函数要进行响应式
+watchFn(function () {
+  console.log(obj.work);
+  console.log(obj.age);
+});
+
+obj.work = "送外卖";
+```
+
+
+
+# 五、虚拟DOM中的VNode节点
+
+## 1、VNode
+
+​	VNode 就是一个 JavaScript 对象，用 JavaScript 对象的属性来描述当前节点的一些状态，用 VNode 节点的形式来模拟一棵 虚拟 DOM 树。
+
+
+
+## 2、模板到VNode结构
+
+### （1）模板中的元素：
+
+```vue
+<template>
+	<span class="demo" v-show="isSHow">this is span.</span>
+</template>
+```
+
+
+
+### （2）渲染函数表示：
+
+```js
+function render(){
+  return new VNode(
+  	'span',
+    {
+      directives:[//指令集合数组
+        {
+          rawName:'v-show',
+          expression:'isShow',
+          name:'show',
+          value:true
+        }
+      ],
+      staticClass:'demo'//静态class
+    },
+    [ new VNode(undefined, undefined, undefined, 'this, is span.') ]
+  )
+}
+```
+
+
+
+### （3）转换成VNode：
+
+```js
+{
+    tag: 'span',
+    data: {
+        directives: [//指令集合数组
+            {
+                rawName: 'v-show',
+                expression: 'isShow',
+                name: 'show',
+                value: true
+            }
+        ],
+        staticClass: 'demo'//class属性
+    },
+    text: undefined,
+    children: [//子节点是一个文本VNode节点
+        { 
+            tag: undefined,
+            data: undefined,
+            text: 'This is a span.',
+            children: undefined
+        }
+    ]
+}
+```
+
+
+
+## 3、实现VNode
+
+### （1）创建VNode类
+
+创建一个简单的VNode类，只需描述当前节点信息即可
+
+```js
+class VNode {
+  constructor(tag, data, children, text, el) {
+    this.tag = tag; //标签名
+    this.data = data; //节点数据，包括prop或者attrs等
+    this.children = children; //子节点，数组形式
+    this.text = text; //文本内容
+    this.el = el; //对应的真实DOM节点
+  }
+}
+```
+
+
+
+结合VNode的结构，对创建VNode的类进行拓展，常用的生成节点方法：
+
+### （2）创建一个空节点函数
+
+```js
+function createEmptyVNode () {
+    const node = new VNode();
+    node.text = '';
+    return node;
+}
+```
+
+
+
+### （3）创建一个文本节点函数
+
+```js
+function createTextVNode(val){
+  return new VNode(undefined, undefined, undefined, String(val))
+}
+```
+
+
+
+### （4）克隆一个VNode节点
+
+```js
+function cloneVNode(node){
+  const cloneVnode = new VNode(
+    node.tag,
+    node.data,
+    node.children,
+    node.text,
+    node.elm
+  )
+  return cloneVnode;
+}
+```
+
+
+
+# 六、模板Compile编译
+
+## 1、Compile
+
+模板的编译可以分为三部分，解析parse阶段、optimize优化语法树阶段、generate将AST语法树转渲染函数阶段。
+
+整个流程以下面的代码举例说明：
+
+```html
+<div :class="c" class="demo" v-if="isShow">
+  <span v-for="item in sz">{{item}}</span>
+</div>
+```
+
+
+
+## 2、parse
+
+`parse`阶段会利用正则表达式将template分解成由指令、class、style等数据组成的对象，然后形成AST抽象语法树。
+
+```js
+{
+    /* 标签属性的map，记录了标签上属性 */
+    'attrsMap': {
+        ':class': 'c',
+        'class': 'demo',
+        'v-if': 'isShow'
+    },
+    /* 解析得到的:class */
+    'classBinding': 'c',
+    /* 标签属性v-if */
+    'if': 'isShow',
+    /* v-if的条件 */
+    'ifConditions': [
+        {
+            'exp': 'isShow'
+        }
+    ],
+    /* 标签属性class */
+    'staticClass': 'demo',
+    /* 标签的tag */
+    'tag': 'div',
+    /* 子标签数组 */
+    'children': [
+        {
+            'attrsMap': {
+                'v-for': "item in sz"
+            },
+            /* for循环的参数 */
+            'alias': "item",
+            /* for循环的对象 */
+            'for': 'sz',
+            /* for循环是否已经被处理的标记位 */
+            'forProcessed': true,
+            'tag': 'span',
+            'children': [
+                {
+                    /* 表达式，_s是一个转字符串的函数 */
+                    'expression': '_s(item)',
+                    'text': '{{item}}'
+                }
+            ]
+        }
+    ]
+}
+```
+
+
+
+### （1）正则
+
+```js
+//展示部分会用到的正则
+const ncname = '[a-zA-Z_][\\w\\-\\.]*';
+const singleAttrIdentifier = /([^\s"'<>/=]+)/
+const singleAttrAssign = /(?:=)/
+const singleAttrValues = [
+  /"([^"]*)"+/.source,
+  /'([^']*)'+/.source,
+  /([^\s"'=<>`]+)/.source
+]
+const attribute = new RegExp(
+  '^\\s*' + singleAttrIdentifier.source +
+  '(?:\\s*(' + singleAttrAssign.source + ')' +
+  '\\s*(?:' + singleAttrValues.join('|') + '))?'
+)
+const qnameCapture = '((?:' + ncname + '\\:)?' + ncname + ')'
+const startTagOpen = new RegExp('^<' + qnameCapture)
+const startTagClose = /^\s*(\/?)>/
+const endTag = new RegExp('^<\\/' + qnameCapture + '[^>]*>')
+const defaultTagRE = /\{\{((?:.|\n)+?)\}\}/g
+const forAliasRE = /(.*?)\s+(?:in|of)\s+(.*)/
+```
+
+### （2）advance
+
+解析template采用循环进行字符串匹配，每匹配解析完一段就需要将已经匹配掉的去掉，头部的指针指向接下来需要匹配的部分。
+
+### （3）parseHTML
+
+循环解析模板template中的字符串，匹配到标签头、标签尾和文本的时候进行不同处理，直到tempalte解析完毕。
+
+### （4）parseStartTag
+
+用 `startTagOpen` 正则得到标签的头部，可以得到标签名，接着使用 `startTagClose` 与 `attribute`正则解析标签以及标签内的属性，直到解析标签的所有属性。
+
+### （5）stack
+
+维护一个stack栈保存已解析好的标签头，这样可以根据在解析尾部标签的时候得到所属的层级关系以及父标签。同时我们定义一个 `currentParent` 变量用来存放当前标签的父标签节点的引用， `root` 变量用来指向根标签节点。
+
+### （6）流程图概览
+
+![image-20221210101517123](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212101309207.png)
+
+
+
+## 3、optimize
+
+​	优化抽象语法树，为静态节点添加【标记】（static属性，表示是否是静态节点），在patch时可以跳过标记的节点实现优化的目的。
+
+```js
+//经过标记过的VNode
+{
+    'attrsMap': {
+        ':class': 'c',
+        'class': 'demo',
+        'v-if': 'isShow'
+    },
+    'classBinding': 'c',
+    'if': 'isShow',
+    'ifConditions': [
+        'exp': 'isShow'
+    ],
+    'staticClass': 'demo',
+    'tag': 'div',
+    /* 静态标志 */
+    'static': false,
+    'children': [
+        {
+            'attrsMap': {
+                'v-for': "item in sz"
+            },
+            'static': false,
+            'alias': "item",
+            'for': 'sz',
+            'forProcessed': true,
+            'tag': 'span',
+            'children': [
+                {
+                    'expression': '_s(item)',
+                    'text': '{{item}}',
+                    'static': false
+                }
+            ]
+        }
+    ]
+}
+```
+
+### （1）isStatic
+
+传入一个node判断是否是静态节点。判断标准是当节点为表达式节点或者文本节点是就是静态节点，但是如果有if或者for条件时就是非静态节点。
+
+### （2）markStatic
+
+为所有的节点标记上 `static`属性，值就是`isStatic`的结果。
+
+### （3）markStaticRoots
+
+标记静态根，如果当前节点是静态节点，同时满足该节点并不是只有一个文本节点左右子节点时值为true否则为false。
+
+### （4）optimize
+
+调用`markStatic`和`markStaticRoots`函数就实现了标记优化
+
+
+
+## 4、generate
+
+将 AST 转化成 render funtion 字符串，最终得到 render 的字符串以及 staticRenderFns 字符串。
+
+真实的Vue编译结果如下：
+
+```js
+with(this){
+  //其中_c和_l都是函数简写
+    return (isShow) ? 
+    _c(
+        'div',
+        {
+            staticClass: "demo",
+            class: c
+        },
+        _l(
+            (sz),
+            function(item){
+                return _c('span',[_v(_s(item))])
+            }
+        )
+    )
+    : _e()
+}
+```
+
+# 七、数据更新diff和patch机制
+
+## 1、数据更新视图
+
+​	操作数据时会触发对应`Dep`中的`Watcher`对象。`Watcher`对象会调用对应的`update`修改视图，本质上是产生新的VNode和老的VNode进行一个`patch`的过程。
+
+
+
+## 2、跨平台
+
+​	使用虚拟DOM使得Vue具备跨平台的能力。
+
+​	虚拟DOM就是一些JS对象，这些对象依赖一层适配层，将不同平台的API封装在内，以同样的接口对外提供。
+
+```js
+//假设有一个nodeOps的适配对象，根据平台的不同执行对应的API，对外则提供了统一的接口供虚拟DOM使用
+const nodeOps = {
+    setTextContent (text) {
+        if (platform === 'weex') {
+            node.parentNode.setAttr('value', text);
+        } else if (platform === 'web') {
+            node.textContent = text;
+        }
+    },
+    parentNode () {
+        //......
+    },
+    removeChild () {
+        //......
+    },
+    nextSibling () {
+        //......
+    },
+    insertBefore () {
+        //......
+    }
+}
+```
+
+
+
+## 3、一些API
+
+下面说一些API，这些API在patch的过程中会被用到，最中都会调用`nodeOps`中的相应函数来操作平台。
+
+#### （1）、`insert`
+
+`insert`用来在`parent`父节点下插入一个子节点，如果指定了`ref`则插入`ref`这个子节点前面。
+
+```js
+function insert (parent, elm, ref) {
+  if (parent) {
+    if (ref) {
+      if (ref.parentNode === parent) {
+        nodeOps.insertBefore(parent, elm, ref);
+      }
+    } else {
+      nodeOps.appendChild(parent, elm)
+    }
+  }
+}
+```
+
+### （2）`createElm`
+
+`createElm`用来新建一个节点，tag存在创建一个标签节点，否则创建一个文本节点。
+
+```js
+function createElm (vnode, parentElm, refElm) {
+  if (vnode.tag) {
+    insert(parentElm, nodeOps.createElement(vnode.tag), refElm);
+  } else {
+    insert(parentElm, nodeOps.createTextNode(vnode.text), refElm);
+  }
+}
+```
 
