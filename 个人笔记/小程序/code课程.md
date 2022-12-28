@@ -337,7 +337,80 @@ WXSS优先级与CSS类似
 
 
 
-## 17、Mustache语法
+## 17、结构WXML
+
+### （1）Mustache语法
 
 WXML类似于HTML，可以使用单标签或双标签，必须有严格的闭合，并且大小写敏感。小程序提供和Vue一样的插值语法（双大括号语法）
+
+
+
+### （2）显示隐藏
+
+使用wx:if、wx:elif、wx:else实现逻辑判断，控制显示隐藏；
+
+hidden属性是所有组件都默认拥有的属性，控制显示隐藏；
+
+<font color=deepred>**hidden和wx:if的区别**</font>：
+
+- hidden控制是否添加hidden实现显示隐藏，类似display:none的设置；
+- wx:if通过控制组件是否渲染实现显示隐藏；
+
+
+
+### （3）列表渲染
+
+#### 3.1、wx:for
+
+使用wx:for遍历字符串、数字或者数组实现列表渲染。
+
+<font color=deepred>默认情况下</font>变量item表示某项，变量index表示数据下标。
+
+```html
+<view wx:for="{{10}}" wx:for="*this">
+	<view>{{item}}---{{index}}</view>
+</view>
+```
+
+
+
+#### 3.2、item/index名称
+
+默认情况下，item和index的名字是固定的，但是也可以指定item和index的名称
+
+```html
+<view>
+	<block wx:for="{{books}}"
+         wx:key="id"
+         wx:for-item="book"
+         wx:for-index="num"
+         >
+  		<view>{{book.name}}---{{num}}</view>
+  </block>
+</view>
+```
+
+
+
+#### 3.3、key的作用
+
+​	小程序内部也使用了<font color=deepred>虚拟DOM</font>（和Vue、React类似），当列表节点有很多时，为了更好的复用节点和高效的插入、删除新的节点，需要使用key这个属性。
+
+wx:key的值以两种形式提供：
+
+- <font color=pink>字符串</font>，表示在 for 循环的 array 中 item 的某个 property，该 property 的值需要是列表中唯一的字符串或数字，且不能
+
+  动态改变；
+
+- <font color=pink>保留关键字*this</font>，表示在 for 循环中的 item 本身，这种表示需要 item 本身是一个唯一的字符串或者数字；
+
+
+
+### （4）block标签
+
+`<block/> `并不是一个组件，它仅仅是一个包装元素，不会在页面中做任何渲染，只接受控制属性。
+
+- block的常见用法：
+  - 将需要进行遍历或者判断的内容进行包裹；
+  - 将遍历和判断的属性放在block标签中，不影响普通属性的阅读，提高代码的可读性；
 
