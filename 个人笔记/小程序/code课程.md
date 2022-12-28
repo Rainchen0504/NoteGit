@@ -261,4 +261,83 @@ Page({
 
 创建按钮，默认块级元素
 
-- size按钮大小
+- size：按钮大小；
+- type：样式类型；
+- plain：是否镂空；
+- disabled：是否禁用；
+- loading：名称前面是否带loading图标；
+- form-type：用于form组件，点击分别触发form的submit/reset事件；
+- open-type：微信开放能力，包括打开客服会话、用户转发共享、打开APP、授权等功能；
+- hover-class：指定按钮按下去；
+
+
+
+## 13、view组件
+
+视图组件，块级元素独占一行，通常作为容器组件
+
+- hover-class：指定按下去的样式类；
+- Hover-stop-propagation：指定是否阻止本节点的祖先节点出现点击态；
+- hover-start-time：按住后多久出现点击态，ms；
+- hover-stay-time：手指松开后点击态保留时间，ms；
+
+
+
+## 14、Image组件
+
+图片组件，用于显示图片
+
+- src：图片资源地址，可以是本地图片也可以是网络图片；
+- mode：图片剪裁、缩放的模式；
+- webp：默认不解析webp格式，只支持网络资源；
+- lazy-load：图片懒加载，进入一定范围才加载；
+- show-menu-by-longpress：长按图片显示发送给朋友、收藏等等；
+- binderror：当错误发生时触发；
+- bindload：当图片载入完毕时触发；
+
+⚠️注意：image组件<font color=deepred>默认宽度时320px、高度240px</font>
+
+
+
+## 15、scroll-view组件
+
+实现局部滚动必须添加scroll-x或者scroll-y属性，垂直方向滚动必须给scroll-view设置高度。
+
+- scroll-x：允许横向滚动；
+- scroll-y：允许纵向滚动；
+- bindscrolltoupper：滚动到顶部/左侧时触发；
+- bindscrolltolower：滚动到底部/右侧时触发；
+- bindscroll：滚动时触发；
+
+
+
+## 16、样式WXSS
+
+### （1）写法
+
+页面样式三种写法：包括行内样式、页面样式、全局样式
+
+优先级依次是：行内样式 > 页面样式 > 全局样式
+
+
+
+### （2）权重
+
+WXSS优先级与CSS类似
+
+![image-20221228193525208](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212281935475.png)
+
+
+
+### （3）尺寸单位
+
+<font color=red>rpx</font>可以根据屏幕宽度进行自适应，规定屏幕宽度为750rpx。
+
+设计稿一般用IPhone6作为<font color=deepred>视觉稿</font>的标准。IPhone6屏幕宽度为375px，共有750个物理像素，则750rpx=375px=750物理像素，此时1rpx=0.5px=1物理像素。
+
+
+
+## 17、Mustache语法
+
+WXML类似于HTML，可以使用单标签或双标签，必须有严格的闭合，并且大小写敏感。小程序提供和Vue一样的插值语法（双大括号语法）
+
