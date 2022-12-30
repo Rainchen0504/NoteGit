@@ -518,3 +518,36 @@ module.exports = {
 - target：触发事件的组件的一些属性集合
 - currentTarget：当前组件的一些属性集合
 - mark：事件标记数据
+
+
+
+### （1）currentTarget和target的区别
+
+target：触发事件的对象（也就是事件源，真实DOM本身）；
+
+currentTarget：事件绑定的元素（处理事件的元素）
+
+在没有事件冒泡的情况下是一样的，但是如果采用了事件委托，那么就不同
+
+```html
+<view class="outer" id="outer" bindtap="onOuterTap">outer
+  <view class="inner" id="inner" bindtap="onInnerTap">inner</view>
+</view>
+<!--点击outer元素，currentTarget和target得到的结果是相同的-->
+<!--点击inner元素，会产生事件冒泡，得到两个结果：inner的currentTarget和target结果是相同的；outer的currentTarget和target结果是不同的，outer的target是outer，但是currentTarget的结果是inner-->
+```
+
+
+
+### （2）touches和changedTouches的区别
+
+touches：当前屏幕上所有触摸点的列表；
+
+changedTouches：触发事件时改变的触摸点的集合；
+
+
+
+## 4、事件参数的传递
+
+
+
