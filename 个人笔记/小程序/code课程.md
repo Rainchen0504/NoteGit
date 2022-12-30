@@ -55,7 +55,9 @@
 
 
 
-## 4、技术核心
+# 二、配置和架构
+
+## 1、技术核心
 
 小程序的核心技术主要是三个：
 
@@ -65,7 +67,7 @@
 
 
 
-## 5、项目结构
+## 2、项目结构
 
 ![image-20221204222531555](https://raw.githubusercontent.com/Rainchen0504/picture/master/202212042225319.png)
 
@@ -116,7 +118,7 @@ Page({
 
 
 
-## 6、小程序架构
+## 3、小程序架构
 
  Vue的MVVM和小程序MVVM对比
 
@@ -128,7 +130,7 @@ Data Bindings: ViewModel层可以将数据的变量, 响应式的反应到View�
 
 
 
-## 7、架构模型
+## 4、架构模型
 
 小程序采用了<font color=deepred>**双线程**模型架构</font>：
 
@@ -140,7 +142,7 @@ Data Bindings: ViewModel层可以将数据的变量, 响应式的反应到View�
 
 
 
-## 8、配置文件
+## 5、配置文件
 
 小程序很多开发需求都规定在配置文件中，常见的配置文件有
 
@@ -173,7 +175,7 @@ tabBar：底部的tab是个数组；
 
 
 
-## 9、注册小程序App函数
+## 6、注册小程序App函数
 
 `App()`实例只有一个，是全局共享的（单例对象）
 
@@ -212,7 +214,7 @@ tabBar：底部的tab是个数组；
 
 
 
-## 10、注册页面Page函数
+## 7、注册页面Page函数
 
 ​	小程序中每个页面都有一个对应的js文件，调用`Page`函数注册页面实例。注册时可以绑定初始化数据、生命周期回调、事件处理函数等。
 
@@ -248,7 +250,9 @@ Page({
 
 
 
-## 11、text组件
+# 三、内置组件
+
+## 1、text组件
 
 显示文本，<font color=deepred>类似于`span`标签，是行内元素</font>。
 
@@ -257,7 +261,7 @@ Page({
 
 
 
-## 12、Button组件
+## 2、Button组件
 
 创建按钮，默认块级元素
 
@@ -272,7 +276,7 @@ Page({
 
 
 
-## 13、view组件
+## 3、view组件
 
 视图组件，块级元素独占一行，通常作为容器组件
 
@@ -283,7 +287,7 @@ Page({
 
 
 
-## 14、Image组件
+## 4、Image组件
 
 图片组件，用于显示图片
 
@@ -299,7 +303,7 @@ Page({
 
 
 
-## 15、scroll-view组件
+## 5、scroll-view组件
 
 实现局部滚动必须添加scroll-x或者scroll-y属性，垂直方向滚动必须给scroll-view设置高度。
 
@@ -311,7 +315,9 @@ Page({
 
 
 
-## 16、样式WXSS
+# 四、WXML-WXSS-WXS
+
+## 1、样式WXSS
 
 ### （1）写法
 
@@ -337,7 +343,7 @@ WXSS优先级与CSS类似
 
 
 
-## 17、结构WXML
+## 2、结构WXML
 
 ### （1）Mustache语法
 
@@ -408,9 +414,107 @@ wx:key的值以两种形式提供：
 
 ### （4）block标签
 
-`<block/> `并不是一个组件，它仅仅是一个包装元素，不会在页面中做任何渲染，只接受控制属性。
+`<block/> `并不是一个组件，它仅仅是一个包装元素，不会在页面中做任何渲染，<font color=deepred>只接受控制属性</font>。
 
 - block的常见用法：
   - 将需要进行遍历或者判断的内容进行包裹；
   - 将遍历和判断的属性放在block标签中，不影响普通属性的阅读，提高代码的可读性；
 
+
+
+## 3、WXS
+
+小程序的一套脚本语言，结合WXML使用，可以构建出页面的结构。
+
+### （1）设计初衷
+
+​	WXML中不能直接调用JS文件中Page/Component对象定义的函数，但是在某种情况下希望使用函数处理WXML中的数据因此需要使用WXS。
+
+
+
+### （2）限制和特点
+
+- WXS不依赖运行时的基础库版本；
+- WXS运行环境和其他JS代码是隔离的，WXS中不能调用其他JS文件中定义的函数也不能调用小程序提供的原生API；
+- 在 iOS 设备上小程序内的WXS会比 JavaScript 代码快 2 ~ 20 倍，在 android 设备上二者运行效率无差异；
+
+
+
+### （3）写法
+
+1. WXS有两种写法：
+   1. 写在`<wxs>`标签中
+   2. 写在`.wxs`结尾的文件中
+2. `<wxs>`标签的属性
+   1. module，当前模块的名称，必填字段；
+   2. src，引用.wxs文件的相对路径；
+3. 每个`wxs`文件和`<wxs>`标签**<font color=blue>都是一个单独的模块</font>**
+   1. 每个模块<font color=deepred>都有独立的作用域</font>，在一个模块里面定义的变量和函数默认都是**私有的**；
+   2. 一个模块要想对外暴露其内部的私有变量与函数，只能通过`module.exports`实现
+
+
+
+举个求和的例子：
+
+```html
+<!--写法一：写在wxs标签中-->
+<wxs module="total">
+	function calcTotal(nums){
+  	return nums.reduce(function(preValue,item){
+  		return preValue + item
+  	},0)
+  }
+  module.exports = {
+  	calcTotal:calcTotal
+  }
+</wxs>
+
+<view>{{total.calcTotal(nums)}}</view>
+```
+
+```js
+<!--写法二：写在total.wxs文件中,文件名和module保持一致-->
+function calcTotal(nums){
+  return nums.reduce(function(preValue,item){
+    return preValue + item
+  },0)
+}
+module.exports = {
+  calcTotal:calcTotal
+}
+
+<wxs module="total" src="/utils/total.wxs"></wxs>
+<view>{{total.calcTotal(nums)}}</view>
+```
+
+# 五、事件处理
+
+## 1、事件监听
+
+​	事件<font color=red>通过`bind/catch`属性</font>绑定在组件上，同时在当前页面的Page构造器中定义对应的事件处理函数。当事件触发后事件处理函数会被执行，同时还会收到一个事件对象event。
+
+
+
+## 2、常见事件
+
+| 类型        | 触发条件                                     |
+| ----------- | -------------------------------------------- |
+| touchstart  | 手指触摸动作开始                             |
+| touchmove   | 手指触摸后移动                               |
+| touchcancel | 手指触摸动作被打断（来电提醒、弹窗等）       |
+| touchend    | 手指触摸动作结束                             |
+| tap         | 手指触摸后马上离开                           |
+| longpress   | 手指触摸后，超过350ms离开（tap不触发）       |
+| longtap     | 手指触摸后，超过350ms离开（用longpress替代） |
+
+
+
+## 3、事件对象event
+
+​	当事件触发时会产生一个<font color=deepred>事件对象</font>，这个对象被传入到回调函数中，事件对象常见的属性包括：
+
+- type：事件类型
+- timeStamp：事件生成的时间戳
+- target：触发事件的组件的一些属性集合
+- currentTarget：当前组件的一些属性集合
+- mark：事件标记数据
