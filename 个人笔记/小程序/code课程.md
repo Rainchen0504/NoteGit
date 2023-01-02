@@ -549,5 +549,86 @@ changedTouches：触发事件时改变的触摸点的集合；
 
 ## 4、事件参数的传递
 
+当视图层发生事件需要携带一些参数到执行的函数中时，可以通过`data-`属性来完成
+
+- 格式：`data-`属性的名称
+- 获取：`e.currentTarget.dataset.`属性的名称
 
 
+
+# 六、组件化
+
+从`v1.6.3`版本版本开始支持自定义组件化开发
+
+### （1）创建组件
+
+每个自定义组件文件夹中也由json、wxml、wxss、js文件组成；全局公共组件放在`components`文件夹中。
+
+<font color=deepred>**自定义组件的步骤**</font>：
+
+1. 在json文件中进行自定义组件声明（将component字段设为true表示自定义组件）；
+
+   ```json
+   {
+     "component":true,
+     "usingComponents":{}
+   }
+   ```
+
+2. 在wxml中编写模板；
+
+3. 在wxss中编写样式；
+
+4. 在js中定义数据和组件内部逻辑；
+
+   ```js
+   Component({
+     properties:{},
+     data:{},
+     methods:{}
+   })
+   ```
+
+
+
+### （2）组件注册细节
+
+- 自定义组件<font color=pink>可以引用自定义组件</font>（使用`usingComponents`字段）；
+
+- 自定义组件和页面所在项目根目录名<font color=pink>不能以`wx-`为前缀</font>；
+
+- 如果<font color=pink>在全局的app.json的`usingComponents`声明某个组件</font>那么所有页面和组件都可以直接使用该组件；
+
+  ```json
+  {
+    "pages":[
+      "pages/home/home",
+      "pages/category/category"
+    ],
+    "usingComponents":{
+      "my-cpn":"/components/my-cpn/my-cpn"
+    }
+  }
+  ```
+
+
+
+### （3）组件样式细节
+
+- 组件内样式对外部样式影响
+  - 组件内class样式，只对组件wxml内的节点生效，对于引用组件的Page页面不生效；
+  - 组件内不能使用id选择器、属性选择器、标签选择器；
+- 外部样式对组件内样式的影响
+  - 外部使用class样式，只对外部wxml的class生效不对组件生效；
+  - 外部使用id选择器或属性选择器，不会对组件内产生影响；
+  - 外部使用标签选择器，会对组件内产生影响；
+- 让class相互影响的方法
+  - 在`Compoent`对象中传入一个`options`属性，`options`属性中有一个`styleIsolation`（隔离）属性
+  - `styleIsolation`有三个取值：
+    - isolated 表示启用样式隔离；
+    - apply-shared 表示页面 wxss 样式将影响到自定义组件，自定义组件不影响页面；
+    - hared 表示页面 wxss 样式将影响到自定义组件，自定义组件也影响页面；
+
+
+
+### （4）组件通信
