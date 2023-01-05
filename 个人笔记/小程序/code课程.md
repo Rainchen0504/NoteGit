@@ -637,3 +637,13 @@ changedTouches：触发事件时改变的触摸点的集合；
 
 
 ## 4、组件通信
+
+
+
+### （1）向组件传递数据`properties`
+
+
+
+
+
+### （2）向组件传递样式`externalClasses`
