@@ -3319,3 +3319,72 @@ const itemHeight = (param) => {
 </style>
 ```
 
+
+
+# 2023年1月5日
+
+## 1、使用html2canvas心得
+
+使用该插件将dom绘制成canvas转成图片可用于保存，在可视化中应用于样式库组件渲染小效果图用。
+
+```js
+/**
+* param是当前组件的属性对象，包括宽高等
+* wrapScale全局缩放比例
+* dom要转换的组件dom
+* options是html2canvas插件的配置项
+*/
+const convertToImage = (param,wrapScale,dom,options = {}) => {
+  const cacheScale = Number(wrapScale) / 100
+  const scale = scaleFun(param,cacheScale)	//计算比例
+  const opts = {
+    scale, // 比例，默认是设备像素比
+    width:param.width * cacheScale, //canvas宽度
+    height:param.height * cacheScale, //canvas高度
+    useCORS:true,	//允许跨域
+    allowTaint:false,	//同上
+    backgroundColor:"#1C1F25"	//canvas背景
+  }
+  return html2canvas(dom, opts).then((canvas) => {
+    const canvasUrl = canvas.toDataURL("image/png")	//canvas生成base64
+    const picFile = base64ToBlob(canvasUrl,"image/png")	//将base64编码的图片转换为blob文件
+    return uploadImg(picFile,param)	//图片上传方法
+  })
+}
+
+/**
+* base64不能直接上传至oss服务器，需要转换成file文件上传,这里先转换为blob格式
+* dataURI是base64图片
+* type是文件类型
+*/
+const base64ToBlob = (dataURI,type) => {
+  const binary = atob(dataURI.split(',')[1]);
+  const array = [];
+  for(let i = 0; i < binary.length; i++) {
+    array.push(binary.charCodeAt(i));
+  }
+  return new Blob([new Uint8Array(array)], {type })
+}
+
+/**
+* 请求接口，将blob格式抓换为file格式，再把转换后的图片上传获取链接
+* dataURI是base64图片
+* type是文件类型
+*/
+const uploadImg = (fileData,param) => {
+ 	const form = new FormData();
+  form.append("bizType","9");
+  const fileOfBlob = new File([fileData], `${new Date()}.jpg`);
+  //请求参数填充
+  form.append("file", fileOfBlob);
+  form.append('proId',param.projectId);
+  form.append('dirPath',DIR_PATH)
+  //调用请求接口返回oss服务器链接
+  const result = await api.upLoadFileToOss(form)
+  if (result.success){
+    return result.data.url
+  }
+  throw new Error(`网络异常`);
+}
+```
+

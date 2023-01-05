@@ -1785,6 +1785,63 @@ comRef.value.foo()即可使用实例组件暴露出来的方法
 
 
 
+### （7）useAttrs
+
+​	获取除了props接收的属性。`attrs`是父组件传递给子组件的属性中除了`props`、`class`以及`style`以外的属性。
+
+```vue
+<child a="1" b="2" msg="hello" class="child" style="color:red" />
+```
+
+​	上面的例子父组件向子组件传递了若干属性，如果子组件只在prop中定义接收了一个msg属性，那么`useAttr`中可以获得到的结果就是`{ a: "1", b: "2" }`。
+
+```js
+//不使用script setup语法糖的写法
+import { useContext } from "vue"
+const { attrs } = useContext()
+
+//使用script setup语法糖的写法
+import { useAttrs } from "vue"
+const attrs = useAttrs()
+```
+
+
+
+### （8）useSlots
+
+```vue
+<!--父组件-->
+<child>
+	<div>默认插槽</div>
+  <template #left>
+  	<div>具名插槽</div>
+  </template>
+</child>
+```
+
+```js
+// 子组件
+import { defineComponent, useSlots } from 'vue'
+const Child = defineComponent({
+  setup() {
+    const slots = useSlots()
+
+    // 渲染组件
+    return () => (
+      <div>
+        // 默认插槽
+        <div>{ slots.default ? slots.default() : '' }</div>
+        // 具名插槽
+        <div>{ slots.left ? slots.left() : '' }</div>
+      </div>
+    )
+  },
+})
+export default Child
+```
+
+
+
 ## 17、自定义指令
 
 ​	除过v-show、v-for等指令，Vue支持<font color=red>使用自定义指令</font>对，需要<font color=red>对DOM元素进行底层操作</font>。
