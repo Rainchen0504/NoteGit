@@ -95,10 +95,6 @@ plugins:[
 };
 ```
 
-
-
-
-
 # 2、编译时间优化
 
 ## （1）extensions
@@ -291,7 +287,7 @@ module.exports = {
 
 
 
-## （8）cache-loader
+## （9）cache-loader
 
 - 在一些性能开销较大的loader之前添加cache-loader，可以将结果缓存到磁盘中
 - 默认保存在 node_modules/.cache/cache-loader 目录下
@@ -313,7 +309,7 @@ module.exports = {
 
 
 
-## （9）hard-source-webpack-plugin
+## （10）hard-source-webpack-plugin
 
 - HardSourceWebpackPlugin 为模块提供了中间缓存,缓存默认的存放路径是 node_modules/.cache/hard-source
 - 配置 hard-source-webpack-plugin 后，首次构建时间并不会有太大的变化，但是从第二次开始， 构建时间大约可以减少80% 左右
@@ -478,8 +474,6 @@ module.exports = {
   ]
 }
 ```
-
-
 
 # 4、运行速度优化
 

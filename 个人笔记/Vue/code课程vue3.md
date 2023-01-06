@@ -911,6 +911,27 @@ slot中可以插入普通的内容、html元素、组件元素，都是可以的
 
 ​	对于一些**不需要立即使用**的组件，可以单独拆分成一些小的代码块在需要时从服务器加载下来运行，也就是懒加载优化。
 
+- 魔法注释
+
+  - 默认通过动态导入产生的bundle文件名称是一个序号，如果要命名的话可以使用webpack特有的<font color=pink>魔法注释</font>来实现。
+
+    ```js
+    //如果命名一致会打包到一个文件中，否则是多个文件
+    if(hash === '#post'){
+      // mainElement.appendChild(posts())
+      import(/* webpackChunkName: 'components' */'./posts/posts').then(({ default: posts }) => {
+        mainElement.appendChild(posts())
+      })
+    }else if(hash === '#album'){
+      // mainElement.appendChild(album())
+      import(/* webpackChunkName: 'components' */'./album/album').then(({ default: album }) => {
+        mainElement.appendChild(album())
+      })
+    }
+    ```
+
+    产生的结果会产生出一个`components.bundle.js`文件。
+
 
 
 ### （2）异步组件

@@ -638,12 +638,225 @@ changedTouches：触发事件时改变的触摸点的集合；
 
 ## 4、组件通信
 
-
+![image-20230106190024712](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301061900623.png)
 
 ### （1）向组件传递数据`properties`
 
+方法：使用`properties`属性给组件传递参数。
 
+支持类型：`String、Number、Boolean、Object、Array、null（不限制类型）`
+
+默认值：可以通过`value`设置默认值
+
+```js
+properties:{
+  title:{
+    type:String,
+    value:"默认标题"
+  }
+}
+```
 
 
 
 ### （2）向组件传递样式`externalClasses`
+
+方法：使用`externalClasses`属性给组件传递样式
+
+使用步骤：
+
+1. 在`Component`对象中定义`externalClasses`属性；
+2. 在组件内的`wxml`中使用`externalClasses`属性中的class；
+3. 在页面中传入对应的class，并给这个class设置样式；
+
+```vue
+<!--子组件wxml-->
+<view class="my-cpn">
+  <view class="content info">我是组件内容{{content}}</view>
+</view>
+
+<!--子组件js-->
+Component({
+	externalClasses:["info"]
+})
+```
+
+```vue
+<!--父组件wxml-->
+<my-cpn info="test"></my-cpn>
+
+<!--父组件wxss-->
+.test{
+	background-color:red;
+}
+```
+
+
+
+### （3）组件向外传递事件-自定义事件
+
+基本和vue相同，小程序使用<font color=deepred>`triggerEvent`发射事件</font>。
+
+```vue
+<!--父组件wxml-->
+<button bindtap="onBtnTap">event-btn</button>
+<!--父组件js-->
+methods:{
+	onBtnTap(){
+		this.triggerEvent("cpnClick","要传递的参数")
+	}
+}
+
+<!--子组件wxml-->
+<event-cpn bindcpnClick="onCpnClick"></event-cpn>
+<!--子组件js-->
+methods:{
+	onCpnClick(event){
+		console.log("onCpnClick",event)
+	}
+}
+```
+
+
+
+### （4）组件实例调用`selectComponent`
+
+在父组件中调用`this.selectComponent`可直接获取子组件的实例对象；
+
+参数：匹配选择器`selector`；
+
+```vue
+<!--wxml部分-->
+<tab-son class="tabs"></tab-son>
+<button bindtap="onChangeTap">修改按钮</button>
+
+<!--js部分-->
+methods:{
+	onChangeTap(){
+		//获取组件实例
+		const tab = this.selectComponent(".tabs")
+	}
+}
+```
+
+
+
+## 5、插槽
+
+### （1）单个插槽
+
+```vue
+<!--父组件-->
+<my-slot>
+    <button>我是按钮</button>
+</my-slot>
+
+<!--子组件-->
+<view class="my-slot">
+  <view class="content">
+    <slot></slot>
+  </view>
+</view>
+```
+
+
+
+### （2）多个插槽
+
+设置多个插槽需要在插槽所在组件的`options`中开启multipleSlots`属性。`
+
+```vue
+<!--父组件-->
+<mul-slot>
+  <button slot="left" size="mini">left</button>
+  <view slot="center">我是中心内容</view>
+  <button slot="right" size="mini">right</button>
+</mul-slot>
+
+<!--子组件wxml-->
+<view class="mul-slot">
+  <view class="left">
+    <slot name="left"></slot>
+  </view>
+  <view class="center">
+    <slot name="center"></slot>
+  </view>
+  <view class="right">
+    <slot name="right"></slot>
+  </view>
+</view>
+
+<!--子组件js-->
+Component({
+	options:{
+		multipleSlots:true //开启多插槽配置
+	}
+})
+```
+
+
+
+## 6、behaviors
+
+类似于vue中`mixins`，用于组件间代码共享的特性。
+
+- 在pages文件夹同级创建`behavior`文件夹编写`behavior`文件，每个`behavior`可以<font color=deepred>包含一组属性、数据、生命周期函数和方法</font>；
+- 组件引用时，<font color=deepred>它的属性、数据、方法会被合并到组件中</font>，生命周期函数也会在对应时机调用；
+- 每个组件<font color=deepred>可以引用多个`behavior`，`behavior`也可以引用其他`behavior`</font>；
+
+```js
+export const counterBehavior = Behavior({
+  data:{
+    counter:100
+  },
+  methods:{
+    increment(){
+      this.setData({ counter: this.data.counter+1 })
+    }
+  }
+})
+```
+
+```js
+import {counterBehavior} from "../../behavior/counter"
+Component({
+  behavior:[counterBehavior]
+})
+```
+
+
+
+## 7、组件生命周期
+
+<font color=yellow>**这里指的是组件自身的一些函数，在特殊的时间点或者特殊的事件时被自动触发**</font>
+
+最重要的生命周期是<font color=pink>` created attached detached`</font> ，包含一个组件实例生命流程的最主要时间点。
+
+自小程序基础版本2.2.3开始，组件的生命周期可以在`lifetimes`字段内进行声明。
+
+| 生命周期 | 参数         | 描述                                   | 最低版本 |
+| -------- | ------------ | -------------------------------------- | -------- |
+| created  | 无           | 组件实例刚被创建时执行                 | 1.6.3    |
+| attached | 无           | 组件实例进入页面节点树时执行           | 1.6.3    |
+| ready    | 无           | 组件实例在视图层布局完成后执行         | 1.6.3    |
+| moved    | 无           | 组件实例被移动到节点树另一个位置时执行 | 1.6.3    |
+| datached | 无           | 组件实例被从页面节点树移除时执行       | 1.6.3    |
+| detached | Object Error | 组件方法抛出错误时执行                 | 2.4.1    |
+
+
+
+## 8、组件所在页面生命周期
+
+<font color=yellow>**并非与组件有很强的关联，但有时组件需要获知，以便组件内部处理**</font>
+
+组件所在页面的生命周期可以在`pageLifetimes`字段内进行声明。
+
+| 生命周期 | 参数        | 描述                       | 最低版本 |
+| -------- | ----------- | -------------------------- | -------- |
+| show     | 无          | 组件所在页面被展示时执行   | 2.2.3    |
+| hide     | 无          | 组件所在页面被隐藏时执行   | 2.2.3    |
+| resize   | Object Size | 组件所在页面尺寸改变时执行 | 2.4.0    |
+
+
+
+## 9、Component构造器
