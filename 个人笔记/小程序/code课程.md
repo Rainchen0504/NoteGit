@@ -860,3 +860,201 @@ Component({
 
 
 ## 9、Component构造器
+
+![component构造器](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301071846937.png)
+
+
+
+# 七、系统API调用
+
+## 1、网络请求
+
+### （1）API参数
+
+微信提供了专属的API接口，用于网络请求：`wx.request(Object Object)`
+
+| 属性         | 类型                      | 默认值 | 必填                      | 说明                                                   |
+| ------------ | ------------------------- | ------ | ------------------------- | ------------------------------------------------------ |
+| url          | string                    |        | <font color=red>是</font> | 开发者服务器接口地址                                   |
+| data         | string/Object/ArrayBuffer |        | 否                        | 请求的参数                                             |
+| header       | Object                    |        | 否                        | 设置请求的header，`content-type`默认为application/json |
+| timeout      | number                    |        | 否                        | 超时时间，单位为毫秒，默认值为60000                    |
+| method       | string                    | GET    | 否                        | HTTP请求方法                                           |
+| dataType     | string                    | json   | 否                        | 返回的数据格式                                         |
+| responseType | string                    | text   | 否                        | 响应的数据类型                                         |
+| success      | 函数                      |        | 是                        | 成功的回调                                             |
+| fail         | 函数                      |        | 是                        | 失败的回调                                             |
+
+
+
+### （2）API使用
+
+直接使用`wx.request(Object Object)`发送请求
+
+```js
+wx.request({
+  url:"www.xxx.com",
+  data:{
+    page:1
+  },
+  success:(res) => {
+    console.log(res.data)
+  },
+  fail:(err) => {
+    console.log(err)
+  }
+})
+```
+
+
+
+### （3）API封装
+
+两种封装方式
+
+```js
+//方法一,封装成函数
+export function yuRequest(options){
+  return new Promise((resolve,reject) => {
+    wx.reqeust({
+      ...options,
+      success:(res) => {
+        resolve(res.data)
+      },
+      fail:reject
+    })
+  })
+}
+
+//方法二，封装成类
+class YCRequest {
+  constructor(baseURL){
+    this.baseURL = baseURL
+  }
+  request(options){
+    const { url } = options
+    return new Promise((resolve, reject) => {
+      wx.request({
+        ...options,
+        url:this.baseURL + url,
+        success: (res) => {
+          resolve(res.data)
+        },
+        fail: (err) => {
+          rejcet(err)
+        }
+      })
+    })
+  }
+  get(options){
+    return this.request({...options,method:"get"})
+  }
+  post(options){
+    return this.request({...options,method:"post"})
+  }
+}
+```
+
+
+
+## 2、请求域名配置
+
+- 小程序<font color=deepred>只可以跟指定的域名进行网络通信</font>
+
+- 服务器域名配置入口：小程序登陆后台 -> 开发管理 -> 开发设置 -> 服务器域名。
+
+注意点⚠️：
+
+1. 域名只支持https和wxx协议
+2. 域名不能使用IP地址
+3. 可以配置端口，如果不配置端口请求的URL中也不能包含端口
+4. 域名必须通过ICP备案
+5. 不支持配置父域名，使用子域名
+
+
+
+## 3、弹窗效果
+
+小程序中共有四种弹窗展示方式：
+
+### （1）showToast
+
+```js
+wx.showToast({
+  title: 'toast弹窗',
+  icon:"error",
+  duration:2000,
+  mask:true,
+  success:(res) => {
+    console.log("展示成功",res);
+  },
+  fail:(err) => {
+    console.log("展示失败",err);
+  }
+})
+```
+
+![image-20230108212310194](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301082123746.png)
+
+
+
+### （2）showModal
+
+```js
+wx.showModal({
+  title: 'modal弹窗',
+  cancelText:"不行",
+  cancelColor:"red",
+  confirmText:"可以",
+  confirmColor:"orange",
+  success:(res) => {
+  console.log("展示成功",res);
+  },
+  fail:(err) => {
+  console.log("展示失败",err);
+  }
+})
+```
+
+![image-20230108212511946](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301082125366.png)
+
+
+
+### （3）showLoading
+
+```js
+wx.showLoading({
+  title: '加载中'
+})
+```
+
+![image-20230108212605344](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301082126715.png)
+
+
+
+### （4）hideLoading
+
+隐藏`loading`提示框
+
+
+
+### （5）showActionSheet
+
+```js
+wx.showActionSheet({
+  itemList: ["衣服", "裤子", "鞋子"],
+  success: (res) => {
+    console.log(res.tapIndex);//返回索引
+  },
+  fail: (err) => {
+    console.log("err:", err);
+  }
+})
+```
+
+
+
+## 4、分享功能
+
+小程序有两种分享方式：
+
