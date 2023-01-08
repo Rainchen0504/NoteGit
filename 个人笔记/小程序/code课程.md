@@ -1058,3 +1058,55 @@ wx.showActionSheet({
 
 小程序有两种分享方式：
 
+- 方式一：点击右上角的菜单按钮，之后点击转发
+- 方式二：点击某个按钮直接转发（按钮属性`open-type="share"`）
+
+可以使用`onShareAppMessage`方法决定分享信息的展示内容
+
+```js
+onShareAppMessage(){
+  return {
+    title:"转发标题,一般是当前小程序名称",
+    path:"转发路径，当前页面path用符号/隔开",
+    imageUrl:"自定义图片路径，可以是本地文件路径或者网络路径"
+  }
+}
+```
+
+
+
+## 5、设备信息
+
+小程序提供`wx.getSystemInfo(Object Object)`方法用于获取设备信息
+
+| 属性     | 类型     | 必填 | 说明                   |
+| -------- | -------- | ---- | ---------------------- |
+| success  | function | 否   | 接口调用成功的回调参数 |
+| fail     | function | 否   | 接口调用失败的回调参数 |
+| complete | function | 否   | 接口调用结束的回调参数 |
+
+```js
+wx.getSystemInfo({
+  success:(res) => {
+    console.log(res)
+  }
+})
+```
+
+
+
+## 6、位置信息
+
+小程序提供`wx.getLocation(Object Object)`方法用于获取位置信息
+
+```js
+wx.getLocation({
+  success:(res) => {
+    console.log(res)
+  }
+})
+```
+
+
+
+## 7、Storage存储
