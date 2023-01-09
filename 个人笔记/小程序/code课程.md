@@ -1110,3 +1110,154 @@ wx.getLocation({
 
 
 ## 7、Storage存储
+
+开发中需要将数据存储在本地（token，用户信息），小程序提供了<font color=deepred>`Storage`进行本地存储</font>。
+
+### （1）同步存取
+
+- 存储数据：`wx.setStorageSync(string key, any data)`
+- 获取数据：`wx.getStorageSync(string key)`
+- 移除数据：`wx.removeStorageSync(string key)`
+- 清除所有：`wx.clearStorage()`
+
+
+
+### （2）异步存取
+
+- 存储数据：`wx.setStorage(Object, Object)`
+- 获取数据：`wx.getStorageSync(Object Object)`
+- 移除数据：`wx.removeStorageSync(string key)`
+- 清除所有：`wx.clearStorage()`
+
+
+
+## 8、界面跳转
+
+小程序界面跳转有两种方式：<font color=yellow>**通过navigator组件和通过wx的API跳转**</font>
+
+### （1）wx的API跳转
+
+| 名称            | 功能说明                                     |
+| --------------- | -------------------------------------------- |
+| wx.switchTab    | 跳转到tabBar页面，并关闭其他所有非tabBar页面 |
+| wx.reLaunch     | 关闭所有页面，打开到应用内的某个页面         |
+| wx.redirectTo   | 关闭当前页面，跳转到应用内的某个页面         |
+| wx.navigateTo   | 保留当前页面，跳转到应用内的某个页面         |
+| wx.navigateBack | 关闭当前页面，返回上一页面或多级页面         |
+
+
+
+### （2）navigator跳转
+
+语法：`wx.navigateTo(Object Object)`
+
+该方法保留当前页面，跳转到<font color=deepred>应用内的某个页面</font>，但是<font color=yellow>不能跳到tabbar页面</font>。
+
+| 属性     | 类型     | 必填 | 说明                                                   |
+| -------- | -------- | ---- | ------------------------------------------------------ |
+| url      | string   | 是   | 需要跳转的应用内非tabBar的页面的路径，可携带参数       |
+| events   | Object   | 否   | 页面间通信接口，用于监听被打开页面发送到当前页面的数据 |
+| success  | function | 否   | 接口调用成功的回调函数                                 |
+| fail     | function | 否   | 接口调用失败的回调函数                                 |
+| complete | function | 否   | 接口调用结束的回调函数                                 |
+
+
+
+### （3）数据传递
+
+#### 3.1、方式一
+
+- <font color=green>从首页 --> 详情页</font>：使用URL中的query字段
+- <font color=green>从详情页 --> 首页</font>：在详情页内部拿到首页的页面对象，直接修改数据
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202301091959727.png" alt="image-20230109195910619" style="zoom:80%;" />
+
+```js
+//首页
+pushDetail(){
+  const name = "zhang";
+  const age = 25;
+  wx.navigateTo({
+    url:`/pages/detail?name=${name}&age=${age}`
+  })
+}
+
+//详情页
+onPassBackTap(){
+  const pages = getCurrentPages()
+  const prevPage = pages[pages.length - 2]
+  prevPage.setData({
+    title:"传递参数"
+  })
+}
+```
+
+
+
+#### 3.2、方式二
+
+小程序基础库在2.7.3版本之后支持`events`参数，可用于数据的传递。
+
+```js
+pushDetail(){
+  const name = "zhang";
+  const age = 25;
+  wx.navigateTo({
+    url:`pages/detail?name=${name}&age=${age}`,
+    events:{
+      acceptSomeData(data){
+        console.log("main中接受参数",data)
+      }
+    }
+  })
+}
+
+
+onPassBackTap(){
+  //1、拿到eventChannel
+  const eventChannel = this.getOpenerEventChanel()
+  //2、传递数据给上一个页面
+  eventChannel.emit("acceptSomeData", {
+    name:"detail",
+    count:1000
+  })
+}
+```
+
+
+
+## 9、页面返回
+
+语法：`wx.navigateBack(Object Object)`
+
+关闭当前页面，<font color=deepred>返回上一页面或多级页面</font>
+
+| 属性     | 类型     | 必填 | 说明                                                |
+| -------- | -------- | ---- | --------------------------------------------------- |
+| delta    | number   | 否   | 返回的页面数，如果delta大于现有页面数，则返回到首页 |
+| success  | function | 否   | 接口调用成功的回调函数                              |
+| fail     | function | 否   | 接口调用失败的回调函数                              |
+| complete | function | 否   | 接口调用结束后的回调函数                            |
+
+
+
+# 八、登录解析
+
+目的：增加用户的粘性和产品的停留时间；
+
+识别身份：认识小程序登录流程；openid和unionid；获取code；换取authToken；
+
+用户身份多平台共享：账号绑定和手机号绑定
+
+小程序登录流程：
+
+![image-20230109203503438](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301092035471.png)
+
+```js
+//1、获取code
+const res = await wx.login({})
+const code
+
+//2、换取token
+```
+
