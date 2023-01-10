@@ -1256,8 +1256,19 @@ onPassBackTap(){
 ```js
 //1、获取code
 const res = await wx.login({})
-const code
+const code = res.code
 
 //2、换取token
+wx.request({
+  url:"接口地址",
+  data:{
+    code
+  },
+  method:"post",
+  success:(res) => {
+    const token = res.data.token;
+    wx.setStorageSync("token",token)
+  }
+})
 ```
 
