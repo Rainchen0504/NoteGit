@@ -720,6 +720,30 @@ npx的原理非常简单，它会到当前目录的node_modules/.bin目录下查
 | npm uninstall <pkg> | pnpm remove <pkg> |
 | npm run <cmd>       | pnpm <cmd>        |
 
+
+
+### （4）从npm迁移到pnpm
+
+1. 安装`pnpm`为全局包
+
+   ```shell
+   npm i -g pnpm@latest
+   ```
+
+2. 从项目中移除`npm`依赖项安装库和`lock`文件
+
+   ```shell
+   rm -rf node_modules package-lock.json
+   ```
+
+3. 使用`pnpm`安装项目依赖项
+
+   ```shell
+   pnpm i
+   ```
+
+
+
 # 五、创建个人脚手架
 
 
