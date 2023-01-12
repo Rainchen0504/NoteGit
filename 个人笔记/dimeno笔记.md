@@ -3388,3 +3388,146 @@ const uploadImg = (fileData,param) => {
 }
 ```
 
+
+
+# 2023年1月12日
+
+## 1、前端导出xlsx
+
+### （1）`table_to_book`方法
+
+方法：使用`xlsx`库中的<font color=deepred>`table_to_book`方法</font>。
+
+实现过程：
+
+1. 安装依赖
+
+   ```shell
+   npm install xlsx file-saver -D
+   ```
+
+2. 组件使用
+
+   ```vue
+   <template>
+   	<table id="tableID"></table>
+   </template>
+   
+   <script>
+   import * as XLSX from "xlsx/xlsx.mjs";
+   import FileSaver from "file-saver";
+   export default {
+     methods:{
+       exportExecl(){
+         const xlsxParam = { raw: true }; // 导出的内容只做解析，不进行格式转换
+         //将表格生成工作对象
+         const exportTable = XLSX.utils.table_to_book(
+           document.querySelector("#table1"),
+           xlsxParam
+         );
+         //获取二进制字符串作为输出
+         const exportTableOut = XLSX.write(exportTable, {
+           bookType: "xlsx",
+           bookSST: true,
+           type: "array"
+         });
+         //使用file-saver插件实现导出存储
+         try {
+           FileSaver.saveAs(
+             new Blob([exportTableOut], {
+               type: "application/octet-stream"
+             }),
+             `${Date.now()}报表.xlsx`
+           );
+         } catch (e) {
+           if (typeof console !== "undefined") {
+             console.log(e, exportTableOut);
+           }
+         }
+         return exportTableOut;
+       }
+     }
+   }
+   </script>
+   ```
+
+
+
+### （2）原生js实现
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title></title>
+  </head>
+  <body>
+    <p style="font-size: 20px; color: red">
+      使用table标签方式将json导出xls文件
+    </p>
+    <button onclick="tableToExcel()">导出</button>
+    <script>
+      function tableToExcel() {
+        //要导出的json数据
+        const jsonData = [
+          {
+            name: "数据一",
+            phone: "123456",
+            email: "123@123456.com",
+          },
+          {
+            name: "数据二"
+            phone: "123456",
+            email: "123@123456.com",
+          },
+          {
+            name: "数据三",
+            phone: "123456",
+            email: "123@123456.com",
+          },
+          {
+            name: "数据四",
+            phone: "123456",
+            email: "123@123456.com",
+          },
+        ];
+        //列标题
+        let head = `<tr><td>姓名</td><td>电话</td><td>邮箱</td></tr>`;
+        let tbody = ""; //内容
+        for (let item in jsonData) {
+          tbody += `<tr>
+                        <td>${jsonData[item].name + "\t"}</td>
+                        <td>${jsonData[item].phone + "\t"}</td>
+                        <td>${jsonData[item].email + "\t"}</td>
+      </tr>`;
+        }
+        let str = head + tbody; //头部跟身体内容连接
+
+        //Worksheet名
+        let worksheet = "Sheet1";
+        let uri = "data:application/vnd.ms-excel;base64,";
+
+        //下载的表格模板数据
+        let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                  xmlns:x="urn:schemas-microsoft-com:office:excel" 
+                  xmlns="http://www.w3.org/TR/REC-html40">
+                  <head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+                    <x:Name>${worksheet}</x:Name>
+                    <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>
+      </x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+      </head><body><table>${str}</table></body></html>`;
+        //下载模板
+        window.location.href = uri + base64(template);
+      }
+      //输出base64编码
+      function base64(s) {
+        //字符串或二进制转为base64编码的方法：btoa
+        return window.btoa(unescape(encodeURIComponent(s)));
+      }
+    </script>
+  </body>
+</html>
+
+```
+

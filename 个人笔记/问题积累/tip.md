@@ -6,3 +6,6 @@
 4. 内容到达显示区域的条件是`img.offsetTop < window.innerHeight + document.body.scrollTop`
 
 ![image-20230109173631164](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301091736437.png)
+
+
+
