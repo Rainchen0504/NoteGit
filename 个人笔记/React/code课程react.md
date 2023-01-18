@@ -147,5 +147,103 @@ React的特点是声明式编程。只需要维护自己的状态，当状态改
 
 组件中的数据可以分为两类：
 
-- 参与界面更新的数据：当数据变量时，需要更新组件渲染的内容；
-- 不参与界面更新的数据：当数据变量时，不需要更新将组件渲染的内容；
+- **参与界面更新**的数据：当数据变量时，需要更新组件渲染的内容；
+- **不参与界面更新**的数据：当数据变量时，不需要更新将组件渲染的内容；
+
+参与**界面更新的数据**可以称之为<font color=deepred>参与数据流</font>，可以在构造函数中`this.state={数据}`来定义，当数据发生变化时可以调用`this.setState`更新数据，通知React进行`update`操作重新调用`render`函数，使用最新的数据来渲染页面。
+
+```js
+class App extends React.Component {
+  constructor(){
+    super()
+    //定义数据
+    this.state = {
+      message:"我是数据"
+    }
+  }
+  
+  changeMessage(){
+    //修改数据
+    this.setState({
+      message:"修改后的message"
+    })
+  }
+}
+```
+
+
+
+### （3）事件绑定
+
+在类中直接定义一个函数绑定到元素的点击事件上，这个函数的`this`指向结果为`undefined`。
+
+原因分析：
+
+​	DOM操作中监听点击时`this`是当前节点对象（比如说按钮等元素对象），但是React并不是直接渲染成真实的DOM，编写的button只是一个语法糖，它的本质是`React`的`Element`对象，所以react在执行函数时并没有绑定this，默认情况下this就是`undefined`；
+
+​	绑定的目的是为了使用当前对象，就必须拿到当前对象的this，两种做法：方法一通过bind显式绑定this；方法二使用箭头函数即可。
+
+```js
+// 1.定义App根组件
+class App extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      message: "Hello World",
+    };
+  }
+  //默认绑定this结果为undefined
+  btnClick() {
+    console.log(this);
+    this.setState({
+      message: "hellow react",
+    });
+  }
+  //显示绑定，this为当前实例对象，App实例
+  btn1Click() {
+    console.log(this);
+    this.setState({
+      message: "hellow react",
+    });
+  }
+  //箭头函数指向调用者，App实例
+  btn2Click() {
+    console.log(this);
+    this.setState({
+      message: "hellow react",
+    });
+  }
+  render() {
+    const { message } = this.state;
+    return (
+      <div>
+      	<h2>{message}</h2>
+      	<button onClick={this.btnClick}>事件绑定</button>
+				<button onClick={this.btn1Click.bind(this)}>方式一</button>
+				<button onClick={() => this.btn2Click()}>方式二</button>
+			</div>
+		);
+	}
+}
+// 2.创建root并且渲染App组件
+const root = ReactDOM.createRoot(document.querySelector("#root"));
+root.render(<App />);
+```
+
+
+
+# 二、JSX语法
+
+## 1、JSX说明
+
+`JSX`是一种`JavaScript`的语法扩展，也可以称为`JavaScript XML`。用于描述UI界面和`JavaScript`融合使用。
+
+
+
+## 2、书写规范
+
+
+
+
+
+# 三、React脚手架
