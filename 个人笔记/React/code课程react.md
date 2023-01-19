@@ -242,8 +242,109 @@ root.render(<App />);
 
 ## 2、书写规范
 
+- 顶层只能有一个根元素，所以每次都在外层包裹一个`div`元素（或者使用`Fragment`）；
+- 通常在`JSX`外层包裹一个小括号`()`，`JSX`可以进行换行书写；
+- `JSX`中标签可以是单标签，也可以是双标签；
+
+
+
+## 3、JSX使用
+
+### （1）注释
+
+```jsx
+{/*这是注释的写法*/}
+```
+
+### （2）变量
+
+- 当变量为`Number、String、Array`类型时，可以直接显示；
+- 当变量为`null、undefined、Boolean`类型时，内容为空，如果要显示需要<font color=deepred>转成字符串</font>；
+- Object对象类型不能作为子元素；
+
+### （3）绑定属性
+
+任意元素的title属性、img标签的src属性、a元素的href属性、元素的class属性、内联样式style属性
+
+### （4）事件绑定
+
+事件命名采用小驼峰式，需要通过`{}`传入一个事件处理函数，该函数在事件发生时执行；
+
+#### （5）this绑定
+
+解决`this`为`undefined`的方法：
+
+- 使用`bind`给`btnClick`显示绑定`this`
+- 事件监听时传入箭头函数（推荐）
+
+#### （6）参数传递
+
+1. 获取event对象：默认`event`对象被直接传入，函数就可以直接获取到；
+2. 获取更多参数：传入一个箭头函数，直接传入相关的其他参数；
+
+```jsx
+render(){
+  return (
+  	<div>
+    	<button onClick={(e) => this.btnClick(e,"zhang",25)}>按钮</button>
+    </div>
+  )
+}
+btnCLick(event,name,age){
+  console.log(this,event,name,age)
+}
+```
+
+#### （7）条件渲染
+
+`React`中条件判断和普通`Javascript`代码一致：
+
+1. 条件判断语句：适合逻辑较多的情况
+2. 三元运算符：适合逻辑简单的情况
+3. 与运算符&&：适合如果条件成立，渲染某个组件，如果不成立都不渲染的情况
+4. v-show的效果：控制`display`属性是否为`none`
+
+#### （8）列表渲染
+
+展示列表最多的方式就是使用数组的`map`方法。可以使用`flter`和`slice`函数过滤和截取数组中的内容。
+
+同时列表展示时需要设置key，提高diff算法的效率。
+
+
+
+## 4、本质
+
+所有的`jsx`<font color=deepred>都会被转换成`React.createElement`函数的调用</font>。**`jsx`只是`React.createElement`函数的语法糖**。
+
+### （1）语法
+
+```jsx
+React.createElement(component, props, ...children)
+```
+
+### （2）参数
+
+该函数需要传递三个参数：
+
+#### （1）type
+
+当前`ReactElement`的类型:
+
+- 如果是标签元素，那么就使用字符串表示"div"；
+- 如果是组件元素，就直接使用组件的名称；
+
+#### （2）config
+
+- 所有jsx中的属性都在config中以对象的属性和值的形式存储；
+- 比如传入className作为元素的class；
+
+#### （3）children
+
+- 存放在标签中的内容，以children数组的方式进行存储
+
 
 
 
 
 # 三、React脚手架
+
