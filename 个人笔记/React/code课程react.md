@@ -344,7 +344,222 @@ React.createElement(component, props, ...children)
 
 
 
-
-
 # 三、React脚手架
+
+## 1、创建项目
+
+### （1）官方
+
+```shell
+npx create-react-app 项目名称
+```
+
+### （2）vite
+
+```shell
+npm create vite@latest
+```
+
+
+
+## 2、目录结构
+
+```js
+.
+├── README.md	 //说明文档
+├── package.json	//版本号、依赖、启动、打包命令
+├── public
+│   ├── favicon.ico 	//顶部icon
+│   ├── index.html  //应用的index.html入口文件
+│   ├── logo192.png  //被manifest.json使用
+│   ├── logo512.png  //被manifest.json使用
+│   ├── manifest.json  //和web app配置相关
+│   └── robots.txt  //指定搜索引擎可以或无法爬取哪些文件
+└── src
+    ├── App.css  //App组件相关的样式
+    ├── App.js  //App组件的代码文件
+    ├── App.test.js  //App组件的测试代码文件
+    ├── index.css  //全局样式文件
+    ├── index.js  //整个应用程序入口文件
+    ├── logo.svg  //启动项目看到的react图标
+    ├── reportWebVitals.js  //默认注册PWA代码
+    └── setupTests.js  //测试初始化文件
+```
+
+
+
+## 3、扩展：PWA
+
+### （1）概述
+
+PWA全称`Progressive Web App`，也称为<font color=deepred>渐进式WEB应用</font>；
+
+- 一个PWA应用首先是一个网页，可以**通过Web技术编写出一个网页应用**；
+- 加上`App Manifest`和`Service Worker`来实现PWA的<font color=yellow>安装和离线</font>等功能；
+
+这种Web存在的形式，称之为是 Web App
+
+
+
+### （2）解决的问题
+
+1. 可以添加至主屏幕，点击主屏幕图标实现启动动画和隐藏地址栏；
+2. 实现离线消息缓存，即使没有网络也可以使用离线功能；
+3. 实现消息推送功能；
+4. 类似于`Native APP`相关的功能；
+
+
+
+## 4、脚手架中的Webpack
+
+脚手架默认是<font color=gree>**基于Webpack开发**</font>的，但是默认配置文件是被隐藏的，要想显示处理需要执行脚本`npm run eject`。
+
+![image-20230120095710900](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301200957716.png)
+
+
+
+# 四、React组件化
+
+## 1、分类特点
+
+React的组件相对于Vue更加灵活和多样，按照不同的方式可以分成很多种类：
+
+### （1）定义方式
+
+函数组件和类组件
+
+### （2）是否维护状态
+
+无状态组件和有状态组件
+
+### （3）职责不同
+
+展示型组件和容器型组件
+
+### （4）逻辑和展示分离
+
+- <font color=yellow>函数组件、无状态组件、展示型组件</font>主要关注UI
+- <font color=gren>类组件、有状态组件、容器型组件</font>主要关注数据逻辑
+
+
+
+## 2、类组件
+
+### （1）要求
+
+- 组件名称必须是**大写字母开头**
+- 类组件要**继承自`React.Component`**
+- 类组件必须**实现`render`函数**，是<font color=red>**唯一必须实现的方法**</font>
+- `constructor`是可选的，用来初始化一些数据，`this.state`中维护组件内部数据
+
+
+
+### （2）render函数返回值
+
+当render函数被调用时，**会检查`this.props`和`this.state`的变化**并返回以下类型：
+
+1. **React元素**：
+   1. 通常通过 JSX 创建；
+   2. 原始标签会被渲染为DOM节点，组件会被渲染为自定义组件；
+2. **数组或者`fragments`**：使render方法可以返回多个元素；
+3. **`Protals`**：可以渲染子节点到不同的DOM子树中；
+4. **字符串或数值类型**：在DOM中被渲染为文本节点；
+5. **布尔类型或者null**：不渲染；
+
+
+
+## 3、函数组件
+
+函数组件是使用`function`来进行定义的函数，这个函数会返回和类组件中`render`函数一样的内容。
+
+### 特点（和hooks不同）
+
+- 会被更新并挂载，但是没有生命周期函数；
+- this关键字不能指向组件实例（没有组件实例）;
+- 没有内部状态（state）
+
+```jsx
+export default function App(){
+  return (
+  	<div>hello world</div>
+  )
+}
+```
+
+
+
+## 4、生命周期
+
+`React`内部为了告诉外部处于哪个阶段会对组件内部实现的**某些函数进行回调**，这些函数就是<font color=deepred>生命周期函数</font>。
+
+⚠️注意：这里主要讨论的是**类的生命周期，因为函数式组件是没有生命周期的**。
+
+### （1）生命周期解析
+
+![image-20230120114644049](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301201146854.png)
+
+类组件的生命周期可分为三个状态：
+
+- Mounting（挂载）：已插入真实DOM
+- Updating（更新）：正在被重新渲染
+- Unmounting（卸载）：已移除真实DOM
+
+
+
+### （2）生命周期函数
+
+#### 2.1、挂载
+
+当组件实例被创建并插入DOM中时，其生命周期调用顺序如下：
+
+- **Constructor**
+  - 在`React`组件挂载之前，会调用它的构造函数
+  - 如果不需要初始化`state`或不进行方法的绑定，则不需要为`React`组件实现构造函数
+  - `constructor`中通常只做两件事：
+    - 通过给`this.state`赋值对象来初始化内部的`state`
+    - 为事件绑定实例（this）
+- **getDerivedStateFromProps**
+  - 在调用`render`方法之前调用，并且在初始挂载及后续更新时都会被调用
+- **render**
+  - `render`方法是class组件中唯一必须实现的方法
+- **componentDidMount**
+  - 在组件挂载后（插入DOM树中）立即调用
+  - 通常进行的操作：
+    - 依赖DOM的操作在这处理
+    - 发送网络请求最好的地方
+    - 添加一些订阅
+
+
+
+#### 2.2、更新
+
+每当组件的`state`或者`props`发生变化时，组件就会更新，生命周期调用顺序如下：
+
+- **getDerivedStateFromProps**
+  - 在调用`render`方法之前调用，在初始挂载及后续更新时都会被调用
+- **shouldComponentUpdate**
+  - 当`props`或者`state`发生变化时，会在渲染执行之前调用
+- **render**
+  - class组件中唯一必须实现的方法
+- **getSnapshotBeforeUpdate**
+  - 最后一次渲染输出前调用
+- **componentDidUpdate**
+  - 更新后立即调用，首次渲染不会执行此方法
+  - 组件更新后在此处对DOM进行操作
+
+
+
+#### 2.3、卸载
+
+当组件从DOM中移除时会调用下面的方法：
+
+- **componentWillUnmount**
+  - 在组件卸载及销毁之前直接调用
+  - 此方法中执行必要的清理操作，清除timer或者清除订阅等
+
+
+
+## 5、组件嵌套
+
+
 
