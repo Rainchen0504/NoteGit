@@ -426,15 +426,15 @@ React的组件相对于Vue更加灵活和多样，按照不同的方式可以分
 
 ### （1）定义方式
 
-函数组件和类组件
+<font color=deepred>函数组件</font>和<font color=deepred>类组件</font>
 
 ### （2）是否维护状态
 
-无状态组件和有状态组件
+<font color=deepred>无状态组件</font>和<font color=deepred>有状态组件</font>
 
 ### （3）职责不同
 
-展示型组件和容器型组件
+<font color=deepred>展示型组件</font>和<font color=deepred>容器型组件</font>
 
 ### （4）逻辑和展示分离
 
@@ -559,7 +559,17 @@ export default function App(){
 
 
 
-## 5、组件嵌套
+## 5、组件通信
+
+### （1）父到子
+
+父组件通过<font color=pink>**属性=值**</font>的形式来传递给子组件数据；
+
+子组件通过<font color=pink>**props**</font>参数获取父组件传递过来的数据；
+
+
+
+### （2）子到父
 
 
 
