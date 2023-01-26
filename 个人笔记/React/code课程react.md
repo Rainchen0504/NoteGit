@@ -559,6 +559,12 @@ export default function App(){
 
 
 
+### （3）生命周期图谱
+
+![image-20230125102604741](https://raw.githubusercontent.com/Rainchen0504/picture/master/202301251026738.png)
+
+
+
 ## 5、组件通信
 
 ### （1）父到子
@@ -569,7 +575,89 @@ export default function App(){
 
 
 
+#### 1.1、类组件
+
+```jsx
+//父组件
+export default class App extends Component {
+  render(){
+    return {
+      <div>
+      	<Children name="晨哥" age="26"></Children>
+      </div>
+    }
+  }
+}
+```
+
+```jsx
+//子组件
+export default class Children extends Component {
+  render(){
+    const { name, age } = this.props;
+    return {
+      <div>
+      	<h2>我是子组件</h2>
+        <p>传递过来的数据{name + age}</p>
+      </div>
+    }
+  }
+}
+```
+
+
+
+#### 1.2、函数组件
+
+```jsx
+//父组件
+export default class App extends Component {
+  render(){
+    return {
+      <div>
+      	<Children name="晨哥" age="26"></Children>
+      </div>
+    }
+  }
+}
+```
+
+```jsx
+//子组件
+function Children( props ){
+  const { name, age } = props;
+  return (
+  	<div>
+    	<h2>我是function子组件</h2>
+      <p>传递过来的数据{name + age}</p>
+    </div>
+  )
+}
+```
+
+
+
+#### 1.3、参数propTypes
+
+​	传递给子组件的数据如果需要验证（未应用TypeScript的项目），可以通过`prop-types`库来进行参数验证。
+
+```jsx
+import PropTypes from "prop-types";
+//设置类型
+当前组件名.propTypes = {
+  name: PropTypes.string,
+  age: PropTypes.number
+}
+
+//设置默认值
+当前组件名.defaultProps = {
+  name: "默认值",
+  age: 0
+}
+```
+
+
+
 ### （2）子到父
 
-
-
+通过`props`传递消息，只是让父组件给子组件传递一个回调函数，在子组件中调用这个函数即可。
