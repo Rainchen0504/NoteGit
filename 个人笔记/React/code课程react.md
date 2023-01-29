@@ -661,3 +661,191 @@ import PropTypes from "prop-types";
 ### （2）子到父
 
 通过`props`传递消息，只是让父组件给子组件传递一个回调函数，在子组件中调用这个函数即可。
+
+```jsx
+//父组件
+export default class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      counter: 100,
+    };
+  }
+  changeCounter(count) {
+    this.setState({
+      counter: this.state.counter + count,
+    });
+  }
+  render() {
+    const { counter } = this.state;
+    return (
+      <div>
+        <h2>当前计数:{counter}</h2>
+        <AddCounter addClick={(count) => this.changeCounter(count)}
+        ></AddCounter>
+      </div>
+    );
+  }
+}
+```
+
+```jsx
+//子组件
+export class AddCounter extends Component {
+  addCount(count) {
+    this.props.addClick(count);
+  }
+  render() {
+    return (
+      <div>
+        <button onClick={(e) => this.addCount(1)}>+1</button>
+        <button onClick={(e) => this.addCount(5)}>+5</button>
+      </div>
+    );
+  }
+}
+```
+
+
+
+### （3）context应用
+
+`React`提供了一个API：**`Context`**。`Context`提供了一种<font color=pink>**在组件之间共享值的方式**，不必显式地通过组件树的逐层传递`props`</font>；
+
+`Context`设计的目的是为了<font color=pink>共享对于一个组件而言是“全局”的数据</font>，比如当前认证的用户、主题等。
+
+#### 3.1、`React.createContext`
+
+- 创建一个需要共享的Context对象
+- 如果一个组件订阅Context，那么该组件会从离自身最近的Provider中读取到当前的context值；
+- defaultValue是组件在顶层查找过程中没有找到对应的Provider，那么就使用默认值
+
+```jsx
+const MyContext = React.createContext(defaultValue)
+```
+
+
+
+#### 3.2、`Context.Provider`
+
+- 每个Context对象都会返回一个 Provider React 组件，它允许消费组件订阅 context 的变化；
+- Provider 接收一个 value 属性，传递给消费组件；
+- 一个 Provider 可以和多个消费组件有对应关系；
+- 多个 Provider 也可以嵌套使用，里层的会覆盖外层的数据；
+- 当 Provider 的 value 值发生变化时，它内部的所有消费组件都会重新渲染；
+
+```jsx
+<MyContext.Provider value={/*某个值*/}></MyContext>
+```
+
+
+
+#### 3.3、`Class.contextType`
+
+- 挂载在 class 上的 contextType 属性会被重赋值为一个由 React.createContext() 创建的 Context 对象；
+- 能让使用 this.context 来消费最近 Context 上的那个值
+- 可以在任何生命周期中访问到它，包括 render 函数中；
+
+```jsx
+MyClass.contextType = MyContext;
+```
+
+
+
+#### 3.4、`Context.Consumer`
+
+- React组件可以订阅到context变更，能在函数式组件中完成订阅context；
+- 需要函数作为子元素；
+- 该函数接收当前的context值，返回一个React节点；
+
+```jsx
+<MyContext.Consumer>
+  {value => /*基于context值进行渲染*/}
+</MyContext.Consumer>
+```
+
+
+
+#### 3.5、实践
+
+
+
+
+
+## 6、组件插槽
+
+react实现插槽的方式有两种：
+
+### （1）children实现
+
+每个组件都可以通过`props.children`获取到：<font color=deepred>包含组件的开始标签和结束标签之间的内容</font>
+
+```jsx
+//子组件
+class NavBar extends Component {
+  render(){
+    const {children} = this.props;
+    return (
+    	<div className="nav-bar">
+        <div className="left">{children[0]}</div>
+        <div className="center">{children[1]}</div>
+        <div className="right">{children[2]}</div>
+      </div>
+    )
+  }
+}
+```
+
+```jsx
+//父组件
+<NavBar>
+	<button>按钮</button>
+  <h2>我是标题</h2>
+  <span>元素</span>
+</NavBar>
+```
+
+#### 缺点：
+
+​	使用`children`的方案存在一个问题：**通过索引获取传入的元素很容易出错**，不能精准获取传入的元素。
+
+
+
+### （2）props实现
+
+通过具体的属性名，让传入和获取元素时更加精准
+
+```jsx
+//子组件
+export default Son extends Component {
+  render(){
+    const {leftSlot,centerSlot,rightSlot} = this.props
+    return (
+    	<div>
+      	<div>{leftSlot}</div>
+      </div>
+    )
+  }
+}
+```
+
+```jsx
+//父组件
+class App extends Component {
+  render(){
+    const leftSlot = <strong>返回</strong>
+    const centerSlot = <h2>标题</h2>
+    const rightSlot = <i>更多</i>
+    return (
+    	<div>
+      	<Son
+          leftSlot={leftSlot}
+          centerSlot={centerSlot}
+          rightSlot={rightSlot}
+          ></Son>
+      </div>
+    )
+  }
+}
+```
+
