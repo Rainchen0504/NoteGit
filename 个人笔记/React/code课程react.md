@@ -877,7 +877,7 @@ div{message}使用babel编译 -> React.createElement("div",{},children)
 
 ​	`React`没有实现类似`Vue2`中的`Object.defineProperty`或者`Vue3`中的`Proxy`方式监听数据的变化，必须通过`setState`方法告知`React`数据发生了变化。
 
-​	`setState`方法是从`Component`中继承过来的，
+​	`setState`方法是从`Component`中继承过来的：
 
 ```js
 Component.prototype.setState = function(partialState, callback) {
@@ -895,3 +895,104 @@ Component.prototype.setState = function(partialState, callback) {
 };
 ```
 
+
+
+### （3）setState的用法
+
+#### 3.1、基本用法
+
+```jsx
+this.setState({message:"嘻嘻"})
+```
+
+
+
+#### 3.2、传入一个回调函数
+
+- 可以在回调函数中写新的state逻辑
+- 当前的回调函数会将之前的state和props传递进来
+
+```jsx
+this.setState((state, props) => {
+	console.log(this.state.message, this.props)
+  return {
+    message: "你好啊, 李银河"
+  }
+})
+```
+
+
+
+#### 3.3、异步调用
+
+setState是异步的操作，并不能在执行完setState之后立马拿到最新的state的结果。
+
+```jsx
+changeText(){
+  this.setState({
+    message:"呵呵"
+  })
+  console.log(this.state.message) //打印结果还会是旧值
+}
+```
+
+
+
+##### 原因：
+
+- 可以显著提升性能
+  - 每次调用 setState都进行一次更新，会频繁调用render函数，界面重新渲染；
+  - 最好的做法是获取到多个更新，之后进行批量更新；
+- 如果同步更新staet但是还没有执行render函数，那么state和props不能保持同步，容易产生很多开发问题
+
+
+
+##### 解决方法
+
+###### 方法一：setState的回调
+
+`setState`<font color=deepred>在`React`的事件处理中是一个**异步调用**</font>，如果需要在数据更新（合并）之后获取对应结果执行逻辑，可以传入第二个参数`callback`
+
+```jsx
+this.setState({message:"哈哈"}, () => {
+  //执行更新后的逻辑
+})
+```
+
+也可以在生命周期`componentDidUpdate`中执行逻辑
+
+
+
+###### 方法二：在setTimeout中更新
+
+```jsx
+changeText(){
+  setTimeout(() => {
+    this.setState({message:"修改"})
+    //这里写逻辑拿到的就是修改后的值
+  },0)
+}
+```
+
+
+
+###### 方法三：原生DOM事件
+
+```jsx
+componentDidMount(){
+	const btnEl = document.getElementById("btn")
+  btnEl.addEventListener('click', () => {
+    this.setState({
+      message:"修改值"
+    })
+    //这里取到的也是修改后的值
+  })
+}
+```
+
+
+
+##### 注意⚠️：区分两种情况
+
+1. 在组件生命周期或React合成事件中，setState是异步的
+2. 在setTimeout或者原生dom事件中，setState是同步的
