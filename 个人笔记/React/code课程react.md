@@ -845,9 +845,11 @@ class App extends Component {
 
 
 
-使用`setState`
+## 7、setState解析
 
-vue对数据管理和界面渲染的流程解析
+### （1）数据管理和界面渲染的流程解析
+
+#### 1.1、Vue
 
 ```js
 template模板 通过render(){}函数编译转换成h函数创建元素对象
@@ -858,6 +860,8 @@ div -> h("div", {}, children)
 
 
 
+#### 1.2、React
+
 react对数据管理和界面渲染的流程解析
 
 ```js
@@ -866,3 +870,28 @@ div{message}使用babel编译 -> React.createElement("div",{},children)
 ```
 
 当数据被修改的时候由于react没有做数据劫持，需要通过setState方法执行render函数
+
+
+
+### （2）使用setState的原因
+
+​	`React`没有实现类似`Vue2`中的`Object.defineProperty`或者`Vue3`中的`Proxy`方式监听数据的变化，必须通过`setState`方法告知`React`数据发生了变化。
+
+​	`setState`方法是从`Component`中继承过来的，
+
+```js
+Component.prototype.setState = function(partialState, callback) {
+  if (
+    typeof partialState !== 'object' &&
+    typeof partialState !== 'function' &&
+    partialState != null
+  ) {
+    throw new Error(
+      'setState(...): takes an object of state variables to update or a ' +
+      'function which returns an object of state variables.',
+    );
+  }
+  this.updater.enqueueSetState(this, partialState, callback, 'setState');
+};
+```
+
