@@ -3531,3 +3531,22 @@ const uploadImg = (fileData,param) => {
 
 ```
 
+
+
+# 2023年1月31日
+
+## 1、M1安装使用低版本node
+
+安装nvm后，下载node12.18版本由于不兼容问题无法安装成功，因此需要开启兼容模式：
+
+```shell
+arch -x86_64 zsh
+```
+
+
+
+## 2、v-for和v-if优先级
+
+在vue2中一个标签同时有`v-for`和`v-if`属性时，`v-for`优先级更高；
+
+在vue3中一个标签同时有`v-for`和`v-if`属性时，`v-if`优先级更高；

@@ -754,7 +754,7 @@ MyClass.contextType = MyContext;
 
 #### 3.4、`Context.Consumer`
 
-- React组件可以订阅到context变更，能在函数式组件中完成订阅context；
+- React组件可以订阅到context变更，能在<font color=deepred>**函数式组件**</font>中完成订阅context；
 - 需要函数作为子元素；
 - 该函数接收当前的context值，返回一个React节点；
 
@@ -763,12 +763,6 @@ MyClass.contextType = MyContext;
   {value => /*基于context值进行渲染*/}
 </MyContext.Consumer>
 ```
-
-
-
-#### 3.5、实践
-
-
 
 
 
@@ -849,3 +843,26 @@ class App extends Component {
 }
 ```
 
+
+
+使用`setState`
+
+vue对数据管理和界面渲染的流程解析
+
+```js
+template模板 通过render(){}函数编译转换成h函数创建元素对象
+div -> h("div", {}, children)
+```
+
+当数据被修改的时候由于做了数据劫持，会自动调用render函数
+
+
+
+react对数据管理和界面渲染的流程解析
+
+```js
+使用render(){}函数创建元素对象
+div{message}使用babel编译 -> React.createElement("div",{},children)
+```
+
+当数据被修改的时候由于react没有做数据劫持，需要通过setState方法执行render函数
