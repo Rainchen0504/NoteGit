@@ -923,7 +923,7 @@ this.setState((state, props) => {
 
 
 
-#### 3.3、异步调用
+#### 3.3、异步更新
 
 setState是异步的操作，并不能在执行完setState之后立马拿到最新的state的结果。
 
@@ -938,16 +938,16 @@ changeText(){
 
 
 
-##### 原因：
+##### （1）、原因：
 
 - 可以显著提升性能
   - 每次调用 setState都进行一次更新，会频繁调用render函数，界面重新渲染；
   - 最好的做法是获取到多个更新，之后进行批量更新；
-- 如果同步更新staet但是还没有执行render函数，那么state和props不能保持同步，容易产生很多开发问题
+- 如果同步更新state但是还没有执行render函数，那么state和props不能保持同步，容易产生很多开发问题
 
 
 
-##### 解决方法
+##### （2）、解决方法
 
 ###### 方法一：setState的回调
 
@@ -992,7 +992,22 @@ componentDidMount(){
 
 
 
-##### 注意⚠️：区分两种情况
+##### （3）、版本区别
 
-1. 在组件生命周期或React合成事件中，setState是异步的
-2. 在setTimeout或者原生dom事件中，setState是同步的
+在`React18`之前：
+
+1. 在组件生命周期或React合成事件中，<font color=pink>setState是异步的</font>；
+2. 在setTimeout或者原生dom事件中，<font color=pink>setState是同步的</font>；
+
+
+
+在`React18`之后：
+
+所有的操作都被放到了批处理中，也就是进行异步处理。
+
+如果想同步拿到结果，需要执行特殊的`flushSync`操作。
+
+
+
+## 8、React更新机制
+
