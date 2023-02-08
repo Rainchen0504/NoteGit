@@ -1050,8 +1050,28 @@ key的注意事项⚠️：
 
 ### （1）render函数调用
 
-​	当组件存在嵌套关系时，修改组件的数据势必会引起组件重新`render`，进行`diff`算法，性能必然是很低的。事实上很多组件并不需要重新`render`，因为`render`调用有个前提，是依赖的数据（state、props）发生改变
+​	当组件存在嵌套关系时，修改组件的数据势必会引起组件重新`render`，进行`diff`算法，性能必然是很低的。事实上很多组件并不需要重新`render`，因为`render`调用有个前提，是依赖的数据（state、props）发生改变再调用。
 
 
 
-### （2）
+### （2）shouldComponentUpdate
+
+react提供了一个生命周期方法`shouldComponentUpdate`（简称为SCU）可以控制render方法的调用。可接收参数，需要有返回值：
+
+- 参数有两个
+  - 参数一：nextProps修改之后，最新的props属性
+  - 参数二：nextState修改之后，最新的state属性
+- 返回值是一个boolean类型
+  - 返回值为true，那么需要调用render方法；
+  - 返回值为false，就不需要调用render方法；
+  - 默认返回值是true，即只要state发生改变，就会调用render方法；
+
+使用场景是：比如在组件中增加一个message属性，但是jsx中并不依赖该值，那么它的改变不应该引起重新渲染，但是因为render监听到state的改变，就会重新render调用。
+
+
+
+### （3）pureComponents
+
+
+
+### （4）shallowEuqalfangfa===
