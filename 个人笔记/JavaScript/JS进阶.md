@@ -596,21 +596,27 @@ add(10);	//15
 function foo(x, y, z) {
   console.log(x + y + z);
 }
-//封装自动柯里化函数
-function autoCurry(fn) {
-  function curryFn(...args) {
+
+// 自动柯里化函数
+function autoCurry (fn) {
+  // fn是传入的函数，长度是函数参数个数
+  function curryied (...args) {
+    // args是调用时的参数
     if (args.length >= fn.length) {
-      return fn.apply(this, args);
+      return fn.apply(this, args)
     } else {
-      return function (...newArgs) {
-        return curryFn.apply(this.args.concat(newArgs));
-      };
+      function curryied2 (...args) {
+        return curryied.apply(this, [...args, ...args2])
+      }
+      return curryied2
     }
   }
-  return curryFn;
+  return curryied
 }
-var fooCurry = autoCurring(foo);
-fooCurry(10)(20)(30);
+
+let curryFoo = autoCurry(foo);
+console.log(curryFoo(10)(20)(30)) //60
+console.log(curryadd(10, 20, 30)) //60
 ```
 
 

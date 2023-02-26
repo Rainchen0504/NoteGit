@@ -1072,6 +1072,424 @@ react提供了一个生命周期方法`shouldComponentUpdate`（简称为SCU）�
 
 ### （3）pureComponents
 
+React默认提供的自动`shouldComponentUpdate`，使用时将`class`继承自`PureComponent`即可。
+
+```jsx
+class App extends PureComponents {}
+```
+
+内部判断新旧`props`和`state`中的数据是否发生改变，决定`ShouldComponentUpdate`返回true或false；
+
+```jsx
+//如果都没法变化才返回false
+if (ctor.prototype && ctor.prototype.isPureReactComponent) {
+  return (
+    !shallowEqual(oldProps, newProps) || !shallowEqual(oldState, newState)
+  );
+}
+
+//其中shallowEqual是浅层比较方法
+function shallowEqual(objA: mixed, objB: mixed): boolean {
+  //Object.is()放方法判断两个值是否是同一个值
+  if (Object.is(objA, objB)) {
+    return true;
+  }
+  if (
+    typeof objA !== 'object' ||
+    objA === null ||
+    typeof objB !== 'object' ||
+    objB === null
+  ) {
+    return false;
+  }
+  const keysA = Object.keys(objA);
+  const keysB = Object.keys(objB);
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+  for (let i = 0; i < keysA.length; i++) {
+    if (
+      !hasOwnProperty.call(objB, keysA[i]) ||
+      !Object.is(objA[keysA[i]], objB[keysA[i]])
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+```
 
 
-### （4）shallowEuqalfangfa===
+
+#### ⚠️tip:Object.is()
+
+`Object.is()` 方法判断两个值是否为同一个值，如果满足以下任意条件则两个值相等：
+
+- 都是`undefined`；
+- 都是`null`；
+- 都是`true`或者是`false`；
+- 都是相同长度、相同字符、按相同顺序排列的字符串；
+- 都是相同对象（意味都是同一个对象的引用）;
+- 都是数字且
+  - 都是+0
+  - 都是-0
+  - 都是NaN
+  - 都是同一个值且非零都不是NaN
+
+
+
+### （4）高阶组件memo
+
+<font color=pink>类组件可以使用PureComponent</font>，函数式组件可以使用**<font color=deepred>高阶组件memo</font>**。
+
+```jsx
+import { memo } from "react";
+const 组件名 = memo(function(props){
+  return <div>{props.message}</div>
+})
+```
+
+
+
+## 10、数据变化写法
+
+```jsx
+// 直接修改原有的state并重新设置，页面不会发生更新
+this.state.list.push({ name:"zhang" });
+this.setState({ list: this.state.list })
+
+// 赋值一份数据，在新的数据中修改，设置新的数据
+const list = [...this.state.list];
+list.push({ name:"zhang" });
+this.setState({list: list})
+```
+
+
+
+## 11、获取DOM和实例
+
+### （1）获取DOM对象（类组件）
+
+#### 1.1、传入字符串
+
+在React元素上绑定一个ref字符串，使用`this.refs.传入的字符串`格式获取对应的元素。（已废弃⚠️）
+
+```jsx
+export class App extends PureCompoent {
+  getNativeDom(){
+    console.log(this.refs.zhang)
+  }
+  render(){
+    return (
+    	<div>
+      	<h2 ref="zhang">这是实例</h2>
+      </div>
+    )
+  }
+}
+```
+
+
+
+#### 1.2、传入对象
+
+创建ref对象，通过`React.createRef()`方式创建，将创建出来的对象绑定到元素。
+
+```jsx
+import { PureComponent, createRef } from 'react'
+export class App extends PureCompoent {
+  constructor(){
+    super()
+    this.titleRef = createRef()
+  }
+  getNativeDom(){
+    console.log(this.titleRef.current)
+  }
+  render(){
+    return (
+    	<div>
+      	<h2 ref={this.titleRef}>这是实例</h2>
+      </div>
+    )
+  }
+}
+```
+
+
+
+#### 1.3、传入函数
+
+传入一个回调函数, 在对应的元素被渲染之后, 回调函数被执行, 并且将元素传入
+
+```jsx
+import { PureComponent } from 'react'
+export class App extends PureCompoent {
+  constructor(){
+    super()
+    this.titleEl = null
+  }
+  getNativeDom(){
+    console.log(this.titleEl)
+  }
+  render(){
+    return (
+    	<div>
+      	<h2 ref={e => this.titleEl = e}>这是实例</h2>
+      </div>
+    )
+  }
+}
+```
+
+
+
+### （2）获取DOM对象（函数组件）
+
+- 当ref属性作用于HTML元素时，ref接收<font color=gren>底层DOM元素</font>；
+
+- 当ref属性用于自定义class组件时，ref对象接收<font color=gren>组件挂载实例</font>；
+
+- <font color=pink>**不能在函数组件上使用ref属性**</font>，因为没有实例；
+
+  - **使用`React.forwardRef`可以获取函数组件的DOM元素**；
+
+    ```jsx
+    import { PureComponent, createRef, forwardRef } from "react";
+    const HelloWorld = forwardRef(function (props, ref) {
+      return (
+        <div>
+          <h1 ref={ref}>Hello World</h1>
+        </div>
+      );
+    });
+    
+    export class App extends PureComponent {
+      constructor() {
+        super();
+        this.hwRef = createRef();
+      }
+      getComponent() {
+        console.log(this.hwRef.current); // 这里可以获取到HW组件中h1元素的DOM对象
+      }
+      render() {
+        return (
+          <div>
+            <HelloWorld ref={this.hwRef} />
+            <button onClick={(e) => this.getComponent()}>获取组件实例</button>
+          </div>
+        );
+      }
+    }
+    export default App;
+    ```
+
+    
+
+## 12、高阶函数
+
+### （1）定义
+
+接受一个或多个函数作为输入；输出一个函数；至少满足其一就是高阶函数。
+
+JS中常见的`filter`、`map`、`reduce`都是高阶函数。
+
+**高阶组件是参数为组件，返回值为新组件的函数**。
+
+- 高阶组件，本身不是一个组件，而是一个函数；
+- 这个函数的参数是一个组件，返回值也是一个组件；
+
+
+
+### （2）意义
+
+优点：可以针对某些React代码进行更加优雅的处理；
+
+缺陷：
+
+- 需要在原组件上进行包裹或者嵌套，如果大量使用HOC，将会产生非常多的嵌套，这让调试变得非常困难；
+- 可以劫持props，在不遵守约定的情况下也可能造成冲突
+
+
+
+## 13、Portals
+
+**Portal** **提供了一种将子节点渲染到存在于父组件以外的** **DOM** **节点的优秀的方案**。（Vue中有`teleport`）
+
+```jsx
+ReactDOM.createPortal(child, container)
+```
+
+第一个参数是任何可渲染的 React 子元素，比如一个元素、字符串或`fragment`；
+
+第二个参数是一个DOM元素；
+
+
+
+## 14、Fragment
+
+Fragment 允许将子列表分组，而无需向 DOM 添加额外节点。（类似Vue中的template）
+
+```jsx
+{sections.map((item) => {
+  return (
+    <div key={item.title}>
+      <h2>{item.content}</h2>
+      <h2>{item.title}</h2>
+    </div>
+  );
+})}
+
+//可以将外层的div包裹元素替换为Fragment
+{sections.map((item) => {
+  return (
+    <Fragment key={item.title}>
+      <h2>{item.content}</h2>
+      <h2>{item.title}</h2>
+    </Fragment>
+  );
+})}
+```
+
+
+
+## 15、严格模式
+
+`StrictMode`是一个用来突出显示应用程序中潜在问题的工具。
+
+1. 和`Fragment`一样，严格模式不会渲染任何可见的UI；
+2. 为后代元素触发额外的检查和警告；
+3. 严格模式检查仅在开发模式下运行，不会影响生产构建；
+
+
+
+### 检查的内容
+
+- 识别不安全的生命周期；
+- 使用过时的ref API；
+- 检查意外的副作用；
+  - 组件的constructor会被调用两次；
+  - 在生产环境中，是不会被调用两次；
+- 使用废弃的findDOMNode方法；
+- 检测过时的context API
+
+
+
+# 五、React过渡动画
+
+## 1、介绍
+
+react提供了一个库`npm install react-transition-group`实现组件的<font color=pink>**入场和离场动画**</font>。
+
+
+
+## 2、主要组件
+
+`react-transition-group`主要包含四个组件
+
+### （1）Transition
+
+该组件是一个和平台无关的组件，一般结合CSS完成样式；
+
+
+
+### （2）CSSTransition
+
+通常使用CSSTransition来完成过渡动画效果
+
+
+
+### （3）SwitchTransition
+
+两个组件显示和隐藏切换时，使用该组件
+
+
+
+### （4）TransitionGroup
+
+将多个动画组件包裹在其中，一般用于列表中元素的动画
+
+
+
+## 3、CSSTransition
+
+基于`Transition`组件构建的
+
+### （1）三个状态
+
+有三个状态：`appear、enter、exit`；
+
+- 开始状态：对应的类-appear、-enter、exit；
+- 执行动画：对应的类-appear-active、-enter-active、-exit-active；
+- 执行结束：对应的类-appear-done、-enter-done、-exit-done；
+
+
+
+### （2）常见属性
+
+- classNames：动画class的名称；
+- timeout：过渡动画时间；
+- appear：是否在初次进入添加动画；
+- unmountOnExit：退出后卸载组件；
+- 对应的钩子函数，检测动画执行过程：
+  - onEnter：进入动画之前被触发；
+  - onEntering：进入动画时被触发；
+  - onEntered：进入动画结束后被触发；
+  - onExit：离开动画之前被触发；
+  - onExiting：离开动画时被触发；
+  - onExited：离开动画结束后被触发；
+
+
+
+## 4、SwitchTransition
+
+可以完成两个组件之间切换的炫酷动画，主要通过属性`mode`控制，该属性有两个值：
+
+1. `in-out`表示新组件先进入，旧组件再移除；
+2. `out-in`表示旧组件先移除，新组件再进入；
+
+
+
+# 六、React中CSS
+
+## 1、内联样式
+
+ style 接受一个采用小驼峰命名属性的 JavaScript 对象，可以引用state中的状态来设置相关的样式
+
+### （1）优点
+
+- 内联样式样式之间不会有冲突；
+- 可以动态获取当前state中的状态；
+
+
+
+### （2）缺点
+
+- 写法上都需要使用驼峰标识；
+- 某些样式没有提示；
+- 某些样式无法编写(比如伪类/伪元素)；
+- 大量的样式, 代码混乱；
+
+
+
+## 2、普通CSS
+
+将样式单独编写到单独的文件中，之后再进行引入
+
+最大的问题是**样式之间会相互层叠掉**。
+
+
+
+## 3、css modules
+
+### （1）优点
+
+- 解决了局部作用域的问题；
+- 脚手架内置了css module配置，`.css/.less/.scss` 等样式文件都需要修改成 `.module.css/.module.less/.module.scss` 等；
+
+
+
+### （2）缺点
+
+- 引用的类名不能his用链接符，在js中不识别；
+- 所有的className都必须使用 {style.className} 的形式来编写；
+- 不方便动态来修改某些样式，依然需要使用内联样式的方式；
