@@ -874,7 +874,7 @@ const nodeOps = {
 
 下面说一些API，这些API在patch的过程中会被用到，最中都会调用`nodeOps`中的相应函数来操作平台。
 
-#### （1）、`insert`
+### （1）`insert`
 
 `insert`用来在`parent`父节点下插入一个子节点，如果指定了`ref`则插入`ref`这个子节点前面。
 
@@ -904,5 +904,33 @@ function createElm (vnode, parentElm, refElm) {
     insert(parentElm, nodeOps.createTextNode(vnode.text), refElm);
   }
 }
+```
+
+### （3）`addVnodes`
+
+批量调用`createElm`新建节点
+
+```js
+function addVnodes (parentElm, refElm, vnodes, startIdx, endIdx) {
+  for(startIdx <= endIdx; ++startIdx) {
+    createElm(vnodes[startIdx], parentElm, refElm)
+  }
+}
+```
+
+### （4）`removeNode`
+
+
+
+```js
+
+```
+
+### （5）`removeVnodes`
+
+
+
+```js
+
 ```
 

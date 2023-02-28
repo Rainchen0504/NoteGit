@@ -5164,6 +5164,35 @@ user.account = "cyz"
 
 ## 1、虚拟DOM（VNode）
 
+虚拟DOM就是用JS对象来模拟DOM结构，拆解结构如下：
+
+```vue
+<template>
+	<div id="app" class="container">
+    <h1>虚拟DOM</h1>
+  </div>
+</template>
+
+<!--转换后的虚拟DOM如下,是一个对象-->
+<script>
+	const (Virtual Node) = {
+    tag: "div",
+    props: { id:'app', class:'container' },
+    children:[
+      { tag: 'h1', children: '虚拟DOM' }
+    ]
+  }
+</script>
+```
+
+把每一个标签转化为一个对象，该对象具有三个属性：`tag、props、children`
+
+- `tag`必填，就是标签，也可以是组件或者函数；
+- `props`非必填，该标签上的属性和方法；
+- children非必填，标签的内容或者子节点：如果是文本节点就是字符串，如果有子节点就是数组。
+
+
+
 ### （1）虚拟DOM的优势
 
 - 首先可以对真实的元素节点进行抽象，抽象成VNode(虚拟节点)，这样方便后续对其进行各种操作：
