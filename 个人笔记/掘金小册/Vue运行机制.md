@@ -920,17 +920,62 @@ function addVnodes (parentElm, refElm, vnodes, startIdx, endIdx) {
 
 ### （4）`removeNode`
 
-
+用来移除一个节点
 
 ```js
-
+function removeNode (el) {
+    const parent = nodeOps.parentNode(el);
+    if (parent) {
+        nodeOps.removeChild(parent, el);
+    }
+}
 ```
 
 ### （5）`removeVnodes`
 
-
+批量调用 `removeNode` 移除节点
 
 ```js
+function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
+  for (; startIdx <= endIdx; ++startIdx) {
+    const ch = vnodes[startIdx]
+    if (ch) {
+      removeNode(ch.elm);
+    }
+  }
+}
+```
 
+
+
+## 4、patch过程
+
+patch的核心是`diff`算法，使用`diff`算法可以对比出两棵树的「差异」
+
+![image-20230301213832905](https://raw.githubusercontent.com/Rainchen0504/picture/master/202303012138382.png)
+
+diff算法是通过同层的树节点进行比较，而非对树进行逐层搜索遍历，所以时间复杂度只有O(n)，是一种高效的算法。如上图，只有相同的颜色块会进行比较，并将对比得到的差异更新到视图上。
+
+```js
+// patch的过程，简化版
+function path (oldVnode, vnode, parentElm) {
+  if(!oldVnode) {
+    // 如果旧节点不存在，相当于新的vnode替代原本没有的节点，直接在父节点上创建
+    addVnodes(parentElm, null, vnode, 0, vnode.length - 1)
+  } else if (!vnode) {
+    // 如果新节点不存在，相当于要把老的节点删除，直接批量删除旧节点
+    removeVnodes(parentElm, oldVnode, 0, oldVnode.length - 1)
+  } else {
+    // 当新旧节点都存在时候，判断是否是相同节点
+    if (sameVnode(oldVNode, vnode)) {
+      // 相同节点就patchVnode对比节点
+      patchVnode(oldVNode, vnode)
+    } else {
+      // 不相同就删除老节点，增加新节点
+      removeVnodes(parentElm, oldVnode, 0, oldVnode.length - 1)
+      addVnodes(parentElm, null, vnode, 0, vnode.length - 1)
+    }
+  }
+}
 ```
 
