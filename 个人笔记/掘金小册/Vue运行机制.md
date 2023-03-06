@@ -454,7 +454,7 @@ function reactive(obj) {
   // const proxyObj = new Proxy(obj, {
   //   get: function (target, key, receiver) {
   //     const dep = getDepend(target, key);
-  //     dep.depend();
+  //     dep.depend(); // 找响应式关系
   //     return Reflect.get(target, key, receiver);
   //   },
   //   set: function (target, key, newValue, receiver) {
@@ -514,6 +514,7 @@ obj.work = "送外卖";
 
 ```js
 function render(){
+  // h函数就是createVnode函数
   return new VNode(
   	'span',
     {
@@ -870,85 +871,7 @@ const nodeOps = {
 
 
 
-## 3、一些API
-
-下面说一些API，这些API在patch的过程中会被用到，最中都会调用`nodeOps`中的相应函数来操作平台。
-
-### （1）`insert`
-
-`insert`用来在`parent`父节点下插入一个子节点，如果指定了`ref`则插入`ref`这个子节点前面。
-
-```js
-function insert (parent, elm, ref) {
-  if (parent) {
-    if (ref) {
-      if (ref.parentNode === parent) {
-        nodeOps.insertBefore(parent, elm, ref);
-      }
-    } else {
-      nodeOps.appendChild(parent, elm)
-    }
-  }
-}
-```
-
-### （2）`createElm`
-
-`createElm`用来新建一个节点，tag存在创建一个标签节点，否则创建一个文本节点。
-
-```js
-function createElm (vnode, parentElm, refElm) {
-  if (vnode.tag) {
-    insert(parentElm, nodeOps.createElement(vnode.tag), refElm);
-  } else {
-    insert(parentElm, nodeOps.createTextNode(vnode.text), refElm);
-  }
-}
-```
-
-### （3）`addVnodes`
-
-批量调用`createElm`新建节点
-
-```js
-function addVnodes (parentElm, refElm, vnodes, startIdx, endIdx) {
-  for(startIdx <= endIdx; ++startIdx) {
-    createElm(vnodes[startIdx], parentElm, refElm)
-  }
-}
-```
-
-### （4）`removeNode`
-
-用来移除一个节点
-
-```js
-function removeNode (el) {
-    const parent = nodeOps.parentNode(el);
-    if (parent) {
-        nodeOps.removeChild(parent, el);
-    }
-}
-```
-
-### （5）`removeVnodes`
-
-批量调用 `removeNode` 移除节点
-
-```js
-function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
-  for (; startIdx <= endIdx; ++startIdx) {
-    const ch = vnodes[startIdx]
-    if (ch) {
-      removeNode(ch.elm);
-    }
-  }
-}
-```
-
-
-
-## 4、patch过程
+## 3、patch过程
 
 patch的核心是`diff`算法，使用`diff`算法可以对比出两棵树的「差异」
 
@@ -979,3 +902,376 @@ function path (oldVnode, vnode, parentElm) {
 }
 ```
 
+下面说一些API，这些API在patch的过程中会被用到，最中都会调用`nodeOps`中的相应函数来操作平台。
+
+### （1）`insert`
+
+`insert`用来在`parent`父节点下插入一个子节点，如果指定了`ref`则插入`ref`这个子节点前面。
+
+```js
+function insert (parent, elm, ref) {
+  if (parent) {
+    if (ref) {
+      if (ref.parentNode === parent) {
+        nodeOps.insertBefore(parent, elm, ref);
+      }
+    } else {
+      nodeOps.appendChild(parent, elm)
+    }
+  }
+}
+```
+
+
+
+### （2）`createElm`
+
+`createElm`用来新建一个节点，tag存在创建一个标签节点，否则创建一个文本节点。
+
+```js
+function createElm (vnode, parentElm, refElm) {
+  if (vnode.tag) {
+    insert(parentElm, nodeOps.createElement(vnode.tag), refElm);
+  } else {
+    insert(parentElm, nodeOps.createTextNode(vnode.text), refElm);
+  }
+}
+```
+
+
+
+### （3）`addVnodes`
+
+批量调用`createElm`新建节点
+
+```js
+function addVnodes (parentElm, refElm, vnodes, startIdx, endIdx) {
+  for(startIdx <= endIdx; ++startIdx) {
+    createElm(vnodes[startIdx], parentElm, refElm)
+  }
+}
+```
+
+
+
+### （4）`removeNode`
+
+用来移除一个节点
+
+```js
+function removeNode (el) {
+    const parent = nodeOps.parentNode(el);
+    if (parent) {
+        nodeOps.removeChild(parent, el);
+    }
+}
+```
+
+
+
+### （5）`removeVnodes`
+
+批量调用 `removeNode` 移除节点
+
+```js
+function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
+  for (startIdx <= endIdx; ++startIdx) {
+    const ch = vnodes[startIdx]
+    if (ch) {
+      removeNode(ch.elm);
+    }
+  }
+}
+```
+
+
+
+### （6）sameVnode
+
+判断两个节点是否相同，判断的根据是key值，tag(标签)，isCommit(注释),是否input的type一致等等
+
+```js
+function sameVnode () {
+    return (
+        a.key === b.key &&
+        a.tag === b.tag &&
+        a.isComment === b.isComment &&
+        (!!a.data) === (!!b.data) &&
+        sameInputType(a, b)
+    )
+}
+
+function sameInputType (a, b) {
+    if (a.tag !== 'input') return true
+    let i
+    const typeA = (i = a.data) && (i = i.attrs) && i.type
+    const typeB = (i = b.data) && (i = i.attrs) && i.type
+    return typeA === typeB
+}
+```
+
+
+
+### （7）patchVnode
+
+新旧节点都存在且是同一节点时进行深度比对
+
+```js
+function patchVnode (oldVnode, vnode) {
+	// 新老节点完全相同时不用做任何改变
+  if (oldVnode === vnode) {
+    return;
+  }
+  
+	// 当新老节点都是静态的(static)且key相同时，只要把旧节点写到新节点元素和组件实例上即可
+  if (vnode.isStatic && oldVnode.isStatic && vnode.key === oldVnode.key) {
+    vnode.elm = oldVnode.elm;
+    vnode.componentInstance = oldVnode.componentInstance;
+    return;
+  }
+  
+	// 获取新老节点的elm ，以及孩子节点集合
+  const elm = vnode.elm = oldVnode.elm;
+  const oldCh = oldVnode.children;
+  const ch = vnode.children;
+  
+	// 如果新节点是文本节点，直接设置文本
+  if (vnode.text) {
+    // 其中nodeOps提供了跨平台操作DOM的能力
+    nodeOps.setTextContent(elm, vnode.text);
+    
+  } else {
+  // 不是文本节点需要区分几种情况 
+    if (oldCh && ch && (oldCh !== ch)) {
+      // 如果孩子节点都存在且不相同，调用方法更新子节点
+      updateChildren(elm, oldCh, ch);
+      
+    } else if (ch) {
+      // 如果只有新节点存在孩子节点，且旧节点是文本节点则先清除文本然后将新节点的孩子节点批量插入到节点elm下
+      if (oldVnode.text) nodeOps.setTextContent(elm, '');
+      addVnodes(elm, null, ch, 0, ch.length - 1);
+      
+    } else if (oldCh) {
+      // 如果只有旧节点存在孩子节点，则将旧节点的孩子节点全部清除
+      removeVnodes(elm, oldCh, 0, oldCh.length - 1)
+      
+    } else if (oldVnode.text) {
+      // 如果只有旧节点是文本节点，则清除节点文本内容
+      nodeOps.setTextContent(elm, '')
+    }
+  }
+}
+```
+
+
+
+### （8）updateChildren
+
+对比新旧两个孩子节点的方法
+
+```js
+function updateChildren(parentElm, oldCh, newCh) {
+    // 定义 oldStartIdx、newStartIdx、oldEndIdx、newEndIdx 分别是新老两个 VNode 的两边的索引
+    let oldStartIdx = 0;
+    let newStartIdx = 0;
+ 		let newEndIdx = newCh.length - 1;
+    let oldEndIdx = oldCh.length - 1;
+  
+    // 定义 oldStartVnode、newStartVnode、oldEndVnode、newEndVnode 分别指向索引对应的 VNode 节点
+    let oldStartVnode = oldCh[0];
+    let oldEndVnode = oldCh[oldEndIdx];
+    let newStartVnode = newCh[0];
+    let newEndVnode = newCh[newEndIdx];
+  
+    // 定义当前面所有条件都不满足时，才使用的变量，具体后面分析
+    let oldKeyToIdx, idxInOld, elmToMove, refElm;
+ 
+  	// 开启循环，新旧节点左右索引逐渐向中间靠拢
+    while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+        if (!oldStartVnode) {
+            // 当oldStartVnode不存在时，更新索引及对应的节点指向
+            oldStartVnode = oldCh[++oldStartIdx];
+        } else if (!oldEndVnode) {
+     				// 当oldEndVnode不存在时，更新索引以及对应的节点指向
+            oldEndVnode = oldCh[--oldEndIdx];
+        } else if (sameVnode(oldStartVnode, newStartVnode)) {
+						// 当新旧节点起始位vNode相同时，调用 patchVnode 并更新索引以及对应的节点指向
+            patchVnode(oldStartVnode, newStartVnode);
+            oldStartVnode = oldCh[++oldStartIdx];
+            newStartVnode = newCh[++newStartIdx];
+        } else if (sameVnode(oldEndVnode, newEndVnode)) {
+       			// 当新旧节点终止位vNode相同时，调用 patchVnode 并更新索引以及对应的节点指向
+            patchVnode(oldEndVnode, newEndVnode);
+            oldEndVnode = oldCh[--oldEndIdx];
+            newEndVnode = newCh[--newEndIdx];
+        } else if (sameVnode(oldStartVnode, newEndVnode)) {
+						// 当旧节点起始位和新节点终止位vNode相同时，将旧节点起始位节点插入父节点最后并更新索引以及对应的节点指向
+            patchVnode(oldStartVnode, newEndVnode);
+            nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm));
+            oldStartVnode = oldCh[++oldStartIdx];
+            newEndVnode = newCh[--newEndIdx];
+        } else if (sameVnode(oldEndVnode, newStartVnode)) {
+   					// 当旧节点终止位和新节点起始位vNode相同时，将旧节点起始位节点插入父节点最前并更新索引以及对应的节点指向
+            patchVnode(oldEndVnode, newStartVnode);
+            nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm);
+            oldEndVnode = oldCh[--oldEndIdx];
+            newStartVnode = newCh[++newStartIdx];
+        } else {
+        		// 当以上条件都不满足，调用 createKeyToOldIdx 获取一个 key-索引 的 map 集合
+            let elmToMove = oldCh[idxInOld];
+            if (!oldKeyToIdx) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+						// 取出对应 key 的节点索引，不存在则为 null
+            idxInOld = newStartVnode.key ? oldKeyToIdx[newStartVnode.key] : null;
+            if (!idxInOld) {
+    						// 索引不存在，直接创建一个新的节点
+                createElm(newStartVnode, parentElm);
+                newStartVnode = newCh[++newStartIdx];
+            } else {
+               	// 索引存在
+                elmToMove = oldCh[idxInOld];
+                if (sameVnode(elmToMove, newStartVnode)) {
+     								// 两个节点相同，调用 patchVnode 将老节点集合中对应节点赋值为 undefined ，将节点插入 oldStartVnode 之前，更新对应索引
+                    patchVnode(elmToMove, newStartVnode);
+                    oldCh[idxInOld] = undefined;
+                    nodeOps.insertBefore(parentElm, newStartVnode.elm, oldStartVnode.elm);
+                    newStartVnode = newCh[++newStartIdx];
+                } else {
+             				// 两节点不相同，直接创建新节点插入，更新对应索引
+                    createElm(newStartVnode, parentElm);
+                    newStartVnode = newCh[++newStartIdx];
+                }
+            }
+        }
+    }
+    if (oldStartIdx > oldEndIdx) {
+     		// 终止条件， oldStartIdx > oldEndIdx 说明 newCh 中还有剩余节点，直接批量添加
+        refElm = (newCh[newEndIdx + 1]) ? newCh[newEndIdx + 1].elm : null;
+        addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx);
+    } else if (newStartIdx > newEndIdx) {
+   			// 终止条件， newStartIdx > newEndIdx 说明 oldCh 中还有剩余节点，直接批量删除
+        removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx);
+    }
+}
+```
+
+
+
+#### 8.1、第一步
+
+定义 oldStartIdx、newStartIdx、oldEndIdx、newEndIdx 分别是新老两个 VNode 的两边的索引；
+
+定义 oldStartVnode、newStartVnode、oldEndVnode、newEndVnode 分别指向索引对应的 VNode 节点；
+
+![](https://raw.githubusercontent.com/Rainchen0504/picture/master/202303032152303.png)
+
+
+
+#### 8.2、第二步
+
+定义一个循环♻️，该循环中新旧节点所有都向中间靠拢
+
+```js
+while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) 
+```
+
+![image-20230303215950139](https://raw.githubusercontent.com/Rainchen0504/picture/master/202303032159218.png)
+
+当旧节点开始和结束位置不存在的时候，旧节点开始和结束位索引继续向中间靠拢，更新对应的开始和结束位节点指向。
+
+```js
+if (!oldStartVnode) {
+    oldStartVnode = oldCh[++oldStartIdx];
+} else if (!oldEndVnode) {
+    oldEndVnode = oldCh[--oldEndIdx];
+}
+```
+
+
+
+#### 8.3、第三步
+
+接下来是新旧节点开始和结束位两两比较的过程，共有4种情况
+
+##### （1）新旧节点起始位符合sameVnode
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303032240243.png" alt="image-20230303224044068" style="zoom:50%;" />
+
+说明老节点头部和新节点头部是相同节点，直接进行`patchVnode`，同时新旧节点起始位索引分别向后移动一位。
+
+
+
+##### （2）新旧节点结束位符合sameVnode
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303032244007.png" alt="image-20230303224403420" style="zoom:50%;" />
+
+说明老节点尾部和新节点尾部是相同节点，直接进行`patchVnode`，同时新旧节点结束位索引分别向前移动一位。
+
+
+
+##### （3）旧节点起始位和新节点结束位符合sameVnode
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303032247039.png" alt="image-20230303224703777" style="zoom:50%;" />
+
+说明旧节点头部和新节点尾部是同一节点，将旧节点头部直接移动到旧节点尾部，然后旧节点起始位索引向后移动一位，新节点结束位向前移动一位。
+
+
+
+##### （4）旧节点结束位和新节点起始位符合sameVnode
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303032252250.png" alt="image-20230303225159789" style="zoom:50%;" />
+
+说明旧节点尾部和新节点头部是同一节点，将旧节点尾部直接移动到旧节点头部，然后新节点起始位索引向后移动一位，旧节点结束位向前移动一位。
+
+
+
+#### 8.4、第四步
+
+以上条件都不符合时，首先会使用`createKeyToOldIdx`方法产生`key`和`index`索引对应的一个map表
+
+```js
+// createKeyToOldIdx函数的作用
+let before = [
+  {xx: xx, key:'key0'},
+  {xx: xx, key:'key1'},
+  {xx: xx, key:'key2'}
+]
+// 经过函数转换后
+let after = {
+  key0: 0,
+  key1: 1,
+  key2 :2
+}
+```
+
+这样可以根据某一个 key 的值，快速地从 `oldKeyToIdx`（`createKeyToOldIdx` 的返回值）中获取相同 key 的节点的索引 `idxInOld`然后找到相同的节点。
+
+- 如果没找到就创建新节点
+
+```js
+if (!idxInOld) {
+    createElm(newStartVnode, parentElm);
+    newStartVnode = newCh[++newStartIdx];
+}
+```
+
+- 如果找到了就进行节点比对
+  - 同时它符合 `sameVnode`，则将这两个节点进行 `patchVnode`，将该位置的老节点赋值 undefined（之后如果还有新节点与该节点key相同可以检测出来提示已有重复的 key ），同时将 `newStartVnode.elm` 插入到 `oldStartVnode.elm` 的前面。同理，`newStartIdx` 往后移动一位。<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303040119770.png" alt="image-20230304011915513" style="zoom:50%;" />
+  - 不符合`sameVnode`，就创建一个新节点插入到`parentElm`的子节点中，`newStartIdx` 往后移动一位<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303040122346.png" alt="image-20230304012243088" style="zoom:50%;" />
+
+
+
+#### 8.5、第五步
+
+当`while`循环结束之后，新旧节点对比完成，如果新节点还有多的，就将新节点插入到真实DOM中
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303040124691.png" alt="image-20230304012436501" style="zoom:50%;" />
+
+当旧节点还有多的，就将旧节点批量删除
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303040126508.png" alt="image-20230304012556518" style="zoom:50%;" />
+
+
+
+## 4、全流程图
+
+![patch函数调用 patch(oldVnode,Vnode,parentElm)](https://raw.githubusercontent.com/Rainchen0504/picture/master/202303040158743.png)

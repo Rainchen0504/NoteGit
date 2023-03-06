@@ -1,4 +1,16 @@
-# 1、判断图片是否进入可视区域
+# 一、nginx代理配置
+
+<img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202303051622860.png" alt="image-20230305162239487" style="zoom: 50%;" />
+
+server配置项：
+
+1. listen是监听的端口
+2. Server_name是监听的主机名
+3. location表示服务器上文件入口地址
+
+
+
+# 二、判断图片是否进入可视区域
 
 1. `window.innerHeight`是浏览器可视区域的高度
 2. `document.body.scrollTop || document.documentElement.scrollTop`是浏览器滚动过的距离
@@ -9,7 +21,7 @@
 
 
 
-# 2、大文件上传（切片上传加断点续传）
+# 三、大文件上传（切片上传加断点续传）
 
 ## 1、思路
 
@@ -563,4 +575,6 @@ handleClickBtn() {
   }
 </style>
 ```
+
+
 
