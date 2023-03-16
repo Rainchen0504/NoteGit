@@ -84,10 +84,10 @@ Blink:是Webkit的一个分支，Google开发，目前应用于Google Chrome、E
 
 ![image-20221004174042938](https://raw.githubusercontent.com/Rainchen0504/picture/master/202210041740437.png)
 
-- **__dirname:**<font color=deepred>获取**当前文件所在的路径**，不包括后面的文件名</font>；
-- **__filename:**<font color=deepred>获取**当前文件所在的路径和文件名称**，包括后面的文件名</font>；
-- **process对象:**process提供了Node进程中相关的信息；
-- **console对象:**提供了简单的调试控制台；
+- **`__dirname`:**<font color=deepred>获取**当前文件所在的路径**，不包括后面的文件名</font>；
+- **`__filename`:**<font color=deepred>获取**当前文件所在的路径和文件名称**，包括后面的文件名</font>；
+- **`process`对象:**process提供了Node进程中相关的信息；
+- **`console`对象:**提供了简单的调试控制台；
 - **定时器函数:**在Node中使用定时器有好几种方式：
   - setTimeout(callback, delay[, ...args]):callback在delay毫秒后执行一次
   - setInterval(callback, delay[, ...args]):callback每delay毫秒重复执行一次
