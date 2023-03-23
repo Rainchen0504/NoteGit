@@ -3550,3 +3550,61 @@ arch -x86_64 zsh
 在vue2中一个标签同时有`v-for`和`v-if`属性时，`v-for`优先级更高；
 
 在vue3中一个标签同时有`v-for`和`v-if`属性时，`v-if`优先级更高；
+
+
+
+
+
+# 2023年3月17日
+
+## 1、接收下载后端文件流
+
+后端返回的响应体类型是 `response.setContentType("application/vnd.ms-execl")`
+
+响应头类型是`response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");`
+
+```js
+// 请求时
+export const request = (option) =>
+  new Promise((resolve, reject) => {
+    axios({ ...option })
+      .then((res) => {
+      resolve(res.data);
+    })
+      .catch((err) => {
+      reject();
+    });
+});
+
+const exportDetail = (prams) => request({
+  url: "路径",
+  method: "",
+  params,
+  dataType: "application/json",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  // 表示浏览器将要响应的数据类型，包括：'arraybuffer', 'document', 'json', 'text', 'stream'
+  // 浏览器专属 'blob'
+  responseType: "blob"
+})
+
+// 处理响应结果
+exportDetail(params)
+	.then((res) => {
+    const blob = res;
+    const binaryData = [];
+    binaryData.push(blob);
+    const url = window.URL.createObjectURL(new Blob(binaryData));
+    const aLink = document.createElement("a");
+    aLink.href = url;
+    // 2.直接使用自定义文件名,设置下载文件名称
+    aLink.setAttribute("download", "文件名字.xlsx");
+    document.body.appendChild(aLink);
+    // 模拟点击下载
+    aLink.click();
+    // 移除改下载标签
+    document.body.removeChild(aLink);
+	})
+```
+
