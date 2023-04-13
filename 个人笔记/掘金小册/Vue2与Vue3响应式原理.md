@@ -34,7 +34,7 @@
 
 我们可以通过下面的简易代码来分析：
 
-```
+```js
 // 响应式数据处理，构造一个响应式对象
 class Observer {
   constructor(data) {
@@ -159,7 +159,7 @@ function parsePath(path) {
 
 例如：
 
-```
+```js
 <body>
   <div id="app" class="demo-vm-1">
     <p>{{arr[0]}}</p>
@@ -626,5 +626,4 @@ function triggerEffect(effect) {
 对比起 Vue 2 通过 `Object.defineProperty` 在数据定义时为指定具体属性添加 `getter/setter` 拦截、为每个对象添加 `deps` 依赖数组的响应式系统实现方式，Vue 3 采用 `ES6` 的 `Proxy` 结合 `WeakMap、WeakSet` ，通过代理在运行时拦截对象的基本操作来收集依赖并全局管理，在性能上就得到了很大的提升，也为开发者带来了更好的开发体验。
 
 并且通过全局的依赖管理模式，也让 Vue 3 的组合式 API 和 `hooks` 开发模式得以实现，在进行大型项目开发时，公共逻辑拆分也会变得更加清晰。
-
 

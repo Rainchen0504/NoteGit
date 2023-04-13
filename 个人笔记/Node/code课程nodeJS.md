@@ -1719,6 +1719,16 @@ app.listen(8000, () => {
 });
 ```
 
+设置静态资源：
+
+![image-20230411134337480](https://raw.githubusercontent.com/Rainchen0504/picture/master/202304111343947.png)
+
+访问方法：
+
+![image-20230411134441869](https://raw.githubusercontent.com/Rainchen0504/picture/master/202304111344990.png)
+
+![image-20230411134542285](https://raw.githubusercontent.com/Rainchen0504/picture/master/202304111345250.png)
+
 
 
 ## 5、错误处理
