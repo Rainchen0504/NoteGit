@@ -1490,6 +1490,233 @@ react提供了一个库`npm install react-transition-group`实现组件的<font 
 
 ### （2）缺点
 
-- 引用的类名不能his用链接符，在js中不识别；
+- 引用的类名不能使用链接符，在js中不识别；
 - 所有的className都必须使用 {style.className} 的形式来编写；
 - 不方便动态来修改某些样式，依然需要使用内联样式的方式；
+
+
+
+## 4、CSS in JS
+
+是一种模式，CSS<font color=yellow>**由JS生成而不是在外部文件中定义**</font>。该功能<font color=pink>不是React的一部分</font>，由第三方库提供。
+
+### （1）引入外部的库
+
+目前`styled-components`依然是社区最流行的CSS-in-JS库
+
+```shell
+npm install styled-components
+```
+
+
+
+### （2）基本使用
+
+本质是通过调用函数创建出一个组件：
+
+1. 这个组件会被自动添加上一个不重复的class；
+2. `styled-components`会给该class添加相关的样式；
+
+```js
+import styled from "styled-components";
+
+// 基础写法
+export const HomeWrapper = styled.div`
+	border: 1px solid red;
+	border-radius: 5px;
+`
+
+// 样式继承
+export const exWrapper = styled(HomeWrapper)`
+  background-color: #0f0;
+  color: #fff;
+`
+```
+
+支持子代选择器或后代选择器，直接编写样式。可以通过&符号获取当前元素。
+
+
+
+# 七、Redux使用
+
+## 1、核心思想
+
+### （1）JS纯函数
+
+react中组件被要求像一个纯函数，redux中的reducer也被要求必须是一个纯函数。
+
+- 此函数在相同的输入值时，需产生相同的输出；
+- 函数的输出和输入值以外的其他隐藏信息或状态无关，也和由I/O设备产生的外部输出无关；
+- 该函数不能有语义上可观察的函数副作用，诸如“触发事件”，使输出设备输出，或更改输出值以外物件的内容等；
+
+总结说就是：**确定的输入一定返回确定的输出，且在函数执行的过程中不能产生副作用**。
+
+
+
+### （2）副作用
+
+表示在执行一个函数时，除了<font color=deepred>**返回函数值之外**</font>，还<font color=yellow>**对调用函数产生了附加的影响**</font>， 比如修改了全局变量，修改参数或者改变外部的存储
+
+
+
+### （3）介绍
+
+​	React要求**无论是函数还是class声明一个组件**，每个组件都必须像纯函数一样，保护它的props不被更改。
+
+​	React是在视图层解决了DOM渲染问题，但是组件自己的state、组件通信的props还有Context都留给开发者自己来管理。
+
+```js
+UI = render(state)
+```
+
+​	Redux就是一个帮助我们管理State的容器：Redux是<font color=pink>**JavaScript的状态容器，提供了可预测的状态管理**</font>；
+
+
+
+### （4）核心理念
+
+#### 4.1、Store
+
+一段数据需要定义统一的规范来操作这段数据，否则整个数据的变化是无法跟踪的。
+
+
+
+#### 4.2、action
+
+​	Redux要求必须通过action更新数据，所有数据的变化必须通过派发（dispatch）action来更新，action是一个普通的JS对象，用来描述这次更新的type和content。
+
+```js
+const action1 = {type:"ADD_NUM", index:1}
+const action2 = {type:"CHANGE_NAME", info:{name:"chenge"}}
+```
+
+
+
+#### 4.3、reducer
+
+reducer是一个纯函数，作用是将传入的state和action结合起来生成一个新的state；
+
+```js
+const initialState = {
+  name: "zhang",
+  counter: 100,
+};
+function reducer(state = initialState, action) {
+  switch (action.type) {
+    case "change_name":
+      return { ...state, name: action.name };
+      break;
+    case "add_number":
+      return { ...state, counter: state.counter + action.num };
+      break;
+    default:
+      return state;
+  }
+}
+```
+
+
+
+## 2、基本使用
+
+### （1）三大原则
+
+#### 1.1、单一数据源
+
+- 整个应用程序的state被存储在一颗object tree中，并且这个object tree只存储在一个 store 中；
+- Redux并没有强制说不能创建多个Store，但是那样做并不利于数据的维护；
+- 单一的数据源可以让整个应用程序的state变得方便维护、追踪、修改；
+
+
+
+#### 1.2、state是只读的
+
+- 唯一修改State的方法一定是触发action，不要试图在其他地方通过任何的方式来修改State；
+- 可以保证所有的修改都被集中化处理，并且按照严格的顺序来执行；
+- 保证View或网络请求都不能直接修改state；
+
+
+
+#### 1.3、使用纯函数执行修改
+
+- 通过reducer将 旧state和 actions联系在一起，并且返回一个新的State；
+- 可以将reducer拆分成多个小的reducers，分别操作不同state tree的一部分；
+- 所有的reducer都应该是纯函数，不能产生任何的副作用；
+
+
+
+### （2）测试项目搭建
+
+```shell
+1、安装redux
+npm install redux --save
+2、创建新项目文件夹
+npm init
+npm install redux
+3、创建src目录，创建index.js文件
+4、修改packjson.json文件，执行脚本
+"scripts":{
+	"start": "node src/index.js"
+}
+```
+
+
+
+### （3）使用流程
+
+1. 创建一个初始化state对象，作为要保存的状态；
+2. 从redux中引入createStore方法，创建store存储值个state；
+   1. 创建store时需要传入reducer函数；
+   2. 使用时可以通过store.getState获取当前state；
+3. 通过action修改state；
+   1. 通过dispatch派发action；
+   2. 通常action中都会有type属性，也可以携带其他的数据；
+4. 修改reducer中的处理代码；
+   1. reducer是一个纯函数，不能直接修改state；
+   2. 要修改也是返回新state对象；
+5. 可以在派发action之前监听store的变化；
+
+代码流程：
+
+```js
+// store部分
+const { createStore } = require("redux");
+
+const initialState = {
+  name: "zhang",
+  counter: 100,
+};
+function reducer (state=initialState, action) {
+  switch (action.type) {
+    case "change":
+      return {...state, name: action.name}
+      break;
+    case "add":
+      return {..state, counter: state.counter + action.num}
+      break;
+    default:
+      return state
+  }
+}
+
+const store = createStore(reducer);
+module.exports = store;
+
+// 使用时
+const store = require("./store");
+const unsubscribe = store.subscribe(() => {
+  console.log("订阅数据的变化", store.getState())
+})
+store.dispatch({ type: "change", name: "chenge" });
+store.dispatch({ type: "add", num: 10 });
+unsubscribe()
+```
+
+
+
+## 3、React结合Redux
+
+
+
+
+
