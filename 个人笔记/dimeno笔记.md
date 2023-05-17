@@ -3610,8 +3610,7 @@ exportDetail(params)
 
 
 
-# 2023年4月18日
+hashChange实现hash路由模式
 
-## 1、真机调试
+pushState和replaceState实现history路由模式
 
-### （1）手机访问
