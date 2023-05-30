@@ -3610,7 +3610,7 @@ exportDetail(params)
 
 
 
-hashChange实现hash路由模式
+
 
 pushState和replaceState实现history路由模式
 
