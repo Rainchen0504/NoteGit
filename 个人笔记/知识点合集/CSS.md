@@ -23,3 +23,34 @@
 }
 ```
 
+
+
+## 3、绘制0.5px的线
+
+### （1）viewport方式
+
+```html
+<meta name="viewport" content="width=device-width,initial-scale=0.5,minimum-scale=0.5,maximum-scale=0.5" />
+```
+
+
+
+### （2）transform缩放
+
+```css
+tarnsform: scale(0.5, 0.5)
+```
+
+
+
+### （3）box-shadow阴影
+
+```css
+height: 1px;
+background: none;
+box-shadow: 0 0.5px 0 #000
+```
+
+
+
+## 4、link和@import
