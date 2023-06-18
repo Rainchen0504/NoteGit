@@ -130,9 +130,145 @@ flex-direction: row | row-reverse | column | column-reverse;
 flex-wrap: nowrap | wrap | wrap-reverse;
 /* direction和wrap的简写 */
 flex-flow: <flex-direction> || <flex-wrap>
+/* 水平对齐 */
+justify-content: flex-start | flex-end | center | space-between | space-around;
+/* 垂直对齐 */
+align-items: flex-start | flex-end | center | baseline | stretch;
+/* 多轴线对齐方式 */
+align-content: flex-start | flex-end | center | space-between | space-around | stretch;
 ```
 
 
 
 ### （2）项目属性
 
+```css
+/* 项目排列顺序，数值越小，排列越靠前，默认为0 */
+order: <integer>
+/* 放大比例 */
+flex-grow: <number>
+/* 缩小比例 */
+flex-shrink: <number>
+/* flex-grow、flex-shrink和flex-basis简写，默认值为0 1 auto，后两个属性可选填 */
+flex: none | [flex-grow flex-shrink flex-basis]
+```
+
+
+
+## 7、垂直居中方法
+
+### （1）margin:auto
+
+```css
+.parent {
+    position: relative;
+    width: 500px;
+    height: 400px;
+    background: blue;
+}
+.child {
+    background: red;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    margin: auto;
+}
+```
+
+
+
+### （2）margin负值+translate偏移
+
+```css
+.parent {
+    width: 500px;
+    height: 400px;
+    position: relative;
+    background: pink;
+}
+.child {
+    width: 180px;
+    height: 80px;
+    background-color: #746;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+```
+
+
+
+### （3）利用flex
+
+```css
+.parent {
+    width: 500px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: pink;
+}
+.child {
+    width: 50px;
+    height: 50px;
+    background: red;
+}
+```
+
+
+
+### （4）利用line-height
+
+```css
+.parent {
+    width: 500px;
+    height: 400px;
+    border: 1px solid #546461;
+    font-size: 0px;
+    text-align: center;
+    line-height: 400px;
+}
+.child {
+    display: inline-block;
+    width: 100px;
+    height: 50px;
+    font-size: 16px;
+    background-color: red;
+    vertical-align: middle;
+}
+```
+
+
+
+## 8、JS动画和CSS3动画
+
+### （1）JS动画
+
+- 优点
+  - Javascript动画控制力很强，可以在动画播放过程中对动画进行控制：开始、暂停、回放、终止、取消都是可以做到的；
+  - 动画效果比CSS3动画丰富，有些动画效果比如曲线运动,冲击闪烁,视差滚动效果，只有JavaScript动画才能完成；
+  - CSS3有兼容性问题，而JS大多时候没有兼容性问题；
+
+- 缺点
+
+  - JS是单线程的脚本语言，当JS在浏览器主线程运行时，主线程还有其它需要运行的JS脚本、样式、计算、布局、交互等一系列任务，对其他干扰线程可能出现阻塞，造成丢帧情况；
+  - JS在做动画时，其复杂度是高于CCS3的，需要考虑一些计算、操作等问题；
+
+  
+
+### （2）CSS3动画
+
+- 优点
+  - 浏览器可以对动画进行优化；
+  - 代码相对简单，性能调优方向固定；
+  - 对于帧数表现不好的低版本浏览器，CSS3可以做到自然降级，而JS则需要撰写额外代码；
+
+- 缺点
+  - 代码冗余，实现复杂动画代码变得非常笨重；
+  - 运行过程控制较弱，无法附加时间绑定回调函数；CSS动画只能暂停,不能在动画中寻找一个特定的时间点，不能在半路反转动画，不能变换时间尺度，不能在特定的位置添加回调函数或是绑定回放事件，无进度报告；
