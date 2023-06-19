@@ -1,3 +1,63 @@
+## 1、判断对象是否存在属性
+
+### （1）Reflect.has()
+
+检查一个对象是否有某个属性，包含原型上的属性；
+
+```js
+Reflect.has({name: "zhang"}, "name") // true
+Reflect.has({name: "zhang"}, "age") // false
+```
+
+
+
+### （2）Object.hasOwn()
+
+用于替代`Object.prototype.hasOwnProperty`的方法，如果指定的对象自身有指定的属性就返回true。如果属性是继承的或不存在就返回false；
+
+```js
+const object1 = {prop: 'exists'};
+console.log(Object.hasOwn(object1, 'prop'));
+// Expected output: true
+console.log(Object.hasOwn(object1, 'toString'));
+// Expected output: false
+```
+
+
+
+### （3）Object.prototype.hasOwnProperty()
+
+返回一个布尔值，表示对象自有属性（非继承）中是否有指定属性；
+
+```js
+const object1 = {};
+object1.property1 = 42;
+console.log(object1.hasOwnProperty('property1'));
+// Expected output: true
+console.log(object1.hasOwnProperty('toString'));
+// Expected output: false
+```
+
+
+
+### （4）in操作符
+
+返回一个布尔值，表示指定的属性是否在指定对象的原型链中；
+
+```js
+const car = { make: 'Honda', model: 'Accord' };
+console.log('make' in car);
+// Expected output: true
+delete car.make;
+if ('make' in car === false) { //此处没有make属性结果为false
+  car.make = 'Suzuki';
+}
+console.log(car.make);
+// Expected output: "Suzuki"
+```
+
+
+
 ## 8、web worker
 
 ### （1）说明
