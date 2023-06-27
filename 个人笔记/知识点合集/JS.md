@@ -58,6 +58,98 @@ console.log(car.make);
 
 
 
+## 2、判断数据类型方法
+
+### （1）typeof
+
+- **概要**：typeof操作符返回一个字符串，表示未经计算的操作数类型；
+
+- **说明**：可以判断8种类型：`String、Boolean、Number、undefined、Symbol、BigInt、Object、Function`，其wpw中`typeof null === 'object'、typeof NaN === number`；
+- **优点**：除了null，其他基本数据类型都能判断；
+- **缺点**：function之外的其他引用数据类型，基础数据类型null，构造函数创建的字符串、数字、布尔值等都被创建为object；
+
+```js
+typeof(1);		// number
+typeof(NaN);	// number
+typeof(true);	// boolean
+typeof('');	    // string
+typeof(undefined);	// undefined
+typeof(13n);	// bigint
+typeof(Symbol(13));  	// symbol
+typeof({name:"chenge"});	// object
+typeof([1, 2, 3]);	// object
+typeof(null);	// object
+let func1 = function(){
+  console.log('hello');
+}
+typeof(func1);	// function
+```
+
+
+
+### （2）instanceof
+
+- **概要**：返回一个布尔值，表示一个对象是否为某个构造函数的实例；
+- **范围**：判断构造函数的 prototype 属性是否出现在某个实例对象的原型链上，一般用来判断引用数据类型；
+- **优点**：能够监测出引用数据类型；
+- **缺点**：无法判断基础数据类型；
+
+```js
+var arr1 = new Array(2)
+arr1 instanceof Array  // true
+arr1 instanceof Object  // true
+var str1 = new String("123")
+str1 instanceof String  // true
+str1 instanceof Object  // true
+var str2 = '1234'
+str2 instanceof String // false
+let num1 = new Number('123');
+num1 instanceof Number;	// true
+num1 instanceof Object;	// true
+let num2 = 13;
+num2 instanceof Number;	// false
+function A(name, age){
+  this.name = name;
+  this.age = age;
+}
+let p1 = new A('ostuthere', 18);
+p1 instanceof A;		// true
+p1 instanceof Object;	// true
+// A.prototype有可能被改变，改变后的 prototype 不一定会出现在 p1 的原型链上
+A.prototype = {
+  sayHi: function(){
+    console.log('hi');
+  }
+}
+p1 instanceof A;	// false
+```
+
+
+
+### （3）Object.prototype.isPrototypeOf()
+
+- **概要**：返回一个布尔值，测试一个对象是否存在于另一个对象的原型链上；
+- **范围**：和instanceof不同，
+- **优点**：能够检测出引用数据类型；
+- **缺点**：不能检测基本数据类型，且prototype能被修改导致检测结果不一定真实；
+
+```js
+
+```
+
+
+
+### （4）Object.prototype.toString.call()
+
+- **概要**：
+- **范围**：
+- **优点**：
+- **缺点**：
+
+
+
+
+
 ## 8、web worker
 
 ### （1）说明
