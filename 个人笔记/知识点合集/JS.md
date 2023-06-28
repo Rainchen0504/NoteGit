@@ -90,7 +90,7 @@ typeof(func1);	// function
 ### （2）instanceof
 
 - **概要**：返回一个布尔值，表示一个对象是否为某个构造函数的实例；
-- **范围**：判断构造函数的 prototype 属性是否出现在某个实例对象的原型链上，一般用来判断引用数据类型；
+- **说明**：判断构造函数的 prototype 属性是否出现在某个实例对象的原型链上，一般用来判断引用数据类型；
 - **优点**：能够监测出引用数据类型；
 - **缺点**：无法判断基础数据类型；
 
@@ -126,25 +126,27 @@ p1 instanceof A;	// false
 
 
 
-### （3）Object.prototype.isPrototypeOf()
+### （3）Object.prototype.toString.call()
 
-- **概要**：返回一个布尔值，测试一个对象是否存在于另一个对象的原型链上；
-- **范围**：和instanceof不同，
-- **优点**：能够检测出引用数据类型；
-- **缺点**：不能检测基本数据类型，且prototype能被修改导致检测结果不一定真实；
+- **概要**：返回`[object type]`，type是调用者的数据类型；
+- **优点**：能够检测出所有的数据类型；
+- **缺点**：不兼容IE6以前版本的浏览器；
 
 ```js
-
+Object.prototype.toString.call(1); // [object Number]
+Object.prototype.toString.call(true); // [object Boolean]
+Object.prototype.toString.call('13');	// [object String]
+Object.prototype.toString.call(undefined);	// [object Undefined]
+Object.prototype.toString.call(null);	// [object Null]
+Object.prototype.toString.call(Symbol(13));	// [object Symbol]
+Object.prototype.toString.call(13n);	// [object BigInt]
+Object.prototype.toString.call([1,2,3]);	// [object Array]
+Object.prototype.toString.call(new Function());	// [object Function]
+Object.prototype.toString.call(new Date());	// [object Date]
+Object.prototype.toString.call(new RegExp());	// [object RegExp]
+Object.prototype.toString.call(new Error());	// [object Error]
+Object.prototype.toString.call(window) ;	// [object global] window是全局对象global的引用
 ```
-
-
-
-### （4）Object.prototype.toString.call()
-
-- **概要**：
-- **范围**：
-- **优点**：
-- **缺点**：
 
 
 
