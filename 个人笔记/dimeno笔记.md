@@ -3610,7 +3610,123 @@ exportDetail(params)
 
 
 
+# 2023年7月4日
+
+## 1、execl转json
+
+### （1）安装依赖
+
+```shell
+npm install xlsx
+```
 
 
-pushState和replaceState实现history路由模式
 
+### （2）项目引入
+
+```js
+import * as XLSX from "xlsx"
+```
+
+
+
+### （3）使用案例
+
+```vue
+<template>
+  <div>
+    <el-upload
+      action=""
+      :show-file-list="false"
+      accept=".xls,.XLS,.xlsx,.XLSX"
+      :http-request="httpRequest"
+    >
+      <el-button type="primary">导入</el-button>
+    </el-upload>
+  </div>
+</template>
+
+<script>
+import * as xlsx from "xlsx";
+export default {
+  data() {
+    return {
+      jsonData: [],
+    };
+  },
+  methods: {
+    httpRequest(e) {
+      // 文件信息
+      const { file } = e;
+      // 类型判断
+      if (!file) {
+        return false;
+      } else if (!/\.(xls|xlsx)$/.test(file.name.toLowerCase())) {
+        this.$message.error("上传格式不正确，请上传xls或者xlsx格式");
+        return false;
+      }
+
+      // 读取文件
+      const fileReader = new FileReader();
+      fileReader.onload = (ev) => {
+        try {
+          const data = ev.target.result;
+          // 获取所有表信息
+          const workbook = xlsx.read(data, {
+            type: "binary", // 以字符编码的格式解析
+          });
+          // 获取第一张表的表名
+          const exlname = workbook.SheetNames[0];
+          // 转成json数据
+          const exl = xlsx.utils.sheet_to_json(workbook.Sheets[exlname]);
+          this.jsonData = exl;
+        } catch (e) {
+          console.log("error", e);
+          return falses;
+        }
+      };
+
+      fileReader.readAsBinaryString(file);
+    },
+  },
+};
+</script>
+```
+
+
+
+# 2023年7月5日
+
+## 1、iframe操作dom
+
+当iframe加载完成后，
+
+​	可以通过**`contentDocument`**获取iframe生成的<font color=deepred>文档对象</font>，
+
+​	也可以通过**`contentWindow`**获取iframe生成的<font color=deepred>window对象</font>；
+
+```vue
+<template>
+	<iframe src="" width="100%" height="200" class="iframe"></iframe>
+</template>
+
+<script>
+	export default {
+    mounted(){
+      const iframe = document.querySelector('iframe')
+      iframe.onload = () => {
+        const iframeDocument = iframe.contentDocument
+        // 可以获取内部dom元素
+        iframeDocument.getElementById("")
+        iframeDocument.querySelector("")
+      }
+    }
+  }
+</script>
+```
+
+
+
+### 注意⚠️：
+
+由于安全问题，iframe文档的内容只能通过<font color=pink>**同一个域名下的另一个文档访问**</font>。
