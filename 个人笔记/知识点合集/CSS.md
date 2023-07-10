@@ -25,7 +25,172 @@
 
 
 
-## 3、绘制0.5px的线
+## 3、绘制1px物理像素
+
+现象：CSS设置1px，但是移动端显示却有些粗；
+
+- 物理像素：也叫设备像素，一个物理像素是显示器上最小的物理显示单元。在操作系统的调度下，每一个物理像素都有自己的颜色值和高亮，IPhone6上有750*1334个物理像素颗粒；
+
+- 逻辑像素：设备独立像素或密度像素，由程序使用的虚拟像素，CSS像素，然后由系统转换为物理像素；
+
+- 设备像素比：物理像素和逻辑像素的关系
+
+  ```js
+  设备像素比dpr = 物理像素 / 逻辑像素
+  ```
+
+​	由于手机屏幕分辨率越来越高，同样屏幕大小的一个手机，它的**实际物理像素数更多**了。因为<font color=pink>不同的移动设备有不同的像素密度</font>，所以写的1px在不同的移动设备上展示是不一样的。
+
+### （1）使用box-shadow
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .box {
+        width: 100px;
+        height: 100px;
+        margin: 50px auto;
+        background-color: antiquewhite;
+        box-shadow: 0 1px 0 0 rgba(0, 0, 0, 1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box"></div>
+  </body>
+</html>
+```
+
+
+
+### （2）设置border-image
+
+利用1px宽度图片做border图片
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .box {
+        width: 100px;
+        height: 100px;
+        margin: 50px auto;
+        background-color: antiquewhite;
+      }
+      .border-image-1px {
+        border-bottom: 1px solid transparent;
+        border-image: url(./xnip.jpg) 30 stretch;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box border-image-1px"></div>
+  </body>
+</html>
+```
+
+
+
+### （3）background-iamge实现
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>实现1px的解决办法</title>
+    <style>
+      .box {
+        width: 100px;
+        height: 100px;
+        margin: 50px auto;
+        background-color: antiquewhite;
+      }
+      .background-image-1px {
+        background: url(border.png) repeat-x left bottom;
+        -webkit-background-size: 100% 1px;
+        background-size: 100% 1px;
+        background-color: antiquewhite;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box background-image-1px"></div>
+  </body>
+</html>
+```
+
+
+
+### （4）多背景渐变实现
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>实现1px的解决办法</title>
+    <style>
+      .background-gradient-1px {
+        background: linear-gradient(#000, #000 100%, transparent 100%) left /
+            1px 100% no-repeat,
+          linear-gradient(#000, #000 100%, transparent 100%) right / 1px 100%
+            no-repeat,
+          linear-gradient(#000, #000 100%, transparent 100%) top / 100% 1px
+            no-repeat,
+          linear-gradient(#000, #000 100%, transparent 100%) bottom / 100% 1px
+            no-repeat;
+      }
+      .box {
+        width: 100px;
+        height: 100px;
+        margin: 50px auto;
+        background-color: antiquewhite;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box background-gradient-1px"></div>
+  </body>
+</html>
+```
+
+
+
+### （5）viewport + rem实现
+
+首先在viewport设置缩放，通过JS去动态修改viewport的值
+
+```html
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+```
+
+通过JS来修改viewport的值：
+
+```js
+var 
+```
+
+
+
+### （6）伪类+transfrom实现
+
+### 
+
+
+
+
 
 ### （1）viewport方式
 
@@ -346,3 +511,67 @@ link不存在兼容问题，权重高于@import；
 | rem  | 相对根元素字体大小       | 遵循html元素字体大小      | 适配移动端长度 |
 | rpx  | 微信小程序独有自适应尺寸 | 1rpx=0.5px=1物理像素      | 移动端小程序   |
 | vh   | 视口高度                 | 1vh 等于 1/100 的视口高度 | 自适应长度     |
+
+
+
+## 14、CSS中的overflow属性
+
+超出内容区内容处理方式：
+
+- `scroll`——显示滚动条
+- `auto`——子元素内容大于父元素时出现滚动条
+- `visible`——溢出的内容在父元素之外
+- `hidden`——溢出隐藏
+
+
+
+## 15、隐藏元素方法
+
+```css
+/* 方法1,元素不可见,不占用文档空间  */
+display: none;
+
+/* 方法2,使一个元素完全透明,占用空间 */
+opacity: 0;
+
+/* 方法3,隐藏元素,但是元素占用空间 */
+visibility: hidden;
+
+/* 方法4,将元素定位为负值,显示在画布区域之外 */
+position: absolute;
+
+/* 方法5,缩小比例到不可见,位置被保留 */
+transform: scale(0);
+
+/* 方法6,高斯模糊到不可见,数值越大越糊 */
+filter: blur(100px);
+
+/* 方法7,高度为0，消除边框 */
+height: 0;
+```
+
+
+
+## 16、CSS盒子模型
+
+### （1）标准盒模型
+
+```js
+width = 内容宽度(content) + border + padding + margin
+```
+
+![](https://raw.githubusercontent.com/Rainchen0504/picture/master/202307070015101.png)
+
+
+
+### （2）IE盒模型
+
+```js
+width = 内容宽度(content + border + padding) + margin
+```
+
+![](https://raw.githubusercontent.com/Rainchen0504/picture/master/202307070016816.png)
+
+
+
+## 
