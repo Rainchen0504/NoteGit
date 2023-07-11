@@ -239,3 +239,14 @@ self.close()
 - event 指定事件名；
 - function 指定要事件触发时执行的函数；
 - useCapture 指定事件是否在捕获或冒泡阶段执行，true在捕获阶段处理，false在冒泡阶段处理；
+
+
+
+## 15、constructor和instanceof
+
+constructor是一个对象属性，指向创建该对象的构造函数
+
+
+
+instanceof是JS运算符，用于检查是否是某个特定类型的实例
+
