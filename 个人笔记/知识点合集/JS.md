@@ -244,9 +244,23 @@ self.close()
 
 ## 15、constructor和instanceof
 
-constructor是一个对象属性，指向创建该对象的构造函数
+- constructor是一个对象属性，指向创建该对象的构造函数；
 
+```js
+function Person(name) {
+  this.name = name;
+}
+const zhang = new Person();
+console.log(zhang.constructor === Person); // true
+```
 
+- instanceof是JS运算符，用于检查对象是否是某个特定类型的实例；
 
-instanceof是JS运算符，用于检查是否是某个特定类型的实例
+```js
+function Person(name) {
+  this.name = name;
+}
+const zhang = new Person();
+console.log(zhang instanceof Person); // true
+```
 
