@@ -179,43 +179,76 @@
 通过JS来修改viewport的值：
 
 ```js
-var 
+// 根据设备像素比进行比例缩放
+var viewport = document.querySelector("meta[name=viewport]");
+if (window.devicePixelRatio == 1) {
+  viewport.setAttribute(
+    "content",
+    "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+  );
+}
+if (window.devicePixelRatio == 2) {
+  viewport.setAttribute(
+    "content",
+    "width=device-width, initial-scale=0.5, maximum-scale=0.5, minimum-scale=0.5, user-scalable=no"
+  );
+}
+if (window.devicePixelRatio == 3) {
+  viewport.setAttribute(
+    "content",
+    "width=device-width, initial-scale=0.333333333, maximum-scale=0.333333333, minimum-scale=0.333333333, user-scalable=no"
+  );
+}
+var docEl = document.documentElement;
+var fontsize = 10 * (docEl.clientWidth / 320) + "px";
+docEl.style.fontSize = fontsize;
 ```
 
 
 
 ### （6）伪类+transfrom实现
 
-### 
-
-
-
-
-
-### （1）viewport方式
+​	先把原先元素的`border`去掉，然后利用`:before`或者`:after`重做border，边框宽度设置为1px，并且transform的scale缩小一半，原先的元素相对定位，新做的border绝对定位。
 
 ```html
-<meta name="viewport" content="width=device-width,initial-scale=0.5,minimum-scale=0.5,maximum-scale=0.5" />
-```
-
-
-
-### （2）transform缩放
-
-```css
-tarnsform: scale(0.5, 0.5)
-```
-
-
-
-### （3）box-shadow阴影
-
-设置box-shadow的第二个参数为0.5px，表示阴影垂直方向的偏移为0.5px
-
-```css
-height: 1px;
-background: none;
-box-shadow: 0 0.5px 0 #000
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+          name="viewport"
+          id="WebViewport"
+          content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+          />
+    <title>实现1px的解决办法</title>
+    <style>
+      .scale-1px {
+        position: relative;
+        border: none;
+      }
+      .scale-1px:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        background: #000;
+        width: 100%;
+        height: 1px;
+        -webkit-transform: scaleY(0.5);
+        transform: scaleY(0.5);
+        -webkit-transform-origin: 0 0;
+        transform-origin: 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scale-1px"></div>
+    <script>
+      if (window.devicePixelRatio && devicePixelRatio >= 2) {
+        document.querySelector("ul").className = "scale-1px";
+      }
+    </script>
+  </body>
+</html>
 ```
 
 
@@ -574,4 +607,78 @@ width = 内容宽度(content + border + padding) + margin
 
 
 
-## 
+## 17、CSS选择器
+
+### （1）常见选择器
+
+- id选择器（"#content"）
+- 类选择器（",content"）
+- 标签选择器（"div"、"p"）
+- 子选择器（"ul>li"）
+- 后代选择器（"li a"）
+- 通配符选择器（"*"）
+- 伪类选择器（"a:hover"）
+
+
+
+### （2）可继承样式
+
+font-size、font-family、color
+
+
+
+### （3）不可继承样式
+
+border、padding、margin、width、height
+
+
+
+## 18、CSS写法优化
+
+1. 属性值为0时，不加单位；
+2. 避免使用后代选择器和过度约束；
+3. 使用紧凑的语法；
+4. 避免不必要的重复；
+5. 使用语义化命名，便于维护；
+6. 尽量减少`!important`使用；
+7. 遵守盒子模型规则；
+
+
+
+## 19、CSS3新特性
+
+1. 媒体查询`@media`；
+2. 弹性布局`flex`和`grid`网格布局；
+3. CSS3边框
+   1. 圆角效果`border-radius`；
+   2. 边框阴影`border-shadow`；
+   3. 边框图片`border-image`；
+4. CSS3颜色
+   1. RGBA颜色；
+   2. 颜色渐变`gradient`；
+      1. liner-gradient线性渐变；
+      2. radial-gradient径向渐变；
+      3. conic-gradient圆锥渐变；
+5. CSS3字体
+   1. 文本的阴影 `text-shadow`；
+   2. 文本换行`word-wrap`；
+6. CSS3转换`transform`
+   1. `translate`移动
+   2. `rotate`旋转
+   3. `scale`缩放
+7. CSS3动画
+   1. `animation`动画
+   2. `transition`过渡
+
+
+
+## 20、flex:1展开
+
+flex:1是缩写，包含
+
+```css
+flex-grow: 1; /*对应元素增长系数*/
+flex-shrink: 1; /*对应元素收缩规则*/
+flex-basis: 0%; /*对应元素在主轴上的大小*/
+```
+
