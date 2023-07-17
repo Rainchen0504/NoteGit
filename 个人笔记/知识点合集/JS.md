@@ -5,80 +5,24 @@ Javascript一共有**8种数据类型**，包含7种基本数据类型和1种引
 ### （1）基本数据类型
 
 ```js
-String、Number、Boolean
+String、Number、Boolean、Null、undefined、Symbol、BigInt
 ```
+
+也称为原始数据类型，直接存储在栈中，占据空间小，大小固定，被频繁使用；
 
 
 
 ### （2）引用数据类型
 
-
-
-
-
-
-
-## 1、判断对象是否存在属性
-
-### （1）Reflect.has()
-
-检查一个对象是否有某个属性，包含原型上的属性；
-
 ```js
-Reflect.has({name: "zhang"}, "name") // true
-Reflect.has({name: "zhang"}, "age") // false
+Object（包含function、Array、Date）
 ```
 
-
-
-### （2）Object.hasOwn()
-
-用于替代`Object.prototype.hasOwnProperty`的方法，如果指定的对象自身有指定的属性就返回true。如果属性是继承的或不存在就返回false；
-
-```js
-const object1 = {prop: 'exists'};
-console.log(Object.hasOwn(object1, 'prop'));
-// Expected output: true
-console.log(Object.hasOwn(object1, 'toString'));
-// Expected output: false
-```
+​	本质上是一组无序的名值对组成的，同时存储在栈和堆中，占据空间大，大小不固定；引用数据类型在栈中存储了指针，该指针指向堆中该实体的起始地址。当解释器寻找引用值时，会首先检索其在栈中的地址，取得地址后从堆中获得实体。
 
 
 
-### （3）Object.prototype.hasOwnProperty()
-
-返回一个布尔值，表示对象自有属性（非继承）中是否有指定属性；
-
-```js
-const object1 = {};
-object1.property1 = 42;
-console.log(object1.hasOwnProperty('property1'));
-// Expected output: true
-console.log(object1.hasOwnProperty('toString'));
-// Expected output: false
-```
-
-
-
-### （4）in操作符
-
-返回一个布尔值，表示指定的属性是否在指定对象的原型链中；
-
-```js
-const car = { make: 'Honda', model: 'Accord' };
-console.log('make' in car);
-// Expected output: true
-delete car.make;
-if ('make' in car === false) { //此处没有make属性结果为false
-  car.make = 'Suzuki';
-}
-console.log(car.make);
-// Expected output: "Suzuki"
-```
-
-
-
-## 2、判断数据类型方法
+## 2、判断数据类型的方法
 
 ### （1）typeof
 
@@ -167,6 +111,72 @@ Object.prototype.toString.call(new RegExp());	// [object RegExp]
 Object.prototype.toString.call(new Error());	// [object Error]
 Object.prototype.toString.call(window) ;	// [object global] window是全局对象global的引用
 ```
+
+****
+
+
+
+
+
+## 1、判断对象是否存在属性
+
+### （1）Reflect.has()
+
+检查一个对象是否有某个属性，包含原型上的属性；
+
+```js
+Reflect.has({name: "zhang"}, "name") // true
+Reflect.has({name: "zhang"}, "age") // false
+```
+
+
+
+### （2）Object.hasOwn()
+
+用于替代`Object.prototype.hasOwnProperty`的方法，如果指定的对象自身有指定的属性就返回true。如果属性是继承的或不存在就返回false；
+
+```js
+const object1 = {prop: 'exists'};
+console.log(Object.hasOwn(object1, 'prop'));
+// Expected output: true
+console.log(Object.hasOwn(object1, 'toString'));
+// Expected output: false
+```
+
+
+
+### （3）Object.prototype.hasOwnProperty()
+
+返回一个布尔值，表示对象自有属性（非继承）中是否有指定属性；
+
+```js
+const object1 = {};
+object1.property1 = 42;
+console.log(object1.hasOwnProperty('property1'));
+// Expected output: true
+console.log(object1.hasOwnProperty('toString'));
+// Expected output: false
+```
+
+
+
+### （4）in操作符
+
+返回一个布尔值，表示指定的属性是否在指定对象的原型链中；
+
+```js
+const car = { make: 'Honda', model: 'Accord' };
+console.log('make' in car);
+// Expected output: true
+delete car.make;
+if ('make' in car === false) { //此处没有make属性结果为false
+  car.make = 'Suzuki';
+}
+console.log(car.make);
+// Expected output: "Suzuki"
+```
+
+
 
 
 
