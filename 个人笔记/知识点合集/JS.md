@@ -112,13 +112,9 @@ Object.prototype.toString.call(new Error());	// [object Error]
 Object.prototype.toString.call(window) ;	// [object global] window是全局对象global的引用
 ```
 
-****
 
 
-
-
-
-## 1、判断对象是否存在属性
+## 3、判断对象是否存在属性
 
 ### （1）Reflect.has()
 
@@ -177,6 +173,114 @@ console.log(car.make);
 ```
 
 
+
+## 4、作用域、作用域链和执行上下文
+
+### （1）作用域
+
+​	作用域是函数和变量的可访问范围，控制函数、变量的可见性和生命周期。分为全局作用域、函数作用域和块作用域。
+
+- 全局作用域
+
+  全局作用域中的对象在全局任何地方都能访问，常用的例如window对象；
+
+- 函数作用域
+
+  函数作用域中的对象只能在函数内部访问，函数执行结束后就会被销毁；
+
+- 块作用域
+
+  ES6新增块作用域，用一对大括号包裹的一段代码（循环语句、判断语句、函数）甚至单独的一个{}都可以被看作是一个块作用域；
+
+
+
+### （2）作用域链
+
+​	每个执行上下文的变量环境中，都包含一个外部引用，指向外部的执行上下文，当使用外部变量时，查找变量的链式关系就是作用域链。JS执行过程中，作用域链是由词法作用决定的，而词法作用域是**函数声明位置决定的**，是静态作用域，代码编译阶段就决定好的，和函数怎么调用没关系。
+
+
+
+### （3）执行上下文
+
+​	执行上下文是代码运行时产生的执行环境，分为全局执行上下文和函数执行上下文。执行上下文包含变量环境和词法环境。
+
+
+
+## 5、this
+
+**<font color=pink>this是和执行上下文绑定的</font>**，每个执行上下文都有一个this。
+
+### （1）全局执行上下文
+
+指向window对象
+
+
+
+### （2）函数执行上下文
+
+#### 1、普通函数调用
+
+- 独立调用指向全局变量window；
+- 对象调用内部方法指向对象本身；
+
+
+
+#### 2、箭头函数调用
+
+指向包裹箭头函数的第一个普通函数；
+
+
+
+#### 3、call/apply/bind
+
+指向绑定的对象；
+
+
+
+#### 4、构造函数调用
+
+指向构造函数创建出的实例；
+
+构造函数实例化四步过程：
+
+1. 创建一个空对象；
+2. 将新对象的隐式原型`__proto__`指向构造函数的原型对象`prototype`；
+3. 使用`CreateObj.call()`方法，把创建的空对象作为call的参数改变this指向，给对象添加属性和方法；
+4. 返回新创建的对象；
+
+```js
+function A () {
+  this.name = "A"
+}
+
+// 使用new关键字实例化对象
+function newA () {
+  const obj = {}
+  obj.__proto__ = A.prototype
+  A.call(obj)
+  return obj
+}
+```
+
+```js
+// new命令的内部简化流程
+function _new () {
+  // 将arguments对象转为数组
+  var args = [].slice.call(arguments);
+  // 取出构造函数
+  var constructor = args.shift();
+  // 创建一个空对象，继承构造函数的 prototype 属性
+  var context = Object.create(constructor.prototype);
+  // 执行构造函数
+  var result = constructor.apply(context, args);
+  // 如果返回结果是对象，就直接返回，否则返回 context 对象
+  return (typeof result === 'object' && result != null) ? result : context;
+}
+```
+
+
+
+## 6、原型和原型链
 
 
 
