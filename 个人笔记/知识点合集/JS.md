@@ -292,9 +292,67 @@ function _new () {
 
 ### （2）原型链
 
-当访问一个对象的属性时候
+​	当访问一个对象的属性时，如果该属性不在这个对象内部，会去原型对象中查找这个属性，原型对象也有自己的原型，这样一直查找下去就是原型链的概念。
+
+​	所有的对象原型都可以追溯到`Object.prototype`，也就是所有对象都继承了Object.prototype的属性，因此所有对象都有`valueOf`和`toString`方法。
+
+`Object.prototype`的原型是`null`,null没有任何属性喝方法，也没有自己的原型，原型链的尽头是`null`。
 
 
+
+### （3）实现继承
+
+使用class类，用`extends`关键字进行继承，或直接改变对象
+
+```js
+class Car {
+  constructor(brand) {
+    this.brand = brand;
+  }
+  showBrand() {
+    console.log("the brand of car :>> ", this.brand);
+  }
+}
+
+class ElectricCar extends Car {
+  constructor(brand, duration) {
+    super(brand);
+    this.duration = duration;
+  }
+  showDuration() {
+    console.log(
+      `duration of this ${this.brand} ElectricCar :>> `,
+      this.duration
+    );
+  }
+}
+
+ElectricCar.prototype.showOriginator = function (originator) {
+  console.log(`originator of this ElectricCar :>> `, originator);
+};
+
+const tesla = new ElectricCar("tesla", "600km");
+tesla.showBrand(); // the brand of car :>>  tesla
+tesla.showDuration(); // duration of this tesla ElectricCar :>>  600km
+console.log("tesla instanceof Car :>> ", tesla instanceof Car); // tesla instanceof Car :>>  true
+console.log("tesla instanceof ElectricCar :>> ", tesla instanceof ElectricCar); // tesla instanceof ElectricCar :>>  true
+console.log("tesla.__proto__ :>> ", tesla.__proto__); // tesla.__proto__ :>>  Car {}
+console.log(
+  "ElectricCar.prototype === tesla.__proto__  :>> ",
+  ElectricCar.prototype === tesla.__proto__
+); // ElectricCar.prototype === tesla.__proto__  :>>  true
+tesla.showOriginator("Mask"); // originator of this  ElectricCar :>>  Mask
+
+const bydCar = {
+  brand: "比亚迪",
+  duration: "666km",
+};
+bydCar.__proto__ = ElectricCar.prototype;
+
+bydCar.showBrand(); //the brand of car :>>  比亚迪
+bydCar.showDuration(); // duration of this 比亚迪 ElectricCar :>>  666km
+
+```
 
 
 
