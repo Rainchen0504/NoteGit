@@ -526,13 +526,106 @@ define(["./a", "./b"], function(a,b) {
 
 
 
-## 14、事件循环机制
+## 14、事件循环
+
+### （1）任务队列
 
 ​	JS是单线程的（JS引擎在执行代码时只有一个主线程，每次只能干一件事），同时还是非阻塞运行的（执行异步任务时，会先将异步任务挂起，等待异步返回结果再执行回调）。
 
+​	在JS代码执行时，会将对象存在堆中，在栈中存放一些基础类型变量和对象的指针，对于普通函数就是正常的入栈出栈即可，涉及到异步任务时，JS执行会把对应的任务放到事件队列中（微任务、宏任务队列）。
 
 
 
+### （2）事件分类
+
+<font color=pink>**JS分为同步任务和异步任务，异步任务又分宏任务和微任务**</font>。
+
+- 宏任务：整体代码script、setTimeout、setInterval、setImmediate、i/o操作（输入输出，比如读取文件操作、网络请求）、ui render（dom渲染，即更改代码重新渲染dom的过程）、异步ajax等
+- 微任务：Promise（then、catch、finally）、async/await、process.nextTick、Object.observe(⽤来实时监测js中对象的变化)、 MutationObserver(监听DOM树的变化)
+
+![image-20230725102720487](https://raw.githubusercontent.com/Rainchen0504/picture/master/202307251027261.png)
+
+
+
+### （3）执行顺序
+
+1. JS代码在执行过程中，先执行同步代码；
+2. 遇到异步任务区分宏任务和微任务；
+3. 任务为宏任务时加入到宏任务队列；
+4. 任务为微任务时加入到微任务队列；
+5. 当所有同步代码执行完毕后将微任务队列调入主线程执行；
+6. 微任务执行完毕后将宏任务队列调入主线程执行；
+7. 执行完所有任务后第一次事件循环结束；
+8. 主线程会不断获取任务队列中的任务，也就是事件循环；
+
+
+
+## 15、内存泄漏
+
+### （1）造成泄漏原因
+
+1. 没解除绑定事件；
+
+   注册了事件监听器但没有正确解绑，会导致内存泄漏。比如当一个DOM元素被删除时，它仍然会保留对事件监听器的引用，如果没有解绑，事件监听器将无法被垃圾回收。
+
+2. 意外的全局变量；
+
+   JS如果定义了全局变量，会一直存在在内存中，直到页面关闭。
+
+   ```js
+   // 绑定在window对象上
+   function fn(){ a = "message" }
+   fn()
+   function fm(){ this.a = "message" }
+   fm()
+   ```
+
+3. 闭包；
+
+   闭包可以让函数访问外部作用域中的值，然后将访问到的变量保存到内存中。
+
+   ```js
+   function fn(){
+     var a = "hello"
+     return function(){
+       console.log(a)
+     }
+   }
+   ```
+
+4. 遗忘的定时器；
+
+   在JS中使用setInterval()或setTimeout()函数时，必须保证不用时清除。
+
+5. 循环引用；
+
+   当两个或多个对象之间存在相互引用，并且没有被其他对象引用，就会发生循环引用。
+
+6. 未清理DOM引用；
+
+   虽然在某个地方删除了元素，但是对象中还存在对DOM的引用。
+
+   ```js
+   var elements = {
+     btn: document.getElementById('btn'),
+   }
+   function doSomeThing() {
+     elements.btn.click()
+   }
+   function removeBtn() {
+     // 将body中的btn移除, 也就是移除 DOM树中的btn
+     document.body.removeChild(document.getElementById('btn'))
+     // 但是此时全局变量elements还是保留了对btn的引用, btn还是存在于内存中,不能被回收
+   }
+   ```
+
+   
+
+### （2）避免泄漏方法
+
+1. 避免创建全局变量；
+2. 手动删除失效的定时器和DOM，移除不必要的事件监听；
+3. 
 
 
 
