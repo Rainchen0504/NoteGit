@@ -1,3 +1,11 @@
+## 1、Vue基本原理
+
+​	当创建一个Vue实例时，Vue会遍历data中的属性，使用`Object.defineProperty（Vue3.0使用Proxy）`将所有的属性转为`getter/setter`，
+
+
+
+
+
 响应式原理
 
 当`render`渲染该数据时，触发`getter`进行依赖收集，收集依赖的目的是将观察者watcher放到当前订阅者Dep的管理下形成一种关联关系。

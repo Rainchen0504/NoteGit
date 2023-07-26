@@ -605,7 +605,7 @@ function autoCurry (fn) {
     if (args.length >= fn.length) {
       return fn.apply(this, args)
     } else {
-      function curryied2 (...args) {
+      function curryied2 (...args2) {
         return curryied.apply(this, [...args, ...args2])
       }
       return curryied2

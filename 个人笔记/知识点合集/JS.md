@@ -241,43 +241,6 @@ console.log(car.make);
 
 指向构造函数创建出的实例；
 
-构造函数实例化四步过程：
-
-1. 创建一个空对象；
-2. 将新对象的隐式原型`__proto__`指向构造函数的原型对象`prototype`；
-3. 使用`CreateObj.call()`方法，把创建的空对象作为call的参数改变this指向，给对象添加属性和方法；
-4. 返回新创建的对象；
-
-```js
-function A () {
-  this.name = "A"
-}
-
-// 使用new关键字实例化对象
-function newA () {
-  const obj = {}
-  obj.__proto__ = A.prototype
-  A.call(obj)
-  return obj
-}
-```
-
-```js
-// new命令的内部简化流程
-function _new () {
-  // 将arguments对象转为数组
-  var args = [].slice.call(arguments);
-  // 取出构造函数
-  var constructor = args.shift();
-  // 创建一个空对象，继承构造函数的 prototype 属性
-  var context = Object.create(constructor.prototype);
-  // 执行构造函数
-  var result = constructor.apply(context, args);
-  // 如果返回结果是对象，就直接返回，否则返回 context 对象
-  return (typeof result === 'object' && result != null) ? result : context;
-}
-```
-
 
 
 ## 6、原型和原型链
@@ -703,9 +666,46 @@ obj.y() // 11
 
 
 
+## 19、函数柯里化
+
+​	只传递给函数一部分参数调用它返回一个函数去处理剩余参数。将多个参数的一个函数转换成一些列使用一个参数的函数的技术。
+
+```js
+// 普通函数
+function add(x, y, z) {
+  return x + y + z
+}
+// 柯里化函数
+function curryFn(x) {
+  return function(y) {
+    return function(z) {
+      return x + y + z
+    }
+  }
+}
+```
 
 
 
+## 20、new操作符
+
+构造函数实例化四步过程（new一个对象的四步）:
+
+1. 创建一个空对象；
+2. 将新对象的隐式原型`__proto__`指向构造函数的原型对象`prototype`；
+3. 使用`CreateObj.call()`方法，把创建的空对象作为call的参数改变this指向，给对象添加属性和方法；
+4. 返回新创建的对象；
+
+```js
+let obj = new Object();
+obj._proto_ = Function.prototype;
+let res = Function.call(obj);
+if(typeof res === 'object') {
+  return res
+} else {
+  return obj
+}
+```
 
 
 
