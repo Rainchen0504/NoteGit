@@ -3730,3 +3730,77 @@ export default {
 ### 注意⚠️：
 
 由于安全问题，iframe文档的内容只能通过<font color=pink>**同一个域名下的另一个文档访问**</font>。
+
+
+
+# 20223年7月26日
+
+## 1、国密加密
+
+### （1）加密流程
+
+![img](https://raw.githubusercontent.com/Rainchen0504/picture/master/202307260931167.png)
+
+
+
+### （2）基础url参数
+
+| 参数名称  | 描述                                                         |
+| --------- | ------------------------------------------------------------ |
+| reqId     | 客户端生成的uuid                                             |
+| time      | 当前时间的时间戳，单位（ms）                                 |
+| accessKey | 服务方提供的用于标识客户端的id(配套提供secretKey)            |
+| sign      | 根据url参数及请求体生成的签名                                |
+| theKey    | 用于加密请求体（json）的对称秘钥，由前端随机生成；theKey本身使用非对称加密（国密SM2）算法加密；SM2加密所需公钥由公钥获取接口返回 |
+
+ 
+
+### （3）sign算法
+
+1.按照请求参数名的字母升序排列非空请求参数（包含accessKey），使用URL键值对的格式（即key1=value1&key2=value2…）拼接成字符串stringA；
+
+2.如果有json格式的请求体，stringA = stringA + json；
+
+3.在stringA最后拼接上secretkey得到字符串stringSignTemp；
+
+4.对stringSignTemp进行哈希运算（国密SM3杂凑算法），并将得到的字符串所有字符转换为大写，得到sign值；
+
+
+
+### （4）请求体（request  **body）**
+
+请求体使用json格式：
+
+contentType='application/json'
+
+请求体使用国密SM4（对称加密）算法进行加密，秘钥由前端随机生成。
+
+
+
+### （5）公钥获取接口
+
+发放公钥为统一公钥，无需重复获取
+
+ 
+
+### （6）系统返回格式
+
+```js
+{
+  "code": 200,
+  "data": {},
+  "message": "请求成功"∂
+}
+```
+
+code列表:
+
+| 200  | 请求成功     |
+| ---- | ------------ |
+| 500  | 服务器异常   |
+| 501  | 请求过期     |
+| 502  | Sign验证失败 |
+
+ 
+
+ 
