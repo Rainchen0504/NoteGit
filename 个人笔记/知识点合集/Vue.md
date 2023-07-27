@@ -1,6 +1,6 @@
 ## 1、Vue基本原理
 
-​	当创建一个Vue实例时，Vue会遍历data中的属性，使用`Object.defineProperty（Vue3.0使用Proxy）`将所有的属性转为`getter/setter`，
+​	当创建一个Vue实例时，Vue会遍历data中的属性，使用`Object.defineProperty（Vue3.0使用Proxy）`将所有的属性转为`getter/setter`，并在内部追踪相关依赖，在属性被访问和修改时通知
 
 
 
