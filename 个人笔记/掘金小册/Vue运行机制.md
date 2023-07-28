@@ -48,11 +48,11 @@ generate是将AST转化成render function字符串的过程，得到结果是ren
 
 响应式是Vue的核心部分，初始化时由于使用了`Object.defineProperty`对实例对象进行了绑定，使得对象被读取时会执行`getter`函数，被修改赋值时执行`setter`函数。
 
-执行render function进行渲染时会读取实例对象的值，触发getter进行**依赖收集**，依赖收集目的是将观察者Watcher对象放到当前订阅者Dep的管理下形成一种关联关系：
+执行render function进行渲染时会读取实例对象的值，触发getter进行**依赖收集**，依赖收集目的是将观察者Watcher对象放到当前依赖收集器Dep的管理下形成一种关联关系：
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202211211720820.png" alt="image-20221121172021622" style="zoom:50%;" />
 
-修改值的时候，就会触发setter，setter通知依赖收集得到的观察者Dep中的每一个Watcher依赖的值发生改变了，需要重新渲染视图，Watcher调用update函数更新视图，update函数中包含一个patch的过程也就是常说的diff算法过程，还包括使用队列异步更新。
+修改值的时候，就会触发setter，setter通知依赖收集器Dep得到的每一个观察者Watcher依赖的值发生改变了，需要重新渲染视图，Watcher调用update函数更新视图，update函数中包含一个patch的过程也就是常说的diff算法过程，还包括使用队列异步更新。
 
 
 
