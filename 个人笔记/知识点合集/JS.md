@@ -709,9 +709,15 @@ if(typeof res === 'object') {
 
 
 
+## 21、Promise
 
+​	Promise是一个容器，保存着某个未来才会结束的事件（通常是一个异步操作）的结果。通俗的讲，Promise是一个对象，可以获取异步操作的信息。
 
-
+1. Promise有三个状态：pending待定、fulfilled完成、rejected失败，默认状态是pending；
+2. Promise有一个value保存成功状态的值，有一个reason保存失败状态的值；
+3. Promise只能从pending到rejected, 或者从pending到fulfilled，状态一旦确认，就不会再改变；
+4. promise 必须有一个then方法，then接收两个参数，分别是promise成功的回调onFulfilled, 和promise失败的回调onRejected；
+5. 如果then中抛出了异常，那么就会把这个异常作为参数，传递给下一个then的失败的回调onRejected；
 
 
 
