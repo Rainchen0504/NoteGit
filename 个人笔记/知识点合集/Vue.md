@@ -65,7 +65,7 @@ Dep // 依赖收集器，收集watcher订阅者们
 
 2. `Compile`解析模板指令，将模板中的变量替换成数据，然后初始化渲染页面视图，将每个指令对应的节点绑定更新函数，添加监听数据的订阅者，一旦有数据变化，收到通知，更新视图。
 
-3. `Watcher`订阅者是`Observer`和`Compile`之间通信的桥梁，`Watcher`主要任务是：
+3. `Watcher`订阅者是`Observe`和`Compile`之间通信的桥梁，`Watcher`主要任务是：
 
    ① 在自身实例化时向依赖收集器Dep中添加自身；
 
@@ -73,57 +73,33 @@ Dep // 依赖收集器，收集watcher订阅者们
 
    ③ 当依赖属性变动发起`Dep.notify`通知时，能调用`update`方法，触发`Compile`中绑定的回调更新视图；
 
-   ④ MVVM作为数据绑定的入口，整合`Observer、Compile、Watcher`三者，通过`Observer`监听自己的model数据变化，通过Compile解析编译模板指令，最终利用Watcher搭建Observer和Compile之间的通信桥梁，达到数据变化到视图更新、视图交互变化到数据变更的双向绑定效果；
+   ④ MVVM作为数据绑定的入口，整合`Observe、Compile、Watcher`三者，通过`Observe`监听自己的model数据变化，通过Compile解析编译模板指令，最终利用Watcher搭建Observer和Compile之间的通信桥梁，达到数据变化到视图更新、视图交互变化到数据变更的双向绑定效果；
 
    ![image-20230731165606320](https://raw.githubusercontent.com/Rainchen0504/picture/master/202307311656909.png)
 
 
 
-响应式原理：先对数据进行劫持监听，设置一个监听器Observer，用来监听所有的属性，如果属性发生了变化，就需要告诉订阅者Watcher是否需要更新。因为订阅者数据有很多个，所以需要有一个依赖收集器Dep专门管理订阅者，然后在监听器Observer和订阅者Watcher之间进行统一管理。接着，需要有模板解析器Compile，对每个节点元素进行扫描和解析，将相关指令对应初始化成一个订阅者Watcher，并替换模板数据或者绑定相应的函数，此时订阅者Watcher接收到相应属性的变化，回执行相应的更新函数，从而更新视图。
+Vue响应式原理：
+
+1. 数据劫持
+
+   Vue使用`Object.defineProperty`方法来劫持数据的对象属性。在Vue实例化过程中，会遍历数据对象的每个属性，并为其添加getter和setter方法。当访问或修改属性时，Vue就能捕捉到，并执行相应的操作。
+
+2. 依赖追踪
+
+   在属性劫持的过程中，每个属性都会关联一个依赖收集器。当属性被访问时，Vue会将订阅者Watcher对象添加到对应属性的依赖收集器中；当属性发生修改时，对应的依赖收集器会通知所有的订阅者依赖的属性发生了变化。
+
+3. 模板解析
+
+   模板解析器对每个节点元素进行扫描和解析，将相关的指令对应初始化成一个订阅者Watcher，并替换模板数据或者绑定相应的函数，这个时候当订阅者Watcher收到相应属性的变化，会执行相应的update更新函数，从而更新视图。
+
+4. 响应式组件更新
+
+   当数据发生变化时，Vue会进行异步的批量更新操作，以提高性能。Vue使用了异队列和nextTick机制来实现这一点。当数据变化时，会将Watcher对象添加到异步队列中，然后通过nextTick在下一个事件循环中执行更新操作，从而避免频繁更新DOM。
 
 
 
-
-
-
-
-
-
-
-
-深度监听需要递归，计算量大
-
-无法监听新增属性，删除属性
-
-无法监听原生数组，需要特殊处理
-
-
-
-Vue的响应式：
-
-首先对数据进行劫持挤，设置一个Observer监听器，用来
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3、Object.defineProperty缺点
+## 3、Object.defineProperty
 
 ### （1）语法
 
@@ -150,10 +126,8 @@ Object.defineProperty(obj , prop, descriptor)
 ### （3）缺点
 
 1. 深度监听需要递归，一次性计算量大；
-2. 无法监听新增属性、删除属性（需要使用`Vue.set`和`Vue.delet e`）;
+2. 无法监听新增属性、删除属性（需要使用`Vue.set`和`Vue.delete`）;
 3. 无法监听原生数组，需要重写方法；
-
-
 
 
 
@@ -164,6 +138,84 @@ Object.defineProperty(obj , prop, descriptor)
 M：model数据模型，V：view视图模型，C：controller控制器
 
 ​	MVC 通过分离 Model、View 和 Controller 的方式来组织代码结构。其中 View 负责页面的显示逻辑，Model 负责存储页面的业务数据，以及对相应数据的操作。
+
+​	View和Model应用了观察者模式，当Model层发生改变时候会通知有关View层更新页面。Controller层是View和Model层的纽带，主要负责用户与应用的响应操作。当用户与View层页面产生交互的时候，Controller中的事件触发器就开始工作，通过调用Model层，完成对Model的修改，然后 Model 层再去通知View视图更新。
+
+![image-20230806204841330](https://raw.githubusercontent.com/Rainchen0504/picture/master/202308062048247.png)
+
+
+
+### （2）MVVM 
+
+M：model数据模型，V：view视图模型，ViewModel：负责监听数据模型model中数据的变化并且控制view视图的更新
+
+​	Model和View没有直接关联，而是通过ViewModel进行联系，Model和ViewModel之间有着双向绑定的关系。因此当Model中的数据改变时会触发View层的更新，View中由于用户交互操作而改变的数据会同步在Model中同步。
+
+​	这种模式实现了Model和View的数据自动同步，因此开发者只需要专注于数据的维护操作即可，不需要手动操作DOM。
+
+![image-20230807084744037](https://raw.githubusercontent.com/Rainchen0504/picture/master/202308070847420.png)
+
+
+
+## 5、MVVM优缺点
+
+### （1）优点
+
+1. 分离视图和模型，将滴代码的耦合程度，提高代码复用性；
+2. 提高代码可测试性，让开发者可以更好的测试代码；
+3. 自动更新DOM，利用双向绑定，数据更新后视图自动更新；
+
+
+
+### （2）缺点
+
+1. BUG很难被调试，当出现问题时，无法确定是view页面还是model的问题，并且由于数据绑定的关系，bug会快速传递到其他位置，不方便快速定位错误；
+2. 大模型中数据量较大，当长期持有时，不释放内存就造成内存占用过高问题；
+3. 对于大型的图形应用程序，视图状态较多，ViewModel构建和维护成本较高；
+
+
+
+## 6、Vue常用指令和作用
+
+- v-on：给标签绑定函数，语法糖为@；
+- v-bind：动态绑定，语法糖为：
+- v-slot：组件插槽，语法糖为#
+- v-for：循环数组
+- v-if：显示隐藏
+- v-show：显示隐藏
+- v-text：解析文本
+- v-html：解析html
+- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
