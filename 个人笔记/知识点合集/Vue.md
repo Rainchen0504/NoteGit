@@ -185,9 +185,30 @@ M：model数据模型，V：view视图模型，ViewModel：负责监听数据模
 - v-show：显示隐藏
 - v-text：解析文本
 - v-html：解析html
-- 
 
 
+
+## 7、Vue常用修饰符
+
+- v-on
+
+  - `.stop` - 调用 `event.stopPropagation()`。 阻止默认事件；
+  - `.prevent` - 调用 `event.preventDefault()`。阻止默认行为；
+  - `.native` - 监听组件根元素的原生事件；
+
+- v-bind
+
+  - `.prop` - 作为一个 DOM property 绑定而不是作为 attribute 绑定。
+
+    `.camel` - (2.1.0+) 将 kebab-case attribute 名转换为 camelCase。(从 2.1.0 开始支持)
+
+    `.sync` (2.3.0+) 语法糖，会扩展成一个更新父组件绑定值的 `v-on` 侦听器。
+
+- v-model
+
+  - `.lazy`- 取代 `input` 监听 `change` 事件
+  - `.number` - 输入字符串转为有效的数字
+  - `.trim` - 输入首尾空格过滤
 
 
 
