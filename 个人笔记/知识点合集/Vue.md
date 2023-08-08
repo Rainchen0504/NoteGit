@@ -324,7 +324,7 @@ v-show指令的元素会生成虚拟节点，且渲染的时候也会渲染成�
 
 
 
-### （2）作用在组件上
+### （2）单个作用在组件上
 
 ```vue
 <!--父组件-->
@@ -335,8 +335,8 @@ v-show指令的元素会生成虚拟节点，且渲染的时候也会渲染成�
 <!--子组件-->
 <template>
 	<div>
-  <input :value="modelValue" @input="inputChange"/>
-  </div>
+    	<input :value="modelValue" @input="inputChange"/>
+    </div>
 </template>
 <script>
   export default{
@@ -352,6 +352,63 @@ v-show指令的元素会生成虚拟节点，且渲染的时候也会渲染成�
 ```
 
 
+
+### （3）多个绑定在组件上
+
+```vue
+<!--父组件-->
+<my-input v-model="message" v-model:title="title"></my-input>
+```
+
+```vue
+<!--子组件-->
+<template>
+	<div>
+        <input :value="modelValue" @imput="inputChange"/>
+        <input :value="title" @imput="inputChange2"/>
+    </div>
+</template>
+<script>
+	export default {
+        props:["modelValue", "title"],
+        emits:["update:modelValue", "update:title"],
+        methods:{
+            inputChange(event){
+                this.$emit("update:modelValue",event.target.value)
+            },
+            input2Change(event){
+                this.$emit("update:title",event.target.value)
+            }
+        }
+    }
+</script>
+```
+
+
+
+## 13、Vue2和Vue3对比
+
+### （1）响应式系统
+
+​	Vue2响应式实现的方式是通过ES5的`Object.defineProperty`，然后递归遍历所有属性，给每个属性添加`getter`和`setter`方法，劫持对象的属性，从而维护视图和数据的依赖关系，实现响应式。
+
+```js
+
+```
+
+​	Vue3响应式实现的方式是通过ES6新增的`Proxy`和`Reflect`实现的，劫持整个对象，使用代理对象和反射对象相互配合实现响应式。该方式可以监听动态新增和删除的属性，监听数组索引的变化和`length`属性的变化。
+
+
+
+### （2）书写方式
+
+### （3）编译方式
+
+### （4）源码体积
+
+### （5）diff算法
+
+### （6）生命周期
 
 
 

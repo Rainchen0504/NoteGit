@@ -1040,23 +1040,23 @@ input元素不同的只是**属性名称和事件触发的名称而已**；
 <!--子组件-->
 <template>
 	<div>
-    <input :value="modelValue" @input="inputChange"/>
-    <input :value="title" @input="input2Change"/>
-  </div>
+        <input :value="modelValue" @input="inputChange"/>
+        <input :value="title" @input="input2Change"/>
+    </div>
 </template>
 <script>
-	export default{
-    props:["modelValue","title"],
-    emits:["update:modelValue","update:title"],
-    methods:{
-      inputChange(event){
-        this.$emit("update:modelValue",event.target.value)
-      },
-      input2Change(event){
-        this.$emit("update:title",event.target.value)
-      }
+    export default{
+        props:["modelValue","title"],
+        emits:["update:modelValue","update:title"],
+        methods:{
+            inputChange(event){
+                this.$emit("update:modelValue",event.target.value)
+            },
+            input2Change(event){
+                this.$emit("update:title",event.target.value)
+            }
+        }
     }
-  }
 </script>
 ```
 
