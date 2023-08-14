@@ -3682,7 +3682,7 @@ export default {
           this.jsonData = exl;
         } catch (e) {
           console.log("error", e);
-          return falses;
+          return false;
         }
       };
 
@@ -3803,4 +3803,14 @@ code列表:
 
  
 
- 
+#  2023年8月14日
+
+## 1、git设置版本标签
+
+```shell
+// 设置版本号
+git tag -a 'v3.3.1.20-serverPre' -m 'first commit'
+// 提交版本
+git push origin v3.3.1.20-serverPre
+```
+

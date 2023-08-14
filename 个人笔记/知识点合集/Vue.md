@@ -386,35 +386,247 @@ v-show指令的元素会生成虚拟节点，且渲染的时候也会渲染成�
 
 
 
-## 13、Vue2和Vue3对比
+## 13、v-model和.sync
+
+### （1）作用
+
+.sync和v-model的作用都是实现父子组件之间的双向绑定
+
+
+
+### （2）原理
+
+v-model的原理
+
+```html
+<com1 v-model="val"></com1>
+<!--等价于-->
+<com1 :value="val" @input="val=$event.target.value"></com1>
+```
+
+.sync的原理
+
+```html
+<com1 :a.sync="num" .b.sync="num2"></com1> 
+<!--等价于-->
+<com1 
+  :a="num" @update:a="val=>num=val"
+  :b="num2" @update:b="val=>num2=val"></com1> 
+```
+
+
+
+### （3）区别
+
+1. 写法格式不同
+
+   ```js
+   // v-model
+   :value="num" + @input="updateNum"
+   // .sync
+   :num="num" + @update:num
+   ```
+
+2. v-model一个组件只能绑定一个，而.sync可以绑定多个
+
+
+
+## 14、Vue2和Vue3对比
 
 ### （1）响应式系统
 
 ​	Vue2响应式实现的方式是通过ES5的`Object.defineProperty`，然后递归遍历所有属性，给每个属性添加`getter`和`setter`方法，劫持对象的属性，从而维护视图和数据的依赖关系，实现响应式。
 
 ```js
-
+Object.defineProperty(obj, attr, {
+  get:function(){
+    // 值的读取操作，进行依赖收集
+    return obj[attr]
+  },
+  set:function(newValue){
+    // 值的更新操作，触发依赖更新
+    obj[attr] = newValue
+  }
+})
 ```
 
 ​	Vue3响应式实现的方式是通过ES6新增的`Proxy`和`Reflect`实现的，劫持整个对象，使用代理对象和反射对象相互配合实现响应式。该方式可以监听动态新增和删除的属性，监听数组索引的变化和`length`属性的变化。
+
+```js
+new Proxy(data, {
+  // 拦截读取属性
+  get (target, prop) {
+    return Reflect.get( target, prop )
+  }
+  // 拦截设置属性值或添加新属性
+  set (target, prop, value) {
+  	return Reflect.set( target, prop, value )
+	}
+  // 拦截删除属性
+	deleteProperty (target, prop) {
+    return Reflect.deleteProperty( target, prop )
+  }
+})
+```
 
 
 
 ### （2）书写方式
 
+1. 提供setup的方式配合组合式API，可以建立组合逻辑、创建响应式数据、创建通用函数、注册生命周期钩子函数等；
+2. 支持多个根节点；
+
+
+
 ### （3）编译方式
+
+1. Vue2.x：通过标记静态节点，优化 diff 算法的过程；
+2. Vue3.x：
+   1. 静态标记，vue3 中标记和提升所有的静态节点，diff 的时候只要对比动态节点内容；
+   2. 跟节点限制，template 中不需要唯一的根节点，可以直接放文本或者同级标签；
+   3. 静态提升，所有静态的节点都被提升到`render`方法之外，只会在应用启动的时候被创建一次，之后使用只需要应用提取的静态节点，随着每次的渲染被不停的复用；
+   4. `patch flag`，在动态标签末尾加上相应的标记，只能带 patchFlag 的节点才被认为是动态的元素，会被追踪属性的修改,能快速的找到动态节点,而不用逐个逐层遍历，提高了虚拟 dom diff 的性能；
+   5. 缓存事件处理函数`cacheHandler`，避免每次触发都要重新生成全新的`function`去更新之前的函数；
+
+
 
 ### （4）源码体积
 
+- 相比 Vue2，Vue3 整体体积变小了，移除了一些不常用的 API
+- tree-shanking
+  - 任何一个函数，如 ref、reactive、computed 等，仅在用到的时候打包；
+  - 通过编译阶段的静态分析，找到没有引入的模块并打上标记，将这些模块都摇掉；
+
+
+
 ### （5）diff算法
+
+- vue2中使用的是双端diff算法，同时比较新旧两组节点的两个端点的算法（比头、比尾、头比尾、尾比头）
+- vue3中使用的是快速diff算法，借鉴了文本diff算法的预处理思路，先处理新旧两组节点中相同的前置节点和后置节点。当前置节点和后置节点全部处理完毕后，如果无法通过简单的挂载新节点或者卸载已经不存在的节点来更新，则根据节点间的索引关系，构造出一个最长递增子序列，最长递增子序列所指向的节点即为不需要移动的节点；
+
+
 
 ### （6）生命周期
 
+beforeCreate   -> 使用 setup()
+created            -> 使用 setup()
+beforeMount    -> onBeforeMount
+mounted          -> onMounted
+beforeUpdate  -> onBeforeUpdate
+updated           -> onUpdated
+beforeDestroy -> onBeforeUnmount
+destroyed        -> onUnmounted
+errorCaptured -> onErrorCaptured
+
+
+
+## 15、computed和watch的区别
+
+### （1）计算属性computed
+
+- 支持缓存，只有依赖的数据发生变化时，才会重新计算；
+- 不支持异步；
+- 如果computed属性的属性值是函数，那么**默认使用get方法**，函数的返回值就是属性的属性值；在computed中，属性有一个get方法和一个set方法，当数据发生变化时，会调用set方法；
+- **如果一个属性是由其他属性计算而来的，这个属性依赖其他的属性，一般会使用computed**
+
+
+
+### （2）watch监听器
+
+- **不支持缓存**，当数据发生变化时，就会触犯相应的操作；
+- 支持异步监听；
+- 监听的函数接收两个参数，第一个参数是最新的值，第二个参数是变化之前的值；
+- 监听数据必须是data中声明的或者父组件传递过来的props中的数据；
+
+
+
+## 16、computed和methods的区别
+
+- 计算属性是基于依赖进行缓存的，只有在它的相关依赖发生改变时才会重新求值；
+- 方法是函数集合，是主动调用才会执行的函数；
+
+
+
+## 17、组件通信
+
+### （1）prop/emit
+
+用于父子组件之间的通信。
+
+- prop父组件向子组件传值；
+- $emit子组件向父组件发送事件和传递值；
+
+
+
+### （2）provide/inject
+
+用于父子和祖孙组件之间的通信，非响应式的。
+
+```js
+provide(){
+  return {
+    app: this
+  }
+}
+data(){
+  return {
+    num: 1
+  }
+}
+inject:['app']
+// 使用方法
+console.log(this.app.num)
+```
+
+
+
+### （3）ref/$refs
+
+通过$refs方法获取组件实例，可以获取到目标组件的数据和方法。
+
+
+
+### （4）$parent/$children
+
+- 使用`$parent`可以让组件访问父组件的实例（访问的是上一级父组件的属性和方法）；
+- 使用`$children`可以让组件访问子组件的实例，但是，`$children`并不能保证顺序，并且访问的数据也不是响应式的。
+
+
+
+### （5）$attr/$listeners
+
+- $attrs继承所有父组件属性（除了prop传递的属性、class和style），一般用在组件的子元素上；
+- 
 
 
 
 
-## 10、Vue.$set原理
+
+### （6）eventBus事件总线
+
+
+
+## 18、生命周期执行
+
+### （1）生命周期说明
+
+
+
+### （2）执行顺序和机制
+
+
+
+## 19、组件缓存keep-alive
+
+
+
+
+
+
+
+
+
+## 15、Vue.$set原理
 
 ​	当执行$set方法时，Vue会检测该对象是否已经被劫持为响应式对象，如果没有就转换为响应式对象，并为其添加新属性；如果已经是响应式对象，就直接为其添加新属性。然后再向该对象的监听器发送变化通知，更新视图。
 
