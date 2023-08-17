@@ -595,14 +595,50 @@ console.log(this.app.num)
 
 ### （5）$attr/$listeners
 
-- $attrs继承所有父组件属性（除了prop传递的属性、class和style），一般用在组件的子元素上；
-- 
-
-
+- `$attrs`继承所有父组件属性（除了prop传递的属性、class和style），一般用在组件的子元素上；
+- `$listebers`该属性是一个对象，包含作用在这个组件上的所有监听器，可以自组件继承父组件的事件；
 
 
 
 ### （6）eventBus事件总线
+
+事件总线适用于父子和非父子组件之间通信
+
+```js
+// 创建Vue实例作为事件总线
+import Vue from "vue"
+export const EventBus = new Vue()
+
+// 发送事件
+EventBus.$emit("事件名", {num: 数据值})
+
+// 接收事件
+EventBus.$on("事件名", param => {console.log( param.num )})
+```
+
+
+
+### （7）使用场景
+
+1. 父子组件通信
+   1. prop和emit通信；
+   2. $refs和$parent通信；
+   3. provide和inject通信；
+2. 兄弟组件通信
+   1. eventBus事件总线通信；
+   2. $refs通信；
+   3. VUEX通信；
+3. 任意组件通信
+   1. eventBus事件总线通信；
+   2. VUEX通信；
+
+
+
+## 18、子组件直接修改父组件
+
+​	子组件不可以直接修改子组件，为了维护父子组件单向数据流，每次父级组件发生更新时，子组件中所有的 prop 都将会刷新为最新的值。
+
+​	Vue提倡单向数据流，即父组件props的更新会流向子元素，但是反过来不行，为了防止意外的改变父组件状态，使得应用的数据流变得难以理解。如果破坏了单向数据流，当应用复杂时，调试成本较高。
 
 
 
@@ -610,17 +646,114 @@ console.log(this.app.num)
 
 ### （1）生命周期说明
 
+生命周期主要分为4大阶段8大钩子函数
+
+1. 创建前/后
+   1. **beforeCreate（创建前）** ：数据观测和初始化事件还未开始，此时 data 的响应式追踪、event/watcher 都还没有被设置，也就是说不能访问到data、computed、watch、methods上的方法和数据；
+   2. **created（创建后）** ：实例创建完成，实例上配置的 options 包括 data、computed、watch、methods 等都配置完成，但是此时渲染得节点还未挂载到 DOM，所以不能访问到 `$el` 属性；
+2. 渲染前/后
+   1. **beforeMount（挂载前）** ：在挂载开始之前被调用，相关的render函数首次被调用。实例已完成以下的配置：编译模板，把data里面的数据和模板生成html。此时还没有挂载html到页面上；
+   2. **mounted（挂载后）** ：在el被新创建的 vm.$el 替换，并挂载到实例上去之后调用。实例已完成以下的配置：用上面编译好的html内容替换el属性指向的DOM对象。完成模板中的html渲染到html 页面中。此过程中进行ajax交互；
+3. 更新前/后
+   1. **beforeUpdate（更新前）** ：响应式数据更新时调用，此时虽然响应式数据更新了，但是对应的真实 DOM 还没有被渲染；
+   2. **updated（更新后）** ：在由于数据更改导致的虚拟DOM重新渲染和打补丁之后调用。此时 DOM 已经根据响应式数据的变化更新了。调用时，组件 DOM已经更新，所以可以执行依赖于DOM的操作。然而在大多数情况下，应该避免在此期间更改状态，因为这可能会导致更新无限循环。该钩子在服务器端渲染期间不被调用；
+4. 销毁前/后
+   1. **beforeDestroy（销毁前）** ：实例销毁之前调用。这一步，实例仍然完全可用，`this` 仍能获取到实例；
+   2. **destroyed（销毁后）** ：实例销毁后调用，调用后，Vue 实例指示的所有东西都会解绑定，所有的事件监听器会被移除，所有的子实例也会被销毁。该钩子在服务端渲染期间不被调用；
+
+此外还有三个生命周期不常用
+
+1. keep-alive独有生命周期，包裹后的组件在切换时不会被销毁
+
+   1. **activated**：命中缓存渲染后执行；
+   2. **deactivated**：切换出组件时执行；
+
+2. 错误处理生命周期
+
+   ​	当捕获**<font color=pink>来自子孙组件的错误时</font>**被调用，接收三个参数，错误对象、发生错误的组件实例和包含错误来源信息的字符串。返回`false`阻止错误的向上传递。
+
 
 
 ### （2）执行顺序和机制
+
+加载渲染过程
+
+1. 父组件beforeCreate
+2. 父组件created
+3. 父组件beforeMount
+4. 子组件beforeCreate
+5. 子组件created
+6. 子组件beforeMount
+7. 子组件mounted
+8. 父组件mounted
+
+
+
+更新过程
+
+父组件的beforeUpdate
+
+子组件的beforeUpdate
+
+子组件updated
+
+父组件updated
+
+
+
+销毁过程
+
+父组件beforeDestory
+
+子组件beforeDestory
+
+子组件destoryed
+
+父组件destoryed
 
 
 
 ## 19、组件缓存keep-alive
 
+### （1）主要流程
+
+1. 判断组件name，不在include或者exclude中，直接返回vnode，说明该组件不被缓存；
+2. 获取组件实例 key ，如果有获取实例的 key，否则重新生成；
+3. key生成规则，cid +"∶∶"+ tag ，仅靠cid是不够的，因为相同的构造函数可以注册为不同的本地组件；
+4. 如果缓存对象内存在，则直接从缓存对象中获取组件实例给 vnode ，不存在则添加到缓存对象中；
+5. 最大缓存数量，当缓存组件数量超过 max 值时，清除 keys 数组内第一个组件；
 
 
 
+### （2）原理实现
+
+```typescript
+const patternTypes:Array<Function> = [String, RegExp, Array] //接收字符串、正则、数组
+export default {
+  name:"keep-alive",
+  abstract: true, // 抽象组件，自身不会渲染成一个DOM，也不会出现在父组件链中
+  props: {
+    include: patternTypes, // 匹配的组件，缓存
+    exclude: patternTypes， // 不匹配的组件，不缓存
+    max: [String, Number] // 缓存组件的最大实例
+  },
+	creaetd(){
+    // 初始化缓存虚拟DOM数组和vnode的key
+    this.cache = Object.create(null)
+    this.keys = []
+  },
+  destroyed(){
+    // 销毁缓存cache的组件实例
+    for(const key in this.cache) {
+      pruneCacheEntry(this.cache, key, this.keys)
+    }
+  },
+  mounted(){
+    // 监控include和exclude的改变，根据最新的include和exclude的内容，实时更新缓存组件的内容
+    this.
+  }
+}
+```
 
 
 

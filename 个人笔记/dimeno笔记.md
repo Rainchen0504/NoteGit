@@ -3814,3 +3814,63 @@ git tag -a 'v3.3.1.20-serverPre' -m 'first commit'
 git push origin v3.3.1.20-serverPre
 ```
 
+
+
+# 2023年8月15日
+
+## 1、vue接收下载后台返回文件流
+
+核心逻辑是使用blob接收流，生成下载`<a>`标签，然后虚拟点击下载。
+
+#### （1）方法一
+
+```js
+// axios请求时先设置responseType类型
+axios({
+  method:"",
+  url:"",
+  responseType: "blob"
+})
+
+// 接收文件流
+const alink = document.createElement("a");
+alink.style.display = "none";
+const fileName = decodeURI(
+  res.headers["content-disposition"].split(";")[1].split("=")[1]
+);
+const blob = res.data;
+const url = window.URL || window.webkitURL || window.moxURL;
+alink.href = url.createObjectURL(blob);
+alink.download = fileName;
+alink.click();
+window.URL.revokeObjectURL(url);
+```
+
+
+
+### （2）方法二
+
+```js
+// axios请求时先设置responseType类型
+axios({
+  method:"",
+  url:"",
+  responseType: "blob"
+})
+
+// 接收文件流
+const elink = document.createElement("a");
+const fileName = decodeURI(
+  res.headers["content-disposition"].split(";")[1].split("=")[1]
+);
+elink.download = fileName;
+elink.style.display = "none";
+const blob = new Blob([res.data], {
+  type: "application/x-msdownload"
+});
+elink.href = URL.createObjectURL(blob);
+document.body.appendChild(elink);
+elink.click();
+document.body.removeChild(elink);
+```
+
