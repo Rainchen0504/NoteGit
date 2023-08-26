@@ -489,7 +489,7 @@ define(["./a", "./b"], function(a,b) {
 
 
 
-## 14、事件循环
+## 14、浏览器事件循环
 
 ### （1）任务队列
 
@@ -520,6 +520,31 @@ define(["./a", "./b"], function(a,b) {
 6. 微任务执行完毕后将宏任务队列调入主线程执行；
 7. 执行完所有任务后第一次事件循环结束；
 8. 主线程会不断获取任务队列中的任务，也就是事件循环；
+
+
+
+## 15、NodeJS事件循环
+
+​	node和浏览器事件循环都有微任务和宏任务，都遵循微任务先于宏任务的原则，不同点在于node的事件循环机制微任务和宏任务<font color=pink>存在优先级顺序</font>。
+
+### （1）宏任务优先级排序
+
+1. `setTimeout`和`setInterval`定时器；
+2. `I/O` 回调，处理网络、流、TCP错误回调；
+3. 闲置状态，`NodeJS`内部调用；
+4. 轮询，执行轮询的回调；
+5. 存储`setImmediate`的回调；
+6. 关闭回调，比如关闭长连接`socket.close()`；
+
+
+
+### （2）微任务优先级排序
+
+1. `Promise`；
+2. `async / await`；
+3. `process.nextTick`；
+
+其中`nextTick`的优先级最高
 
 
 
@@ -718,8 +743,6 @@ if(typeof res === 'object') {
 3. Promise只能从pending到rejected, 或者从pending到fulfilled，状态一旦确认，就不会再改变；
 4. promise 必须有一个then方法，then接收两个参数，分别是promise成功的回调onFulfilled, 和promise失败的回调onRejected；
 5. 如果then中抛出了异常，那么就会把这个异常作为参数，传递给下一个then的失败的回调onRejected；
-
-
 
 
 
