@@ -9,7 +9,7 @@ brew安装使用nginx
 
 4、brew services stop nginx 停止
 
-5、brew services restart nginx 重新启动
+5、c 重新启动
 
 6、open /opt/homebrew/etc/nginx 打开nginx所在位置
 ```
