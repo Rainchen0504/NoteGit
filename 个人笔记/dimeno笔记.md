@@ -3733,7 +3733,7 @@ export default {
 
 
 
-# 20223年7月26日
+# 国密加密
 
 ## 1、国密加密
 
@@ -3741,7 +3741,7 @@ export default {
 
 ![img](https://raw.githubusercontent.com/Rainchen0504/picture/master/202307260931167.png)
 
-
+<img src="/Users/rain_chen/Library/Application Support/typora-user-images/image-20231011101731823.png" alt="image-20231011101731823" style="zoom: 50%;" />
 
 ### （2）基础url参数
 
@@ -3876,7 +3876,7 @@ document.body.removeChild(elink);
 
 
 
-# 2023年9月25日
+# 可视化项目架构
 
 ## 1、可视化项目架构
 
@@ -3905,4 +3905,20 @@ document.body.removeChild(elink);
 5. 组件选中：选中组件时，从comDic组件字典找到当前选中的组件，将data和attr属性传递到属性面板组件中，将当前选中组件置顶，同时更新Vuex中保存的当前组件对象；
 6. 组件更新，侦听当前组件属性对象，当移动组件或操作属性面板时，会对比是否发生变化，发生变化时会发起请求更新当前组件对象属性，完成更新操作。
 7. 画布监听：侦听当前页面的组件列表，修改和增加组件时更新渲染组件。
+
+
+
+# 2023年9月27日
+
+## 1、webpack多入口
+
+​	webpack支持多入口配置，即`entry`可以接收一个对象，对象中可以包含多个入口文件。多入口可以合理控制包的大小，避免一次性加载太多不需要的代码，能够复用多个入口起点的大量代码和模块。
+
+
+
+Webpack vendor插件，用于将第三方库和依赖项打包成单独的文件，从而加快应用程序的加载速度。例如，假设您的应用程序依赖于React和Lodash库。在使用Webpack-Vendor插件后，React和Lodash将被打包到vendor.js文件中，从而使这两个库在应用程序加载时更快地加载。
+
+
+
+
 
