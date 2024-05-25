@@ -3741,8 +3741,6 @@ export default {
 
 ![img](https://raw.githubusercontent.com/Rainchen0504/picture/master/202307260931167.png)
 
-<img src="/Users/rain_chen/Library/Application Support/typora-user-images/image-20231011101731823.png" alt="image-20231011101731823" style="zoom: 50%;" />
-
 ### （2）基础url参数
 
 | 参数名称  | 描述                                                         |

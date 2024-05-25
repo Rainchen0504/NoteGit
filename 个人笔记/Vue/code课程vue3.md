@@ -1211,13 +1211,32 @@ setup(){
 
 1. 在<font color=blue>template模板中</font>引入ref的值**<font color=red>不需要</font>通过 ref.value 的方式来使用**，Vue会自动帮助我们进行解包操作;
 2. 在<font color=blue> setup 函数内部</font>依然是一个 ref引用，对其进行操作时**<font color=red>依然需要</font>使用 ref.value的方式**;
-3. 将ref放到一个reactive的属性当中，在模板中使用时**会自动解包**。
+3. 如果**将一个对象**赋值给ref，这个对象会通过<font color=red>**reactive**</font>转为具有较深层次响应式的对象；
+4. 将ref放到一个reactive的属性当中，在模板中使用时**会自动解包**。
 
 <img src="https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271018330.png" alt="image-20211227101743353"  />
 
 自动解包：
 
 ![image-20211227101846792](https://raw.githubusercontent.com/Rainchen0504/picture/master/202112271018388.png)
+
+
+
+## 5补充、reactive和ref的使用场景
+
+### （1）reactive
+
+1、reactive应用于本地的数据
+
+2、多个数据之间是有关联/联系的(聚合的数据，组织在一起会有特定作用的，比如表单对象等)
+
+### （2）ref
+
+其他的场景基本上都用ref
+
+1、定义本地的一些简单数据
+
+2、定义从网络中获取的数据(从服务器请求回来的数据)
 
 
 
@@ -1350,7 +1369,13 @@ const testVal = unref(testRefObj)//如果是ref则返回ref.value的值，不是
 
 ### （3）shallowRef
 
-创建一个浅层的ref对象
+ref的浅层作用形式，和ref不相同的点在于：浅层ref的内部值将会原样存储和暴露，并不会被深层递归地转换为响应式。
+
+```js
+const state = shallowRef({count: 1})
+state.value.count = 2  // 不会触发更改
+state.value = {count: 2}  // 会触发更改
+```
 
 
 

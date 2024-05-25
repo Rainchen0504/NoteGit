@@ -110,3 +110,77 @@ https://developer.mozilla.org/zh-CN/docs/Web/API/Element/scrollIntoView
   const targetDom = imageContent.value // 获取dom元素
   targetDom.scrollIntoView(true)	// 调用传参（布尔值，true到顶部，false到底部）
 ```
+
+
+
+# 2024年3月13日
+
+千机系统开发规范：
+
+千机管理端开发流程：测试系统新建开发分支开发 -> 测试系统测试分支合并master -> 测试系统发布正式环境 -> 正式系统按需同步测试系统的页面改动 -> 正式系统发布的code review -> 正式环境发布
+
+
+
+# 2024年3月22日
+
+使用nohost，会在返回值前面添加脚本，如果返回值是纯字符串，需要截取使用，需要特别注意
+
+
+
+# 2024年4月9日
+
+要在特定环境下调试，whistle需要做代理，连同登录一起代理过去，才能让特定环境保持登录态
+
+```shell
+#微证券后台，基线测试环境
+/(www|wzq|zqact(0[1-6])?).\w+(.com|.cn){1,}/(svr|cgi-bin|wss)//   9.135.34.51
+```
+
+
+
+# 2024年4月23日
+
+## 荣耀快应用
+
+首先要声明
+
+```json
+{
+  "name": "service.exchange"
+}
+```
+
+代码修改
+
+```js
+import exchange from '@service.exchange'
+
+// exchange设置值
+exchange.set({
+  key: 'testExchangeValue',
+  value: '晨哥666',
+  scope: "global",
+  success: function () {
+    console.log(`设置成功`)
+  },
+  fail: function (data, code) {
+    console.log(`handling fail, code = ${code}`)
+  }
+})
+
+// exchange取值
+exchange.get({
+  key:'testExchangeValue',
+  scope: "global",
+  success:function(res){
+    console.log("接收success", JSON.stringify(res))
+  },
+  fail:function(error){
+    console.log("551error", error)
+  }
+})
+```
+
+storage找不到时返回空字符串""
+
+exchange找不到时返回空对象{}
